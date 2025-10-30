@@ -1,8 +1,11 @@
+// components/Layout.tsx
 import Link from "next/link";
 import { useRouter } from "next/router";
+import type { ReactNode } from "react";
 
-export default function Layout({ children }: { children: React.ReactNode }) {
+export default function Layout({ children }: { children: ReactNode }) {
   const { pathname } = useRouter();
+
   const Nav = ({ href, label }: { href: string; label: string }) => (
     <Link
       href={href}
