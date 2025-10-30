@@ -8,11 +8,11 @@ const nextConfig = {
           {
             key: "Content-Security-Policy",
             value:
-              "frame-ancestors 'self' https://sites.google.com https://*.google.com https://*.googleusercontent.com;"
-          }
-        ]
-      }
+              "frame-ancestors 'self' https://sites.google.com https://*.google.com https://*.googleusercontent.com;",
+          },
+        ],
+      },
     ];
-  }
+  },
 };
 module.exports = nextConfig;
