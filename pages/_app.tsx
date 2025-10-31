@@ -1,16 +1,12 @@
+// pages/_app.tsx
 import type { AppProps } from "next/app";
+import AppLayout from "@/components/AppLayout";
 import "@/styles/globals.css";
-import { Inter } from "next/font/google";
-import AppLayout from "@/components/AppLayout"; // your app shell
 
-const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
-
-export default function App({ Component, pageProps }: AppProps) {
+export default function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <div className={inter.variable + " font-sans"}>
-      <AppLayout>
-        <Component {...pageProps} />
-      </AppLayout>
-    </div>
+    <AppLayout>
+      <Component {...pageProps} />
+    </AppLayout>
   );
 }
