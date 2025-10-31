@@ -2,5 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
-body { @apply bg-slate-50 text-slate-900; }
-a { @apply text-indigo-600; }
+
+:root{
+  --bg:#0b1220;        /* sidebar bg */
+  --ring:#1f2937;      /* sidebar border */
+  --brand-600:#0d9488; /* teal */
+  --accent-500:#2563eb;/* blue */
+}
+
+/* ===== Optional palette swaps (choose later)
+   Indigo→Orchid:  --brand-600:#4f46e5; --accent-500:#a855f7; --bg:#0b1020;
+   Navy→Electric:  --brand-600:#0ea5e9; --accent-500:#1c92f2; --bg:#0a0f1c;
+*/
+
+html,body{
+  height:100%;
+  font-family:"InterVariable",system-ui,-apple-system,Segoe UI,Roboto,Ubuntu,Cantarell,sans-serif;
+  color:#0f172a;
+  background:#f8fafc;
+}
+
+:focus-visible{ outline:2px solid var(--accent-500); outline-offset:2px; }

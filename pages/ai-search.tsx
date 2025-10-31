@@ -1,0 +1,1 @@
+export default function AISearch(){ return <h2 className="text-2xl font-bold">AI Search (AIO, AIM)</h2> }

@@ -10,6 +10,7 @@ cache/
 .env
 .env.*
 .env.local
+!.env.example
 
 # logs & OS files
 npm-debug.log*

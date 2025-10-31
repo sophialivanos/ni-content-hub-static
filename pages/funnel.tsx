@@ -1,0 +1,1 @@
+export default function Funnel(){ return <h2 className="text-2xl font-bold">Funnel Optimisation</h2> }
