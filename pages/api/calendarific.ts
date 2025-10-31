@@ -1,3 +1,4 @@
+// pages/api/calendarific.ts
 import type { NextApiRequest, NextApiResponse } from "next";
 
 type EventItem = {
@@ -10,26 +11,36 @@ type EventItem = {
   countryIso2: string; // e.g. GB
 };
 
-// Map UI labels -> ISO-2
+/** Minimal shape of Calendarific response we use */
+type CalendarificHoliday = {
+  name?: string;
+  description?: string;
+  date?: { iso?: string };
+  type?: string[];
+};
+type CalendarificPayload = {
+  response?: { holidays?: CalendarificHoliday[] };
+};
+
 const COUNTRY_LABEL_TO_ISO: Record<string, string> = {
   "United Kingdom": "GB",
-  "Ireland": "IE",
-  "Canada": "CA",
+  Ireland: "IE",
+  Canada: "CA",
   "United States": "US",
-  "France": "FR",
-  "Romania": "RO",
-  "Sweden": "SE",
-  "Mexico": "MX",
-  "Brazil": "BR",
-  "Greece": "GR",
-  "Denmark": "DK",
-  "Netherlands": "NL",
+  France: "FR",
+  Romania: "RO",
+  Sweden: "SE",
+  Mexico: "MX",
+  Brazil: "BR",
+  Greece: "GR",
+  Denmark: "DK",
+  Netherlands: "NL",
 };
-const ALL_COUNTRY_LABELS = Object.keys(COUNTRY_LABEL_TO_ISO);
+const ALL_COUNTRY_LABELS: string[] = Object.keys(COUNTRY_LABEL_TO_ISO);
 
 // simple in-memory cache by year+country
 const cache: Record<string, Record<string, EventItem[]>> = {};
-const KEY = process.env.CALENDARIFIC_API_KEY; // put your key in .env.local
+const KEY: string | undefined = process.env.CALENDARIFIC_API_KEY; // set in Vercel & .env.local
 
 async function fetchCountryMonth(
   year: number,
@@ -44,55 +55,78 @@ async function fetchCountryMonth(
   const monthTag = `${iso}:${year}:${month}`;
   if (cache[cacheKey][monthTag]) return cache[cacheKey][monthTag];
 
-  const url = `https://calendarific.com/api/v2/holidays?api_key=${KEY}&country=${iso}&year=${year}&month=${month}`;
-  const r = await fetch(url);
-  const j = await r.json();
+  const url = `https://calendarific.com/api/v2/holidays?api_key=${encodeURIComponent(
+    KEY as string
+  )}&country=${encodeURIComponent(iso)}&year=${year}&month=${month}`;
 
-  const rows: EventItem[] = (j?.response?.holidays || []).map((h: any) => {
-    const types: string[] = (h?.type || []).map((t: any) => String(t));
-    return {
-      id: `${iso}-${h?.name}-${h?.date?.iso || ""}`,
-      name: String(h?.name || ""),
-      date: String(h?.date?.iso || ""),
-      description: String(h?.description || ""),
-      type: types,
-      country: label,
-      countryIso2: iso,
-    };
-  })
-  // drop purely religious observances (keep if also national/observance/etc.)
-  .filter(ev => {
-    const t = ev.type.map(x => x.toLowerCase());
-    const allReligious = t.length > 0 && t.every(x => x.includes("religious"));
-    return !allReligious;
-  });
+  const r: Response = await fetch(url);
+  if (!r.ok) {
+    throw new Error(`Calendarific ${iso} ${year}-${month} -> ${r.status}`);
+  }
+
+  const j = (await r.json()) as CalendarificPayload;
+  const holidays: CalendarificHoliday[] = j?.response?.holidays ?? [];
+
+  const rows: EventItem[] = holidays
+    .map((h: CalendarificHoliday): EventItem => {
+      const types: string[] = Array.isArray(h?.type)
+        ? (h.type as string[]).map((t: string) => String(t))
+        : [];
+      const dateIso = String(h?.date?.iso ?? "");
+
+      return {
+        id: `${iso}-${String(h?.name ?? "")}-${dateIso}`,
+        name: String(h?.name ?? ""),
+        date: dateIso,
+        description: h?.description ? String(h.description) : "",
+        type: types,
+        country: label,
+        countryIso2: iso,
+      };
+    })
+    // drop purely religious observances (keep if also national/observance/etc.)
+    .filter((ev: EventItem) => {
+      const t: string[] = ev.type.map((x: string) => x.toLowerCase());
+      const allReligious: boolean =
+        t.length > 0 && t.every((x: string) => x.includes("religious"));
+      return !allReligious;
+    });
 
   cache[cacheKey][monthTag] = rows;
   return rows;
 }
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
+export default async function handler(
+  req: NextApiRequest,
+  res: NextApiResponse
+) {
   try {
     if (!KEY) {
       return res.status(500).json({ error: "Missing CALENDARIFIC_API_KEY" });
     }
 
-    const year = parseInt(String(req.query.year ?? ""), 10);
-    const month = parseInt(String(req.query.month ?? ""), 10);
-    if (!year || !month) return res.status(400).json({ error: "year and month are required" });
+    const year: number = parseInt(String(req.query.year ?? ""), 10);
+    const month: number = parseInt(String(req.query.month ?? ""), 10);
+    if (!year || !month)
+      return res.status(400).json({ error: "year and month are required" });
 
     // countries query is comma-separated labels; blank or missing = ALL
-    const raw = String(req.query.countries ?? "").trim();
-    const labels = raw
-      ? raw.split(",").map(s => s.trim()).filter(Boolean)
+    const raw: string = String(req.query.countries ?? "").trim();
+    const labels: string[] = raw
+      ? raw.split(",").map((s: string) => s.trim()).filter(Boolean)
       : ALL_COUNTRY_LABELS;
 
-    const all = await Promise.all(labels.map(lbl => fetchCountryMonth(year, month, lbl)));
-    const events = all.flat().sort((a, b) => a.date.localeCompare(b.date));
+    const all: EventItem[][] = await Promise.all(
+      labels.map((lbl: string) => fetchCountryMonth(year, month, lbl))
+    );
+    const events: EventItem[] = all.flat().sort((a: EventItem, b: EventItem) =>
+      a.date.localeCompare(b.date)
+    );
 
     res.setHeader("Cache-Control", "public, max-age=300, s-maxage=300");
     return res.status(200).json({ events });
-  } catch (e: any) {
-    return res.status(500).json({ error: e?.message || "Server error" });
+  } catch (e: unknown) {
+    const msg = e instanceof Error ? e.message : "Server error";
+    return res.status(500).json({ error: msg });
   }
 }

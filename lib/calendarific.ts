@@ -1,15 +1,27 @@
-// pages/api/calendarific.ts
-import type { NextApiRequest, NextApiResponse } from "next";
+// lib/calendarific.ts
+export type EventItem = {
+  id: string;
+  name: string;
+  date: string;        // ISO
+  description?: string;
+  type: string[];      // Calendarific "type" strings
+  country: string;     // human label
+  countryIso2: string; // e.g. GB
+};
 
-const API_KEY = process.env.CALENDARIFIC_KEY || "";
-if (!API_KEY) {
-  // Don't throw; return a helpful error if invoked.
-  // (Vercel envs need the var set per project)
-  console.warn("CALENDARIFIC_KEY is not set");
-}
+// Minimal Calendarific response types (only what we use)
+type CalendarificHoliday = {
+  name?: string;
+  description?: string;
+  date?: { iso?: string };
+  type?: string[];
+};
+type CalendarificPayload = {
+  response?: { holidays?: CalendarificHoliday[] };
+};
 
-// Countries you said we care about (map label -> ISO2 expected by Calendarific)
-const COUNTRY_MAP: Record<string, string> = {
+// UI label -> ISO-2 code
+export const COUNTRY_LABEL_TO_ISO: Record<string, string> = {
   "United Kingdom": "GB",
   Ireland: "IE",
   Canada: "CA",
@@ -23,121 +35,88 @@ const COUNTRY_MAP: Record<string, string> = {
   Denmark: "DK",
   Netherlands: "NL",
 };
+export const ALL_COUNTRY_LABELS: string[] = Object.keys(COUNTRY_LABEL_TO_ISO);
 
-// Wherever you build/normalise the "type" array for a holiday `h`:
-const rawTypes = Array.isArray(h.type) ? (h.type as string[]) : [];
-const t: string[] = (Array.isArray(h.type) ? (h.type as string[]) : [])
-  .map((x: string) => String(x).toLowerCase());// very small in-memory cache (per lambda/container lifecycle)
-type CacheVal = { fetchedAt: number; data: any[] };
-const cache = new Map<string, CacheVal>();
-const ONE_DAY = 24 * 60 * 60 * 1000;
+// simple in-memory cache by year+country+month
+const cache: Record<string, Record<string, EventItem[]>> = {};
 
-async function fetchCountryYear(countryIso2: string, year: number) {
-  const url = `https://calendarific.com/api/v2/holidays?api_key=${API_KEY}&country=${countryIso2}&year=${year}`;
-  const r = await fetch(url);
-  if (!r.ok) throw new Error(`Calendarific ${countryIso2} ${year} failed: ${r.status}`);
-  const j = await r.json();
-  // Normalize to flat list of items we care about
-  const holidays = (j?.response?.holidays ?? []).map((h: any) => ({
-    id: `${countryIso2}-${h.date?.iso}-${h.name}`,
-    name: h.name as string,
-    description: h.description as string,
-    // Calendarific gives: { date: { iso: "YYYY-MM-DD" } }
-    date: h.date?.iso as string,
-    // array like ["National holiday","Observance"] or religion
-    type: (h.type ?? []) as string[],
-    countryIso2,
-    country: Object.keys(COUNTRY_MAP).find((k) => COUNTRY_MAP[k] === countryIso2) ?? countryIso2,
-  }));
-  return holidays;
-}
+/**
+ * Fetch one country's holidays for a given year+month from Calendarific.
+ * Filters out purely religious observances.
+ */
+export async function fetchCountryMonth(
+  apiKey: string,
+  year: number,
+  month: number,
+  countryLabel: string
+): Promise<EventItem[]> {
+  const iso = COUNTRY_LABEL_TO_ISO[countryLabel];
+  if (!iso) return [];
 
-// Heuristic: exclude "purely religious" unless widely commercial.
-// Keep room for improvement once your LLM prompt is plugged in.
-const ALWAYS_INCLUDE_NAME = new Set([
-  "Christmas Day",
-  "Christmas Eve",
-  "Boxing Day",
-  "Easter Monday",
-  "Easter Sunday",
-  "Halloween",
-  "Valentine's Day",
-  "Black Friday",
-  "Cyber Monday",
-  "Singles' Day",
-  "Mother's Day",
-  "Father's Day",
-  "New Year's Day",
-  "New Year's Eve",
-  "Independence Day",
-  "Labour Day",
-  "Labor Day",
-]);
+  const yearKey = String(year);
+  cache[yearKey] ||= {};
+  const tag = `${iso}:${year}:${month}`;
+  if (cache[yearKey][tag]) return cache[yearKey][tag];
 
-function likelyCommercial(h: any) {
-  const name = (h.name || "").toLowerCase();
-  if ([...ALWAYS_INCLUDE_NAME].some((n) => n.toLowerCase() === name)) return true;
+  const url =
+    `https://calendarific.com/api/v2/holidays` +
+    `?api_key=${encodeURIComponent(apiKey)}` +
+    `&country=${encodeURIComponent(iso)}` +
+    `&year=${year}&month=${month}`;
 
-  const t = (h.type || []).map((x: string) => x.toLowerCase());
-  const religious: boolean = t.some((x: string) =>
-    /christian|muslim|buddhist|hindu|sikh|jewish|orthodox/.test(x)
-  );  // Observance/National/Seasonal/Cultural → keep; purely religious → drop
-  const hasCommercialishType: boolean = t.some((x: string) =>
-    /(observance|national|season|seasonal|bank|public|cultural|secular|sport)/.test(x)
-  );
+  const r: Response = await fetch(url);
+  if (!r.ok) throw new Error(`Calendarific ${iso} ${year}-${month} -> ${r.status}`);
 
-  // Example filter condition (adjust to your logic):
-  const keep = hasCommercialishType && !(
-  // e.g., cases where it's purely religious AND not public/seasonal etc.
-  religious && !t.some((x: string) => /(public|bank|national|season|seasonal)/.test(x))
-);
+  const payload = (await r.json()) as CalendarificPayload;
+  const holidays: CalendarificHoliday[] = payload?.response?.holidays ?? [];
 
-  if (!keep) {
-    continue; // or `return false` inside an Array.filter
-  }
+  const rows: EventItem[] = holidays
+    .map((h: CalendarificHoliday): EventItem => {
+      const types: string[] = Array.isArray(h.type)
+        ? (h.type as string[]).map((t: string) => String(t))
+        : [];
+      const isoDate: string = String(h?.date?.iso ?? "");
 
-export default async function handler(req: NextApiRequest, res: NextApiResponse) {
-  try {
-    const year = Number(req.query.year ?? new Date().getFullYear());
-    const month = Number(req.query.month ?? new Date().getMonth() + 1);
-    // comma-separated labels, "all" or empty means all supported
-    const countriesParam = (req.query.countries as string) || "";
-    const labels = countriesParam === "" || countriesParam.toLowerCase() === "all"
-      ? Object.keys(COUNTRY_MAP)
-      : countriesParam.split(",").map((s) => s.trim()).filter(Boolean);
-
-    // fetch (and cache per country+year), then aggregate
-    const results: any[] = [];
-    await Promise.all(
-      labels.map(async (label) => {
-        const iso2 = COUNTRY_MAP[label];
-        if (!iso2) return;
-
-        const key = `${iso2}:${year}`;
-        const now = Date.now();
-        const cached = cache.get(key);
-        if (cached && now - cached.fetchedAt < ONE_DAY) {
-          // use cache
-          results.push(...cached.data);
-          return;
-        }
-        const fresh = await fetchCountryYear(iso2, year);
-        cache.set(key, { fetchedAt: now, data: fresh });
-        results.push(...fresh);
-      }),
-    );
-
-    // month filter (on server to keep payload smaller)
-    const filteredByMonth = results.filter((h) => {
-      const d = new Date(h.date);
-      return d.getMonth() + 1 === month;
+      return {
+        id: `${iso}-${String(h?.name ?? "")}-${isoDate}`,
+        name: String(h?.name ?? ""),
+        date: isoDate,
+        description: h?.description ? String(h.description) : "",
+        type: types,
+        country: countryLabel,
+        countryIso2: iso,
+      };
+    })
+    // drop purely religious observances (keep if also observance/national/etc.)
+    .filter((ev: EventItem) => {
+      const t: string[] = ev.type.map((x: string) => x.toLowerCase());
+      const allReligious: boolean =
+        t.length > 0 && t.every((x: string) => x.includes("religious"));
+      return !allReligious;
     });
 
-    // exclude purely religious (heuristic)
-    const commercialOnly = filteredByMonth.filter(likelyCommercial);
+  cache[yearKey][tag] = rows;
+  return rows;
+}
 
-    res.status(200).json({ year, month, countries: labels, events: commercialOnly });
-  } catch (e: any) {
-    res.status(500).json({ error: e.message || "Calendarific error" });
-  }
+/**
+ * Convenience: fetch for many country labels. If labels is empty/undefined,
+ * it fetches for ALL supported labels.
+ */
+export async function fetchMonthAll(
+  apiKey: string,
+  year: number,
+  month: number,
+  countryLabels?: string[]
+): Promise<EventItem[]> {
+  const labels: string[] =
+    countryLabels && countryLabels.length > 0
+      ? countryLabels
+      : ALL_COUNTRY_LABELS;
+
+  const chunks: EventItem[][] = await Promise.all(
+    labels.map((lbl: string) => fetchCountryMonth(apiKey, year, month, lbl))
+  );
+
+  return chunks.flat().sort((a: EventItem, b: EventItem) => a.date.localeCompare(b.date));
 }
