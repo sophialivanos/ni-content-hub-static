@@ -24,7 +24,10 @@ const COUNTRY_MAP: Record<string, string> = {
   Netherlands: "NL",
 };
 
-// very small in-memory cache (per lambda/container lifecycle)
+// Wherever you build/normalise the "type" array for a holiday `h`:
+const rawTypes = Array.isArray(h.type) ? (h.type as string[]) : [];
+const t: string[] = (Array.isArray(h.type) ? (h.type as string[]) : [])
+  .map((x: string) => String(x).toLowerCase());// very small in-memory cache (per lambda/container lifecycle)
 type CacheVal = { fetchedAt: number; data: any[] };
 const cache = new Map<string, CacheVal>();
 const ONE_DAY = 24 * 60 * 60 * 1000;
@@ -76,14 +79,22 @@ function likelyCommercial(h: any) {
   if ([...ALWAYS_INCLUDE_NAME].some((n) => n.toLowerCase() === name)) return true;
 
   const t = (h.type || []).map((x: string) => x.toLowerCase());
-  const religious = t.some((x) => /christian|muslim|buddhist|hindu|sikh|jewish|orthodox/.test(x));
-  // Observance/National/Seasonal/Cultural → keep; purely religious → drop
-  const hasCommercialishType = t.some((x) =>
-    /(observance|national|season|seasonal|bank|public|cultural|secular|sport)/.test(x),
+  const religious: boolean = t.some((x: string) =>
+    /christian|muslim|buddhist|hindu|sikh|jewish|orthodox/.test(x)
+  );  // Observance/National/Seasonal/Cultural → keep; purely religious → drop
+  const hasCommercialishType: boolean = t.some((x: string) =>
+    /(observance|national|season|seasonal|bank|public|cultural|secular|sport)/.test(x)
   );
 
-  return hasCommercialishType || !religious;
-}
+  // Example filter condition (adjust to your logic):
+  const keep = hasCommercialishType && !(
+  // e.g., cases where it's purely religious AND not public/seasonal etc.
+  religious && !t.some((x: string) => /(public|bank|national|season|seasonal)/.test(x))
+);
+
+  if (!keep) {
+    continue; // or `return false` inside an Array.filter
+  }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
