@@ -2,26 +2,33 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { ChevronDown, ChevronRight, Loader2, Download } from "lucide-react";
 
-// ---------- Types ----------
+/* ---------- Types ---------- */
 type SuggestionBuckets = {
   H1?: string[];
   DH1?: string[];
   H2?: string[];
   "Article headline"?: string[];
   "Ribbon Copy"?: string[];
-  "BTC paragraph"?: string; // single paragraph
+  "BTC paragraph"?: string;
 };
 
 type RelevantEvent = {
-  name: string;
+  name: string; // English (stable for merging)
   date: string; // YYYY-MM-DD
   description?: string;
   relevantVerticals?: string[] | string;
   relevanceExplanation?: string;
   bestPractices?: string[] | string;
   contentSuggestions?: SuggestionBuckets;
-  _country?: string;     // from API
-  _rawType?: string[];   // from API
+  _country?: string;     // ISO-2 from API
+  _rawType?: string[];
+  _nameEn?: string;      // English name from API
+  _nameLocal?: string;   // Native name from API (if provided)
+};
+
+type MergedEvent = RelevantEvent & {
+  _countries?: string[];                 // merged ISO-2 codes
+  _localNames?: Record<string, string>;  // code -> local name
 };
 
 type ApiResponse = {
@@ -32,7 +39,7 @@ type ApiResponse = {
   count: number;
 };
 
-// ---------- Static data ----------
+/* ---------- Static data ---------- */
 const MONTHS = [
   "January","February","March","April","May","June",
   "July","August","September","October","November","December"
@@ -84,7 +91,17 @@ const VERTICALS = [
   "Website Builders","Website Builders (SaaS)","Weight Loss","Weight loss plans","WSB",
 ];
 
-// ---------- Utils ----------
+/* ---------- Language helpers (country -> primary UI language) ---------- */
+const LANG_BY_COUNTRY: Record<string, "en"|"fr"|"ro"|"sv"|"es"|"pt"|"el"|"da"|"nl"> = {
+  GB: "en", IE: "en", US: "en", CA: "en",
+  FR: "fr", RO: "ro", SE: "sv", MX: "es", BR: "pt",
+  GR: "el", DK: "da", NL: "nl",
+};
+
+const isDifferent = (a?: string, b?: string) =>
+  !!a && !!b && a.trim().toLowerCase() !== b.trim().toLowerCase();
+
+/* ---------- Utils ---------- */
 const fmtDate = (iso: string) => {
   try {
     const d = new Date(iso);
@@ -96,6 +113,68 @@ const fmtDate = (iso: string) => {
 const toArray = <T,>(v: T | T[] | undefined): T[] =>
   Array.isArray(v) ? v : v ? [v] : [];
 
+function normaliseName(name: string) {
+  return (name || "")
+    .toLowerCase()
+    .replace(/[’'´`]/g, "'")
+    .replace(/[^\p{L}\p{N}]+/gu, " ")
+    .trim();
+}
+
+/* ---------- Deduplicate & merge by English name ---------- */
+function mergeByName(list: RelevantEvent[]): MergedEvent[] {
+  const map = new Map<string, MergedEvent>();
+
+  for (const ev of list) {
+    const key = normaliseName(ev.name || ev._nameEn || "");
+    if (!key) continue;
+
+    const code = (ev._country || "").toUpperCase();
+    const local = ev._nameLocal || ev._nameEn || ev.name;
+
+    const existing = map.get(key);
+    if (!existing) {
+      map.set(key, {
+        ...ev,
+        _countries: code ? [code] : [],
+        _localNames: code ? { [code]: local } : {},
+        _rawType: toArray(ev._rawType),
+      });
+      continue;
+    }
+
+    // earliest date
+    const curr = new Date(existing.date);
+    const next = new Date(ev.date);
+    if (!isNaN(next.getTime()) && (isNaN(curr.getTime()) || next < curr)) {
+      existing.date = ev.date;
+    }
+
+    // prefer longer description
+    if ((ev.description || "").length > (existing.description || "").length) {
+      existing.description = ev.description;
+    }
+
+    // union country codes
+    if (code && !existing._countries!.includes(code)) {
+      existing._countries!.push(code);
+    }
+
+    // collect local names per country
+    if (code) {
+      existing._localNames = existing._localNames || {};
+      if (!existing._localNames[code]) existing._localNames[code] = local;
+    }
+
+    // union types
+    const types = new Set([...(existing._rawType || []), ...toArray(ev._rawType)]);
+    existing._rawType = Array.from(types);
+  }
+
+  return Array.from(map.values()).sort((a, b) => a.date.localeCompare(b.date));
+}
+
+/* ---------- UI bits ---------- */
 const Pill = ({ children, tone = "indigo" }: { children: React.ReactNode; tone?: "indigo"|"blue"|"amber"|"emerald" }) => {
   const colours: Record<string,string> = {
     indigo: "bg-indigo-50 text-indigo-700 border-indigo-200",
@@ -110,8 +189,8 @@ const Pill = ({ children, tone = "indigo" }: { children: React.ReactNode; tone?:
   );
 };
 
-// ---------- Expandable event row ----------
-function EventRow({ ev }: { ev: RelevantEvent }) {
+/* ---------- Expandable event row ---------- */
+function EventRow({ ev, displayName }: { ev: MergedEvent; displayName: string }) {
   const [open, setOpen] = useState(false);
 
   const verticals = useMemo(() => {
@@ -120,24 +199,19 @@ function EventRow({ ev }: { ev: RelevantEvent }) {
     return Array.isArray(raw) ? raw : raw.split(",").map(s => s.trim()).filter(Boolean);
   }, [ev.relevantVerticals]);
 
-  const best = useMemo(() => {
-    const b = ev.bestPractices;
-    if (!b) return [];
-    if (Array.isArray(b)) return b.filter(Boolean);
-    return b.split(/[.;]\s+|\n|, (?=\d\.)/g).map(s => s.trim()).filter(Boolean);
-  }, [ev.bestPractices]);
-
   function exportThis() {
     const payload = JSON.stringify(ev, null, 2);
     const blob = new Blob([payload], { type: "application/json;charset=utf-8" });
     const url = URL.createObjectURL(blob);
     const a = Object.assign(document.createElement("a"), {
       href: url,
-      download: `${ev.name.replace(/\s+/g, "_")}-${ev.date}.json`,
+      download: `${(ev.name || "event").replace(/\s+/g, "_")}-${ev.date}.json`,
     });
     a.click();
     URL.revokeObjectURL(url);
   }
+
+  const codes = ev._countries?.join(", ") || "";
 
   return (
     <div className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm">
@@ -148,8 +222,7 @@ function EventRow({ ev }: { ev: RelevantEvent }) {
         <div className="flex items-center gap-3">
           {open ? <ChevronDown className="h-4 w-4 text-slate-500" /> : <ChevronRight className="h-4 w-4 text-slate-500" />}
           <div className="font-semibold text-slate-900">
-            {ev.name}
-            {ev._country ? <span className="text-xs text-slate-500 ml-2">({ev._country})</span> : null}
+            {displayName}{codes ? ` (${codes})` : ""}
           </div>
         </div>
         <span className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">
@@ -176,7 +249,7 @@ function EventRow({ ev }: { ev: RelevantEvent }) {
 
           {ev.description && <p className="text-slate-700 mb-3">{ev.description}</p>}
 
-          {(ev.relevanceExplanation || verticals.length > 0) && (
+          {((ev.relevanceExplanation && ev.relevanceExplanation.trim().length > 0) || (verticals.length > 0)) && (
             <div className="rounded-lg border border-indigo-200 bg-indigo-50 p-3 mb-4">
               <div className="text-xs uppercase font-semibold text-indigo-700 mb-2">Relevance</div>
               {verticals.length > 0 && (
@@ -194,80 +267,13 @@ function EventRow({ ev }: { ev: RelevantEvent }) {
               )}
             </div>
           )}
-
-          {best.length > 0 && (
-            <div className="mb-4">
-              <div className="font-semibold text-slate-900 mb-2">Best Practices</div>
-              <ol className="list-decimal pl-5 space-y-1">
-                {best.map((b, i) => <li key={i} className="text-slate-700">{b}</li>)}
-              </ol>
-            </div>
-          )}
-
-          {ev.contentSuggestions && (
-            <div>
-              <div className="font-semibold text-slate-900 mb-2">Content Suggestions</div>
-
-              {ev.contentSuggestions.H1?.length ? (
-                <div className="mb-3">
-                  <Pill>H1</Pill>
-                  <ul className="list-disc pl-5 space-y-1 text-slate-700">
-                    {ev.contentSuggestions.H1.map((x, i) => <li key={i}>{x}</li>)}
-                  </ul>
-                </div>
-              ) : null}
-
-              {ev.contentSuggestions.DH1?.length ? (
-                <div className="mb-3">
-                  <Pill>DH1</Pill>
-                  <ul className="list-disc pl-5 space-y-1 text-slate-700">
-                    {ev.contentSuggestions.DH1.map((x, i) => <li key={i}>{x}</li>)}
-                  </ul>
-                </div>
-              ) : null}
-
-              {ev.contentSuggestions.H2?.length ? (
-                <div className="mb-3">
-                  <Pill>H2</Pill>
-                  <ul className="list-disc pl-5 space-y-1 text-slate-700">
-                    {ev.contentSuggestions.H2.map((x, i) => <li key={i}>{x}</li>)}
-                  </ul>
-                </div>
-              ) : null}
-
-              {ev.contentSuggestions["Article headline"]?.length ? (
-                <div className="mb-3">
-                  <Pill tone="blue">ARTICLE</Pill>
-                  <ul className="list-disc pl-5 space-y-1 text-slate-700">
-                    {ev.contentSuggestions["Article headline"].map((x, i) => <li key={i}>{x}</li>)}
-                  </ul>
-                </div>
-              ) : null}
-
-              {ev.contentSuggestions["Ribbon Copy"]?.length ? (
-                <div className="mb-3">
-                  <Pill tone="amber">RIBBON</Pill>
-                  <ul className="list-disc pl-5 space-y-1 text-slate-700">
-                    {ev.contentSuggestions["Ribbon Copy"].map((x, i) => <li key={i}>{x}</li>)}
-                  </ul>
-                </div>
-              ) : null}
-
-              {ev.contentSuggestions["BTC paragraph"] ? (
-                <div className="mb-1">
-                  <Pill tone="emerald">BTC</Pill>
-                  <p className="text-slate-700">{ev.contentSuggestions["BTC paragraph"]}</p>
-                </div>
-              ) : null}
-            </div>
-          )}
         </div>
       )}
     </div>
   );
 }
 
-// ---------- Page ----------
+/* ---------- Page ---------- */
 export default function EventsPage() {
   const now = new Date();
   const [month, setMonth] = useState<number>(now.getMonth() + 1);
@@ -279,7 +285,6 @@ export default function EventsPage() {
   const [events, setEvents] = useState<RelevantEvent[]>([]);
 
   function handleCountryChange(e: React.ChangeEvent<HTMLSelectElement>) {
-    // keep blanks out of state to represent "all countries"
     const vals = Array.from(e.target.selectedOptions).map(o => o.value).filter(Boolean);
     setSelectedCountries(vals);
   }
@@ -287,9 +292,8 @@ export default function EventsPage() {
   async function load() {
     setLoading(true); setError("");
     try {
-      // Call our API; it will fetch + cache full year per country then filter by month
       const params = new URLSearchParams({ month: String(month) });
-      const body = { countries: selectedCountries }; // optional; blank => all
+      const body = { countries: selectedCountries }; // blank => all
       const r = await fetch(`/api/seasonal-events?${params.toString()}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -297,13 +301,7 @@ export default function EventsPage() {
       });
       const data: ApiResponse | { error: string } = await r.json();
       if (!r.ok || (data as any).error) throw new Error((data as any).error || "Failed to load");
-
-      let list = (data as ApiResponse).events || [];
-
-      // If a vertical is selected, we *display* all events but (optionally)
-      // could reduce noise. For now keep all; the vertical will be used later
-      // when you wire the generator prompt per event.
-      setEvents(list);
+      setEvents((data as ApiResponse).events || []);
     } catch (e: any) {
       setError(e?.message || "Failed to load");
       setEvents([]);
@@ -312,23 +310,51 @@ export default function EventsPage() {
     }
   }
 
-  // search filter
+  // Merge duplicates and create country/local-name map
+  const merged = useMemo(() => mergeByName(events), [events]);
+
+  // Build display name function based on selection
+  const getDisplayName = (ev: MergedEvent): string => {
+    if (selectedCountries.length === 1) {
+      const code = selectedCountries[0].toUpperCase();
+      const local = ev._localNames?.[code] || ev._nameLocal || ev.name;
+      const lang = LANG_BY_COUNTRY[code] || "en";
+      const en = ev._nameEn || ev.name;
+      if (lang !== "en" && local && isDifferent(local, en)) {
+        return `${local} (${en})`;
+      }
+      return local || en;
+    }
+    return ev.name; // multiple/no country selected
+  };
+
+  // Search on merged list
   const filtered = useMemo(() => {
     const needle = q.trim().toLowerCase();
-    if (!needle) return events;
-    return events.filter(ev =>
+    if (!needle) return merged;
+    return merged.filter(ev =>
       (ev.name || "").toLowerCase().includes(needle) ||
       (ev.description || "").toLowerCase().includes(needle)
     );
-  }, [events, q]);
+  }, [merged, q]);
+
+  // De-dupe for the compact monthly list (by English name + date)
+  const monthlyUnique = useMemo(() => {
+    const seen = new Map<string, MergedEvent>();
+    for (const ev of filtered) {
+      const key = `${(ev._nameEn || ev.name || "").toLowerCase()}|${ev.date}`;
+      if (!seen.has(key)) seen.set(key, ev);
+    }
+    return Array.from(seen.values());
+  }, [filtered]);
 
   function exportCsv() {
     const rows = [
-      ["name","date","country","description"].join(","),
+      ["name","date","countries","description"].join(","),
       ...filtered.map(e => [
-        JSON.stringify(e.name ?? ""),
+        JSON.stringify(getDisplayName(e)),
         JSON.stringify(e.date ?? ""),
-        JSON.stringify(e._country ?? ""),
+        JSON.stringify((e._countries && e._countries.join(" / ")) || ""),
         JSON.stringify(e.description ?? ""),
       ].join(","))
     ].join("\n");
@@ -340,12 +366,12 @@ export default function EventsPage() {
     URL.revokeObjectURL(url);
   }
 
-  // initial load (current month, all countries)
+  // initial load
   useEffect(() => { load(); /* eslint-disable-next-line */ }, []);
 
   return (
     <>
-      {/* Header (kept as requested) */}
+      {/* Header */}
       <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl p-5 mb-4 shadow-sm">
         <div className="text-sm opacity-80">Seasonal Events</div>
         <div className="text-lg md:text-xl font-semibold">
@@ -416,12 +442,17 @@ export default function EventsPage() {
       <div className="mb-4">
         <div className="text-slate-900 font-semibold mb-2">Seasonal Events</div>
         <div className="bg-white border border-slate-200 rounded-xl overflow-hidden">
-          {filtered.length === 0 ? (
+          {monthlyUnique.length === 0 ? (
             <div className="text-slate-500 px-4 py-3">No events for this selection.</div>
           ) : (
-            filtered.slice(0, Math.min(5, filtered.length)).map((ev, i) => (
-              <div key={`${ev.name}-${ev.date}-${i}`} className="px-4 py-2 border-b last:border-b-0 border-slate-100 flex items-center justify-between">
-                <div className="text-sm text-slate-800 truncate">{ev.name}</div>
+            monthlyUnique.slice(0, Math.min(5, monthlyUnique.length)).map((ev, i) => (
+              <div
+                key={`${ev.name}-${ev.date}-${i}`}
+                className="px-4 py-2 border-b last:border-b-0 border-slate-100 flex items-center justify-between"
+              >
+                <div className="text-sm text-slate-800 truncate">
+                  {getDisplayName(ev)}
+                </div>
                 <div className="text-xs px-2 py-1 rounded-full bg-slate-100 text-slate-700">
                   {fmtDate(ev.date)}
                 </div>
@@ -431,14 +462,18 @@ export default function EventsPage() {
         </div>
       </div>
 
-      {/* Expandable cards */}
+      {/* Expandable cards (merged) */}
       {error && (
         <div className="text-red-700 bg-red-50 border border-red-200 rounded-md p-3 mb-3">{error}</div>
       )}
       {!error && (
         <div className="space-y-3">
           {filtered.map((ev, i)=> (
-            <EventRow key={`${ev.name}-${ev.date}-${i}`} ev={ev} />
+            <EventRow
+              key={`${normaliseName(ev.name)}-${ev.date}-${i}`}
+              ev={ev}
+              displayName={getDisplayName(ev)}
+            />
           ))}
         </div>
       )}

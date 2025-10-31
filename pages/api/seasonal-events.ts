@@ -3,7 +3,7 @@ import type { NextApiRequest, NextApiResponse } from "next";
 
 /**
  * Server-side cache:
- *  key: `${year}:${countryCode}`  =>  Calendarific response for the whole year
+ *  key: `${year}:${countryCode}`  => Calendarific response for the whole year
  */
 const yearCache = new Map<string, any>();
 
@@ -23,52 +23,109 @@ const SUPPORTED = [
   { code: "NL", label: "Netherlands" },
 ];
 
+const SUPPORTED_CODES = new Set(SUPPORTED.map(c => c.code));
+
+/** Primary UI language per country (tweak if you prefer fr-CA for Quebec etc.) */
+const LANG_BY_COUNTRY: Record<string, string> = {
+  GB: "en", IE: "en", US: "en", CA: "en",
+  FR: "fr", RO: "ro", SE: "sv", MX: "es", BR: "pt",
+  GR: "el", DK: "da", NL: "nl",
+};
+
+/* ─────────────────────────────
+   Retail relevance rules
+   ───────────────────────────── */
+// religious terms that are commonly retail-relevant (allow list)
 const RETAIL_RELEVANT_RELIGIOUS = [
-  // religious but widely linked to retail or promos
   "christmas", "xmas", "noel",
-  "easter", "good friday", "boxing day", "black friday", "cyber monday", // (BF/CM not religious but common add-ins)
-  "diwali", "deepavali", "hanukkah", "ramadan", "eid", "passover",
+  "easter", "good friday",
+  "boxing day",
+  "black friday", "cyber monday",
   "valentine", "valentine’s",
+  "singles day","singles' day","double 11","11.11",
+  "mother's day","mothers day","mothering sunday",
+  "father's day","fathers day",
+  "children's day","childrens day",
+  "halloween",
+  "new year's day","new year","lunar new year","chinese new year",
+  "labour day","labor day",
 ];
 
-function isSupported(code: string) {
-  return SUPPORTED.some(c => c.code === code);
-}
+// hard “never show” terms to catch items that slip through
+const NEVER_SHOW_TERMS = [
+  "yom kippur",
+  "diwali", "deepavali",
+  "hanukkah",
+  "ramadan", "eid",
+  "passover", "pesach", "pesach seder", "pesach seder night", "pesach night",
+  "purim", "pesach seder", "pesach seder night", "pesach night",
+  "purim seder", "purim seder night", "purim night",
+  "shavuot", "shavuot seder", "shavuot seder night", "shavuot night",
+  "sukkot", "sukkot seder", "sukkot seder night", "sukkot night",
+  "rosh hashanah",
+  "dussehra",
+  "ashura",
+  "assumption",
+  "epiphany",
+  // catch most “Feast of St … / Saint …”
+  "feast of st",
+  "feast of saint",
+  "saint ",
+  "st ",
+];
 
-function monthOf(dateStr: string) {
+/* ─────────────────────────────
+   Calendarific response types
+   ───────────────────────────── */
+type CalendarificHoliday = {
+  name: string;
+  description?: string;
+  type?: string[]; // ["Observance","Religious",...]
+  date: { iso: string };
+};
+
+type CalendarificYear = {
+  response?: { holidays?: CalendarificHoliday[] };
+};
+
+/* ─────────────────────────────
+   Helpers
+   ───────────────────────────── */
+function monthOf(dateStr: string): number {
   const d = new Date(dateStr);
-  return isNaN(d.getTime()) ? -1 : d.getMonth() + 1;
+  return Number.isNaN(d.getTime()) ? -1 : d.getMonth() + 1;
 }
 
-function looksCommerciallyRelevant(ev: any): boolean {
-  // Calendarific categories can include: "observance", "national", "seasonal", "religious", etc.
-  const cats: string[] = (ev?.type || []).map((x: string) => x.toLowerCase());
+function looksCommerciallyRelevant(h: CalendarificHoliday): boolean {
+  const cats = (h.type ?? []).map((t) => t.toLowerCase());
+  const name = (h.name || "").toLowerCase();
 
-  // Exclude purely religious unless in our allowlist
+  // Never-show guardrails (explicitly remove)
+  if (NEVER_SHOW_TERMS.some((k) => name.includes(k))) return false;
+
+  // If Calendarific tags as religious, only keep if explicitly retail-relevant
   if (cats.includes("religious")) {
-    const name = String(ev?.name || "").toLowerCase();
-    if (!RETAIL_RELEVANT_RELIGIOUS.some(k => name.includes(k))) {
-      return false;
-    }
+    return RETAIL_RELEVANT_RELIGIOUS.some((k) => name.includes(k));
   }
 
-  // Otherwise, keep national / observance / seasonal by default
+  // Otherwise keep by default (observance/national/seasonal/bank/public/cultural/secular/sport, etc.)
   return true;
 }
 
-async function fetchCalendarificYear(country: string, year: number, apiKey: string) {
-  const cacheKey = `${year}:${country}`;
+async function fetchCalendarificYear(country: string, year: number, apiKey: string, language: string) {
+  const cacheKey = `${year}:${country}:${language}`;
   if (yearCache.has(cacheKey)) return yearCache.get(cacheKey);
 
   const url = new URL("https://calendarific.com/api/v2/holidays");
   url.searchParams.set("api_key", apiKey);
   url.searchParams.set("country", country);
   url.searchParams.set("year", String(year));
+  url.searchParams.set("language", language); // << ask for specific language
 
   const res = await fetch(url.toString());
   if (!res.ok) {
     const text = await res.text();
-    throw new Error(`Calendarific ${country} ${year} failed: ${res.status} ${text}`);
+    throw new Error(`Calendarific ${country} ${year} (${language}) failed: ${res.status} ${text}`);
   }
   const data = await res.json();
   yearCache.set(cacheKey, data);
@@ -87,34 +144,58 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     const year = now.getFullYear();
 
     const m = Math.max(1, Math.min(12, parseInt(String(req.query.month ?? now.getMonth() + 1), 10)));
-    let countries: string[] = [];
 
     // countries can arrive via query (?countries=GB,US) or body JSON
+    let countries: string[] = [];
     if (req.method === "POST" && req.headers["content-type"]?.includes("application/json")) {
       const body = req.body ?? {};
       if (Array.isArray(body.countries)) countries = body.countries.filter(Boolean);
     }
     if (typeof req.query.countries === "string" && req.query.countries.length > 0) {
-      countries = String(req.query.countries).split(",").map(s => s.trim()).filter(Boolean);
+      countries = countries.concat(
+        String(req.query.countries).split(",").map(s => s.trim()).filter(Boolean)
+      );
     }
 
-    // Blank means "all supported"
-    if (countries.length === 0) {
-      countries = SUPPORTED.map(c => c.code);
-    } else {
-      countries = countries.filter(isSupported);
-    }
+    // Blank => all supported
+    countries = (countries.length === 0 ? SUPPORTED.map(c => c.code) : countries)
+      .filter(c => SUPPORTED_CODES.has(c));
 
     // Fetch & merge all countries (cached by year)
     const combined: any[] = [];
     for (const code of countries) {
-      const yearData = await fetchCalendarificYear(code, year, API_KEY);
-      const list: any[] = yearData?.response?.holidays ?? [];
-      for (const h of list) {
-        // Keep a note of source country on each holiday
+      const localLang = LANG_BY_COUNTRY[code] || "en";
+
+      // Always fetch EN so we have a stable English name
+      const enData = await fetchCalendarificYear(code, year, API_KEY, "en");
+      const enList: any[] = enData?.response?.holidays ?? [];
+
+      // Optionally fetch local language (if not English)
+      let localList: any[] = [];
+      if (localLang !== "en") {
+        const locData = await fetchCalendarificYear(code, year, API_KEY, localLang);
+        localList = locData?.response?.holidays ?? [];
+      }
+
+      // Build quick lookup from local list by (date + first type) to attach local name
+      const localNameByKey = new Map<string, string>();
+      for (const h of localList) {
+        const dateIso = h?.date?.iso || h?.date;
+        const t0 = String((h?.type?.[0] ?? "")).toLowerCase();
+        if (dateIso) localNameByKey.set(`${dateIso}|${t0}`, String(h?.name ?? ""));
+      }
+
+      // Push EN items, enrich with local if available
+      for (const h of enList) {
+        const dateIso = h?.date?.iso || h?.date;
+        const t0 = String((h?.type?.[0] ?? "")).toLowerCase();
+        const localName = dateIso ? localNameByKey.get(`${dateIso}|${t0}`) : undefined;
+
         combined.push({
           ...h,
           _country: code,
+          _nameEn: String(h?.name ?? ""),
+          _nameLocal: localName || String(h?.name_local ?? "") || String(h?.name ?? ""),
         });
       }
     }
@@ -125,21 +206,21 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       return monthOf(dateStr) === m && looksCommerciallyRelevant(ev);
     });
 
-    // Format down to the shape the page expects
+    // Format to the shape the page expects; keep helper fields for UI
     const result = filtered
       .sort((a, b) => (a.date?.iso ?? "").localeCompare(b.date?.iso ?? ""))
       .map(ev => ({
-        name: ev?.name ?? "Untitled",
+        name: ev?._nameEn ?? ev?.name ?? "Untitled",       // English for stable merge
         date: ev?.date?.iso ?? ev?.date ?? "",
         description: ev?.description ?? "",
-        // We’re deferring vertical relevance & best practices to your generator prompt,
-        // but we keep slots ready:
         relevantVerticals: [] as string[],
         relevanceExplanation: "",
         bestPractices: [],
         contentSuggestions: undefined,
-        _country: ev?._country,
+        _country: ev?._country,            // ISO-2 e.g., "FR"
         _rawType: ev?.type ?? [],
+        _nameEn: ev?._nameEn ?? "",
+        _nameLocal: ev?._nameLocal ?? "",
       }));
 
     res.status(200).json({
