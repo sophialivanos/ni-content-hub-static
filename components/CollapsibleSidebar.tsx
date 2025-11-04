@@ -3,9 +3,7 @@ import * as React from "react";
 import { ChevronLeft, ChevronRight, X } from "lucide-react";
 
 type Props = {
-  /** Your existing nav markup (links, icons, headings) */
   sidebar: React.ReactNode;
-  /** Main page content */
   children: React.ReactNode;
 };
 
@@ -69,14 +67,15 @@ export default function CollapsibleSidebar({ sidebar, children }: Props) {
           aria-controls={drawerId}
           aria-expanded={!collapsed}
           title={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className="hidden md:inline-flex items-center justify-center absolute -right-3 top-4 h-6 w-6 rounded-full bg-white text-slate-700 shadow border border-slate-200"
+          className="hidden md:inline-flex items-center justify-center
+                     absolute -right-3 top-3 h-9 w-9 rounded-full
+                     bg-white/90 ring-1 ring-slate-200 hover:ring-slate-300
+                     text-slate-500 hover:text-slate-700 shadow"
         >
           {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
         </button>
 
-        <div className="flex-1 overflow-y-auto p-3">
-          {sidebar}
-        </div>
+        <div className="flex-1 overflow-y-auto p-3">{sidebar}</div>
       </aside>
 
       {/* Mobile drawer */}
@@ -90,15 +89,14 @@ export default function CollapsibleSidebar({ sidebar, children }: Props) {
         aria-modal="true"
         aria-label="Navigation"
       >
-        <div
-          ref={trapRef}
-          className="w-64 h-full bg-slate-900 text-slate-50 shadow-lg p-3"
-        >
+        <div ref={trapRef} className="w-64 h-full bg-slate-900 text-slate-50 shadow-lg p-3">
           <button
             type="button"
             onClick={() => setOpenMobile(false)}
-            className="absolute top-3 right-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"
             aria-label="Close menu"
+            className="absolute top-3 right-3 inline-flex h-9 w-9 items-center justify-center
+                       rounded-full bg-white/90 ring-1 ring-slate-200 hover:ring-slate-300
+                       text-slate-500 hover:text-slate-700"
           >
             <X className="h-4 w-4" />
           </button>
@@ -120,19 +118,23 @@ export default function CollapsibleSidebar({ sidebar, children }: Props) {
 
       {/* Main content */}
       <main className="flex-1 min-w-0">
-        {/* Mobile open arrow (default collapsed) */}
+        {/* Mobile open arrow (top of page, smaller, same colour as desktop) */}
         <button
           type="button"
           onClick={() => setOpenMobile(true)}
           aria-controls={drawerId}
           aria-expanded={openMobile}
-          className="md:hidden fixed left-2 top-16 z-50 inline-flex h-10 w-10 items-center justify-center rounded-full bg-slate-900 text-white shadow"
           title="Open menu"
+          className="md:hidden fixed left-3 top-2 z-40
+                     inline-flex h-9 w-9 items-center justify-center rounded-full
+                     bg-white/90 ring-1 ring-slate-200 hover:ring-slate-300
+                     text-slate-500 hover:text-slate-700 focus:outline-none
+                     focus-visible:ring-2 focus-visible:ring-indigo-500"
         >
-          <ChevronRight className="h-5 w-5" />
+          <ChevronRight className="h-4 w-4" />
+          <span className="sr-only">Open navigation</span>
         </button>
 
-        {/* Your page content */}
         {children}
       </main>
     </div>

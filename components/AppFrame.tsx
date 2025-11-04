@@ -1,73 +1,72 @@
 // components/AppFrame.tsx
 import React from "react";
-import { ChevronLeft, ChevronRight, X } from "lucide-react";
+import { ChevronLeft, ChevronRight } from "lucide-react";
 import clsx from "clsx";
 import AppSidebar from "./AppSidebar";
 
-export default function AppFrame({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
-  const [open, setOpen] = React.useState(true);        // desktop default: open
+export default function AppFrame({ children }: { children: React.ReactNode }) {
+  // Desktop: default expanded; collapsed keeps an icon rail (not hidden)
+  const [collapsed, setCollapsed] = React.useState(false);
+  // Mobile drawer: controlled by page-level chevron (e.g., near "Export CSV")
   const [mobileOpen, setMobileOpen] = React.useState(false);
+  const [open, setOpen] = React.useState(true);        // desktop default open
+
+  // Sidebar effective width (desktop)
+  const desktopWidth = collapsed ? 64 : 256; // px (w-16 vs w-64)
 
   return (
     <div className="min-h-screen bg-slate-50 text-slate-900">
-      {/* Sidebar (desktop + mobile) */}
       <AppSidebar
+        collapsed={collapsed}
         open={open}
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
       />
 
-      {/* Desktop toggle – subtle, inside the panel edge */}
+      {/* Desktop toggle – white pill so it's visible over the dark panel */}
       <button
         type="button"
-        aria-label={open ? "Collapse navigation" : "Expand navigation"}
+        aria-label={collapsed ? "Expand navigation" : "Collapse navigation"}
         aria-controls="app-sidebar"
-        aria-expanded={open}
-        onClick={() => setOpen((v) => !v)}
+        aria-expanded={!collapsed}
+        onClick={() => setCollapsed((v) => !v)}
         className={clsx(
-          "hidden md:flex items-center justify-center",
-          "fixed z-40 top-3 left-[248px]",               // sits on the panel, not the content
-          "h-7 w-7 rounded-full ring-1 ring-white/10",
-          "bg-slate-800/70 text-slate-200 hover:bg-slate-700",
-          "transition-colors"
+          "hidden md:flex fixed z-40 top-3",
+          // place the pill near the current sidebar edge
+          `left-[${desktopWidth - 16}px]`, // 16px in from the edge so it’s not half-floating
+          "h-9 w-9 items-center justify-center rounded-full",
+          "bg-slate-800/80 text-slate-200 ring-1 ring-slate-200 hover:ring-slate-300 shadow transition"
         )}
+        style={{ left: `${desktopWidth - 16}px` }} // fallback for arbitrary value
       >
-        {open ? <ChevronLeft className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+        {collapsed ? <ChevronRight className="h-4 w-4" /> : <ChevronLeft className="h-4 w-4" />}
       </button>
 
-      {/* Mobile top bar with tiny arrow – NO extra top whitespace */}
-      <div className="md:hidden sticky top-0 z-30 bg-slate-50/90 backdrop-blur supports-[backdrop-filter]:bg-slate-50/70">
-        <div className="mx-auto max-w-7xl px-3 py-2">
-          <button
-            type="button"
-            aria-label="Open navigation"
-            aria-controls="app-sidebar"
-            aria-expanded={mobileOpen}
-            onClick={() => setMobileOpen(true)}
-            className="inline-flex h-8 w-8 items-center justify-center rounded-full border border-slate-200 text-slate-500 hover:bg-slate-100"
-          >
-            <ChevronRight className="h-4 w-4" />
-          </button>
-        </div>
-      </div>
+      {/* Mobile arrow: fixed, small, slate-coloured */}
+      {!mobileOpen && (
+  <button
+    type="button"
+    aria-label="Open navigation"
+    aria-controls="app-sidebar"
+    aria-expanded={false}
+    onClick={() => setMobileOpen(true)}
+    className="md:hidden fixed top-2 left-2 z-50 inline-flex h-8 w-8 items-center justify-center
+               rounded-full bg-slate-800/80 text-slate-200 ring-1 ring-slate-200 shadow-sm"
+    title="Open menu"
+  >
+    <ChevronRight className="h-4 w-4" />
+  </button>
+)}
 
-      {/* Page content with ‘invisible border’ gutters */}
+      {/* Page content with ‘invisible border’ gutters; padding reflects collapsed width */}
       <main
         className={clsx(
-          "transition-[margin] duration-200",
-          open ? "md:ml-64" : "md:ml-0"
+          "transition-[padding] duration-200",
+          collapsed ? "md:pl-16" : "md:pl-64"
         )}
       >
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-          {children}
-        </div>
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">{children}</div>
       </main>
-
-      {/* Mobile backdrop + close affordance inside drawer handled in AppSidebar */}
     </div>
   );
 }
