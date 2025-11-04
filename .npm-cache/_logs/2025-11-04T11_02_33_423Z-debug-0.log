@@ -1,0 +1,259 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.3
+2 info using node@v22.20.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/sophialivanos/Documents/ni-content-hub/.npmrc
+5 silly config load:file:/Users/sophialivanos/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm i clsx
+8 verbose argv "i" "clsx"
+9 verbose logfile logs-max:10 dir:/Users/sophialivanos/Documents/ni-content-hub/.npm-cache/_logs/2025-11-04T11_02_33_423Z-
+10 verbose logfile /Users/sophialivanos/Documents/ni-content-hub/.npm-cache/_logs/2025-11-04T11_02_33_423Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+13 silly idealTree buildDeps
+14 silly fetch manifest clsx@^2.1.1
+15 silly packumentCache full:https://registry.npmjs.org/clsx cache-miss
+16 verbose shrinkwrap failed to load node_modules/.package-lock.json out of date, updated: node_modules
+17 http fetch GET 200 https://registry.npmjs.org/clsx 123ms (cache miss)
+18 silly packumentCache full:https://registry.npmjs.org/clsx set size:undefined disposed:false
+19 silly placeDep ROOT clsx@2.1.1 REPLACE for: ni-content-hub@0.1.0 want: ^2.1.1
+20 silly reify moves {}
+21 silly audit bulk request {
+21 silly audit   '@alloc/quick-lru': [ '5.2.0' ],
+21 silly audit   '@fontsource/inter': [ '5.2.8' ],
+21 silly audit   '@isaacs/cliui': [ '8.0.2' ],
+21 silly audit   '@jridgewell/gen-mapping': [ '0.3.13' ],
+21 silly audit   '@jridgewell/resolve-uri': [ '3.1.2' ],
+21 silly audit   '@jridgewell/sourcemap-codec': [ '1.5.5' ],
+21 silly audit   '@jridgewell/trace-mapping': [ '0.3.31' ],
+21 silly audit   '@next/env': [ '14.2.33' ],
+21 silly audit   '@next/swc-darwin-arm64': [ '14.2.33' ],
+21 silly audit   '@next/swc-darwin-x64': [ '14.2.33' ],
+21 silly audit   '@next/swc-linux-arm64-gnu': [ '14.2.33' ],
+21 silly audit   '@next/swc-linux-arm64-musl': [ '14.2.33' ],
+21 silly audit   '@next/swc-linux-x64-gnu': [ '14.2.33' ],
+21 silly audit   '@next/swc-linux-x64-musl': [ '14.2.33' ],
+21 silly audit   '@next/swc-win32-arm64-msvc': [ '14.2.33' ],
+21 silly audit   '@next/swc-win32-ia32-msvc': [ '14.2.33' ],
+21 silly audit   '@next/swc-win32-x64-msvc': [ '14.2.33' ],
+21 silly audit   '@nodelib/fs.scandir': [ '2.1.5' ],
+21 silly audit   '@nodelib/fs.stat': [ '2.0.5' ],
+21 silly audit   '@nodelib/fs.walk': [ '1.2.8' ],
+21 silly audit   '@pkgjs/parseargs': [ '0.11.0' ],
+21 silly audit   '@radix-ui/number': [ '1.1.1' ],
+21 silly audit   '@radix-ui/primitive': [ '1.1.3' ],
+21 silly audit   '@radix-ui/react-compose-refs': [ '1.1.2' ],
+21 silly audit   '@radix-ui/react-context': [ '1.1.2' ],
+21 silly audit   '@radix-ui/react-dialog': [ '1.1.15' ],
+21 silly audit   '@radix-ui/react-direction': [ '1.1.1' ],
+21 silly audit   '@radix-ui/react-dismissable-layer': [ '1.1.11' ],
+21 silly audit   '@radix-ui/react-focus-guards': [ '1.1.3' ],
+21 silly audit   '@radix-ui/react-focus-scope': [ '1.1.7' ],
+21 silly audit   '@radix-ui/react-id': [ '1.1.1' ],
+21 silly audit   '@radix-ui/react-portal': [ '1.1.9' ],
+21 silly audit   '@radix-ui/react-presence': [ '1.1.5' ],
+21 silly audit   '@radix-ui/react-primitive': [ '2.1.3' ],
+21 silly audit   '@radix-ui/react-scroll-area': [ '1.2.10' ],
+21 silly audit   '@radix-ui/react-separator': [ '1.1.7' ],
+21 silly audit   '@radix-ui/react-slot': [ '1.2.3' ],
+21 silly audit   '@radix-ui/react-use-callback-ref': [ '1.1.1' ],
+21 silly audit   '@radix-ui/react-use-controllable-state': [ '1.2.2' ],
+21 silly audit   '@radix-ui/react-use-effect-event': [ '0.0.2' ],
+21 silly audit   '@radix-ui/react-use-escape-keydown': [ '1.1.1' ],
+21 silly audit   '@radix-ui/react-use-layout-effect': [ '1.1.1' ],
+21 silly audit   '@swc/counter': [ '0.1.3' ],
+21 silly audit   '@swc/helpers': [ '0.5.5' ],
+21 silly audit   '@types/node': [ '24.9.2' ],
+21 silly audit   '@types/react': [ '19.2.2' ],
+21 silly audit   '@types/react-dom': [ '19.2.2' ],
+21 silly audit   'ansi-regex': [ '6.2.2', '5.0.1' ],
+21 silly audit   'ansi-styles': [ '6.2.3', '4.3.0' ],
+21 silly audit   'any-promise': [ '1.3.0' ],
+21 silly audit   anymatch: [ '3.1.3' ],
+21 silly audit   arg: [ '5.0.2' ],
+21 silly audit   argparse: [ '2.0.1' ],
+21 silly audit   'aria-hidden': [ '1.2.6' ],
+21 silly audit   astronomia: [ '4.2.0' ],
+21 silly audit   autoprefixer: [ '10.4.17' ],
+21 silly audit   'balanced-match': [ '1.0.2' ],
+21 silly audit   'baseline-browser-mapping': [ '2.8.21' ],
+21 silly audit   'binary-extensions': [ '2.3.0' ],
+21 silly audit   'brace-expansion': [ '2.0.2' ],
+21 silly audit   braces: [ '3.0.3' ],
+21 silly audit   browserslist: [ '4.27.0' ],
+21 silly audit   busboy: [ '1.6.0' ],
+21 silly audit   caldate: [ '2.0.5' ],
+21 silly audit   'camelcase-css': [ '2.0.1' ],
+21 silly audit   'caniuse-lite': [ '1.0.30001751' ],
+21 silly audit   chokidar: [ '3.6.0' ],
+21 silly audit   'glob-parent': [ '5.1.2', '6.0.2' ],
+21 silly audit   'class-variance-authority': [ '0.7.1' ],
+21 silly audit   'client-only': [ '0.0.1' ],
+21 silly audit   'color-convert': [ '2.0.1' ],
+21 silly audit   'color-name': [ '1.1.4' ],
+21 silly audit   commander: [ '4.1.1' ],
+21 silly audit   'cross-spawn': [ '7.0.6' ],
+21 silly audit   cssesc: [ '3.0.0' ],
+21 silly audit   csstype: [ '3.1.3' ],
+21 silly audit   'date-bengali-revised': [ '2.0.2' ],
+21 silly audit   'date-chinese': [ '2.1.4' ],
+21 silly audit   'date-easter': [ '1.0.3' ],
+21 silly audit   'date-holidays': [ '3.26.5' ],
+21 silly audit   'date-holidays-parser': [ '3.4.7' ],
+21 silly audit   deepmerge: [ '4.3.1' ],
+21 silly audit   'detect-node-es': [ '1.1.0' ],
+21 silly audit   didyoumean: [ '1.2.2' ],
+21 silly audit   dlv: [ '1.1.3' ],
+21 silly audit   eastasianwidth: [ '0.2.0' ],
+21 silly audit   'electron-to-chromium': [ '1.5.243' ],
+21 silly audit   'emoji-regex': [ '9.2.2', '8.0.0' ],
+21 silly audit   escalade: [ '3.2.0' ],
+21 silly audit   'fast-glob': [ '3.3.3' ],
+21 silly audit   fastq: [ '1.19.1' ],
+21 silly audit   'fill-range': [ '7.1.1' ],
+21 silly audit   'foreground-child': [ '3.3.1' ],
+21 silly audit   'fraction.js': [ '4.3.7' ],
+21 silly audit   fsevents: [ '2.3.3' ],
+21 silly audit   'function-bind': [ '1.1.2' ],
+21 silly audit   'get-nonce': [ '1.0.1' ],
+21 silly audit   glob: [ '10.4.5' ],
+21 silly audit   'graceful-fs': [ '4.2.11' ],
+21 silly audit   hasown: [ '2.0.2' ],
+21 silly audit   'is-binary-path': [ '2.1.0' ],
+21 silly audit   'is-core-module': [ '2.16.1' ],
+21 silly audit   'is-extglob': [ '2.1.1' ],
+21 silly audit   'is-fullwidth-code-point': [ '3.0.0' ],
+21 silly audit   'is-glob': [ '4.0.3' ],
+21 silly audit   'is-number': [ '7.0.0' ],
+21 silly audit   isexe: [ '2.0.0' ],
+21 silly audit   jackspeak: [ '3.4.3' ],
+21 silly audit   'jalaali-js': [ '1.2.8' ],
+21 silly audit   jiti: [ '1.21.7' ],
+21 silly audit   'js-tokens': [ '4.0.0' ],
+21 silly audit   'js-yaml': [ '4.1.0' ],
+21 silly audit   lilconfig: [ '2.1.0', '3.1.3' ],
+21 silly audit   'lines-and-columns': [ '1.2.4' ],
+21 silly audit   lodash: [ '4.17.21' ],
+21 silly audit   'loose-envify': [ '1.4.0' ],
+21 silly audit   'lru-cache': [ '10.4.3' ],
+21 silly audit   'lucide-react': [ '0.552.0' ],
+21 silly audit   merge2: [ '1.4.1' ],
+21 silly audit   micromatch: [ '4.0.8' ],
+21 silly audit   minimatch: [ '9.0.5' ],
+21 silly audit   minipass: [ '7.1.2' ],
+21 silly audit   moment: [ '2.30.1' ],
+21 silly audit   'moment-timezone': [ '0.5.48' ],
+21 silly audit   mz: [ '2.7.0' ],
+21 silly audit   nanoid: [ '3.3.11' ],
+21 silly audit   next: [ '14.2.33' ],
+21 silly audit   postcss: [ '8.4.31', '8.4.33' ],
+21 silly audit   'node-releases': [ '2.0.27' ],
+21 silly audit   'normalize-path': [ '3.0.0' ],
+21 silly audit   'normalize-range': [ '0.1.2' ],
+21 silly audit   'object-assign': [ '4.1.1' ],
+21 silly audit   'object-hash': [ '3.0.0' ],
+21 silly audit   'package-json-from-dist': [ '1.0.1' ],
+21 silly audit   'path-key': [ '3.1.1' ],
+21 silly audit   'path-parse': [ '1.0.7' ],
+21 silly audit   'path-scurry': [ '1.11.1' ],
+21 silly audit   picocolors: [ '1.1.1' ],
+21 silly audit   picomatch: [ '2.3.1' ],
+21 silly audit   pify: [ '2.3.0' ],
+21 silly audit   pirates: [ '4.0.7' ],
+21 silly audit   'postcss-import': [ '15.1.0' ],
+21 silly audit   'postcss-js': [ '4.1.0' ],
+21 silly audit   'postcss-nested': [ '6.2.0' ],
+21 silly audit   'postcss-selector-parser': [ '6.1.2' ],
+21 silly audit   'postcss-value-parser': [ '4.2.0' ],
+21 silly audit   prepin: [ '1.0.3' ],
+21 silly audit   'queue-microtask': [ '1.2.3' ],
+21 silly audit   react: [ '18.2.0' ],
+21 silly audit   'react-dom': [ '18.2.0' ],
+21 silly audit   'react-remove-scroll': [ '2.7.1' ],
+21 silly audit   'react-remove-scroll-bar': [ '2.3.8' ],
+21 silly audit   'react-style-singleton': [ '2.2.3' ],
+21 silly audit   'read-cache': [ '1.0.0' ],
+21 silly audit   readdirp: [ '3.6.0' ],
+21 silly audit   resolve: [ '1.22.11' ],
+21 silly audit   reusify: [ '1.1.0' ],
+21 silly audit   'run-parallel': [ '1.2.0' ],
+21 silly audit   scheduler: [ '0.23.2' ],
+21 silly audit   'shebang-command': [ '2.0.0' ],
+21 silly audit   'shebang-regex': [ '3.0.0' ],
+21 silly audit   'signal-exit': [ '4.1.0' ],
+21 silly audit   'source-map-js': [ '1.2.1' ],
+21 silly audit   streamsearch: [ '1.1.0' ],
+21 silly audit   'string-width': [ '5.1.2', '4.2.3' ],
+21 silly audit   'strip-ansi': [ '6.0.1', '7.1.2' ],
+21 silly audit   'styled-jsx': [ '5.1.1' ],
+21 silly audit   sucrase: [ '3.35.0' ],
+21 silly audit   'supports-preserve-symlinks-flag': [ '1.0.0' ],
+21 silly audit   'tailwind-merge': [ '3.3.1' ],
+21 silly audit   tailwindcss: [ '3.4.3' ],
+21 silly audit   'tailwindcss-animate': [ '1.0.7' ],
+21 silly audit   'postcss-load-config': [ '4.0.2' ],
+21 silly audit   thenify: [ '3.3.1' ],
+21 silly audit   'thenify-all': [ '1.6.0' ],
+21 silly audit   'to-regex-range': [ '5.0.1' ],
+21 silly audit   'ts-interface-checker': [ '0.1.13' ],
+21 silly audit   tslib: [ '2.8.1' ],
+21 silly audit   typescript: [ '5.9.3' ],
+21 silly audit   'undici-types': [ '7.16.0' ],
+21 silly audit   'update-browserslist-db': [ '1.1.4' ],
+21 silly audit   'use-callback-ref': [ '1.3.3' ],
+21 silly audit   'use-sidecar': [ '1.1.3' ],
+21 silly audit   'util-deprecate': [ '1.0.2' ],
+21 silly audit   which: [ '2.0.2' ],
+21 silly audit   'wrap-ansi': [ '8.1.0', '7.0.0' ],
+21 silly audit   yaml: [ '2.8.1' ],
+21 silly audit   clsx: [ '2.1.1' ]
+21 silly audit }
+22 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-x64-msvc
+23 silly reify mark deleted [
+23 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-x64-msvc'
+23 silly reify ]
+24 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-ia32-msvc
+25 silly reify mark deleted [
+25 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-ia32-msvc'
+25 silly reify ]
+26 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-arm64-msvc
+27 silly reify mark deleted [
+27 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-arm64-msvc'
+27 silly reify ]
+28 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-x64-musl
+29 silly reify mark deleted [
+29 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-x64-musl'
+29 silly reify ]
+30 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-x64-gnu
+31 silly reify mark deleted [
+31 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-x64-gnu'
+31 silly reify ]
+32 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-arm64-musl
+33 silly reify mark deleted [
+33 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-arm64-musl'
+33 silly reify ]
+34 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-arm64-gnu
+35 silly reify mark deleted [
+35 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-arm64-gnu'
+35 silly reify ]
+36 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-darwin-x64
+37 silly reify mark deleted [
+37 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-darwin-x64'
+37 silly reify ]
+38 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 306ms
+39 silly audit report {}
+40 silly ADD
+41 silly ADD
+42 silly ADD
+43 silly ADD
+44 silly ADD
+45 silly ADD
+46 silly ADD
+47 silly ADD
+48 verbose cwd /Users/sophialivanos/Documents/ni-content-hub
+49 verbose os Darwin 24.6.0
+50 verbose node v22.20.0
+51 verbose npm  v10.9.3
+52 verbose exit 0
+53 info ok

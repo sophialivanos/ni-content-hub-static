@@ -10,19 +10,19 @@ export default function MobileNavToggle({
   isOpen?: boolean;
 }) {
   return (
-    <div className="md:hidden sticky top-0 z-30 bg-slate-50/90 backdrop-blur border-b border-slate-200">
-      <div className="max-w-screen-2xl mx-auto px-4 py-2">
-        <button
-          type="button"
-          onClick={onOpen}
-          aria-label="Open navigation"
-          aria-controls="mobile-drawer"
-          aria-expanded={isOpen ? "true" : "false"}
-          className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 bg-white/70 text-slate-600 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
-        >
-          <ChevronRight className="h-4 w-4" />
-        </button>
-      </div>
-    </div>
-  );
+   <button
+    onClick={() => setOpen(true)}
+    aria-controls="app-sidebar"
+   aria-expanded={open}
+/* Same colour on all breakpoints; smaller & higher so it doesn’t push content */
+  className="fixed left-3 top-2 z-40 md:hidden
+    inline-flex h-9 w-9 items-center justify-center rounded-full
+    bg-white/90 backdrop-blur ring-1 ring-slate-200 hover:ring-slate-300
+    text-slate-500 hover:text-slate-700 focus:outline-none
+    focus-visible:ring-2 focus-visible:ring-indigo-500"
+    >
+    <ChevronRight className="h-4 w-4" />
+    <span className="sr-only">Open navigation</span>
+    </button>
+   );
 }

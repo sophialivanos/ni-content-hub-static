@@ -1,99 +1,110 @@
 // components/AppSidebar.tsx
 import React from "react";
 import clsx from "clsx";
-import Link from "next/link";
-import { X, Home, CalendarDays, Search, FileText, Activity, Boxes } from "lucide-react";
+import {
+  Home,
+  CalendarDays,
+  Search,
+  FileText,
+  Funnel,
+  Layers,
+  Megaphone,
+  PlusSquare,
+  X,
+} from "lucide-react";
 
-export default function AppSidebar({
-  open,
-  mobileOpen,
-  onCloseMobile,
-}: {
-  open: boolean;
-  mobileOpen: boolean;
+type Props = {
+  collapsed: boolean;       // desktop state: icons-only when true
+  mobileOpen: boolean;      // mobile drawer visibility
   onCloseMobile: () => void;
-}) {
-  // shared panel
-  const Panel = (
-    <aside
-      id="app-sidebar"
-      className={clsx(
-        "bg-slate-900 text-slate-100",
-        "fixed inset-y-0 left-0 z-50 w-64",
-        "transform transition-transform duration-200",
-        // desktop behaviour
-        "md:translate-x-0 md:static md:z-30",
-      )}
-    >
-      {/* Header row (single label only) */}
-      <div className="flex items-center justify-between h-12 px-4 border-b border-white/5">
-        <span className="text-xs font-semibold tracking-wider text-slate-400">CONTENT HUB</span>
-        {/* Close button visible on mobile only */}
-        <button
-          type="button"
-          onClick={onCloseMobile}
-          className="md:hidden inline-flex h-8 w-8 items-center justify-center rounded-full border border-white/10 text-slate-300 hover:bg-white/5"
-          aria-label="Close navigation"
-        >
-          <X className="h-4 w-4" />
-        </button>
-      </div>
+};
 
-      {/* Nav */}
-      <nav className="h-[calc(100vh-3rem)] overflow-y-auto px-3 py-3">
-        <ul className="space-y-1 text-[13px]">
-          <li><Link href="/" className="flex items-center gap-2 rounded px-3 py-2 hover:bg-white/5"><Home className="h-4 w-4" />Welcome</Link></li>
-          <li><Link href="/events" className="flex items-center gap-2 rounded px-3 py-2 hover:bg-white/5"><CalendarDays className="h-4 w-4" />Seasonal Events</Link></li>
-          <li><Link href="/ai-search" className="flex items-center gap-2 rounded px-3 py-2 hover:bg-white/5"><Search className="h-4 w-4" />AI Search (AIO, AIM)</Link></li>
-          <li><Link href="/articles" className="flex items-center gap-2 rounded px-3 py-2 hover:bg-white/5"><FileText className="h-4 w-4" />Articles</Link></li>
-          <li><Link href="/funnel" className="flex items-center gap-2 rounded px-3 py-2 hover:bg-white/5"><Activity className="h-4 w-4" />Funnel Optimisation</Link></li>
-          <li><Link href="/verticals" className="flex items-center gap-2 rounded px-3 py-2 hover:bg-white/5"><Boxes className="h-4 w-4" />Vertical Profiles</Link></li>
-          {/* …add the rest as needed */}
-        </ul>
-      </nav>
-    </aside>
+const NAV = [
+  { href: "/", label: "Welcome", icon: Home },
+  { href: "/events", label: "Seasonal Events", icon: CalendarDays },
+  { href: "/ai-search", label: "AI Search (AIO, AIM)", icon: Search },
+  { href: "/articles", label: "Articles", icon: FileText },
+  { href: "/funnel", label: "Funnel Optimisation", icon: Funnel },
+  { href: "/verticals", label: "Vertical Profiles", icon: Layers },
+  { href: "/mc-ads", label: "MC ads, scripts, + brainstorming", icon: Megaphone },
+  { href: "/more", label: "+ More to come…", icon: PlusSquare },
+];
+
+function NavList({ collapsed }: { collapsed: boolean }) {
+  return (
+    <nav className="mt-2 space-y-1">
+      {NAV.map((item) => {
+        const Icon = item.icon;
+        return (
+          <a
+            key={item.href}
+            href={item.href}
+            className={clsx(
+              "group flex items-center gap-3 rounded-md px-2 py-2",
+              "text-slate-200 hover:bg-white/10 hover:text-white transition"
+            )}
+            title={collapsed ? item.label : undefined}
+          >
+            <Icon className="h-5 w-5 shrink-0" />
+            {/* label hidden in collapsed desktop */}
+            <span className={clsx("truncate", collapsed && "hidden")}>{item.label}</span>
+          </a>
+        );
+      })}
+    </nav>
   );
+}
 
+export default function AppSidebar({ collapsed, mobileOpen, onCloseMobile }: Props) {
+  // Desktop panel
   return (
     <>
-      {/* Desktop: slide in/out */}
-      <div
+      <aside
+        id="app-sidebar"
+        style={{ width: collapsed ? 64 : 256 }}
         className={clsx(
-          "hidden md:block",
-          open ? "md:translate-x-0" : "md:-translate-x-full",
-          "transition-transform duration-200"
+          "hidden md:flex fixed inset-y-0 left-0 z-30 flex-col",
+          "border-r border-slate-800/50 bg-slate-900 text-slate-50",
+          "transition-[width] ease-out motion-safe:duration-200 motion-reduce:duration-0",
+          collapsed ? "w-16" : "w-64"
         )}
+        aria-label="Primary"
       >
-        {Panel}
-      </div>
+        <div className={clsx("px-3 pt-4", collapsed ? "pb-2" : "pb-3")}>
+        {!collapsed && <div className="font-semibold tracking-tight">Content Hub</div>}
+        </div>
 
-      {/* Mobile drawer + backdrop */}
+        <div className="flex-1 overflow-y-auto px-2 pb-4">
+          <NavList collapsed={collapsed} />
+        </div>
+      </aside>
+
+      {/* Mobile drawer (full labels) */}
       <div
         className={clsx(
-          "md:hidden fixed inset-0 z-50",
-          mobileOpen ? "pointer-events-auto" : "pointer-events-none"
+          "md:hidden fixed inset-y-0 left-0 z-40 transform",
+          "transition-transform ease-out motion-safe:duration-200 motion-reduce:duration-0",
+          mobileOpen ? "translate-x-0" : "-translate-x-full"
         )}
-        aria-hidden={!mobileOpen}
+        role="dialog"
+        aria-modal="true"
+        aria-label="Navigation"
       >
-        {/* Backdrop */}
-        <div
-          onClick={onCloseMobile}
-          className={clsx(
-            "absolute inset-0 bg-black/40 transition-opacity",
-            mobileOpen ? "opacity-100" : "opacity-0"
-          )}
-        />
-        {/* Drawer */}
-        <div
-          className={clsx(
-            "absolute inset-y-0 left-0 w-72",
-            "transform transition-transform duration-200",
-            mobileOpen ? "translate-x-0" : "-translate-x-full"
-          )}
-          role="dialog"
-          aria-modal="true"
-        >
-          {Panel}
+        <div className="w-64 h-full bg-slate-900 text-slate-50 shadow-lg p-3 relative">
+          <button
+            type="button"
+            onClick={onCloseMobile}
+            className="absolute top-3 right-3 inline-flex h-8 w-8 items-center justify-center rounded-full bg-white/10 hover:bg-white/20"
+            aria-label="Close menu"
+          >
+            <X className="h-4 w-4" />
+          </button>
+          <div className="px-1 pt-2 pb-2">
+          <div className="font-semibold tracking-tight">Content Hub</div>
+          </div>
+          <div className="px-1">
+            <NavList collapsed={false} />
+          </div>
         </div>
       </div>
     </>

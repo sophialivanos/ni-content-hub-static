@@ -1883,34 +1883,36 @@ export default function EventsPage() {
 
       {/* Export CSV (unchanged) */}
       <div className="mb-6">
-        <button
-          onClick={() => {
-            const rows = [
-              ["name", "date", "countries", "description"].join(","),
-              ...filtered.map((e) =>
-                [
-                  JSON.stringify(getDisplayName(e)),
-                  JSON.stringify(e.date ?? ""),
-                  JSON.stringify((e._countries && e._countries.join(" / ")) || ""),
-                  JSON.stringify(e.description ?? ""),
-                ].join(",")
-              ),
-            ].join("\n");
-            const blob = new Blob([rows], { type: "text/csv;charset=utf-8" });
-            const url = URL.createObjectURL(blob);
-            const a = Object.assign(document.createElement("a"), {
-              href: url,
-              download: `seasonal-events-${month ? MONTHS[Number(month) - 1] : "all"}.csv`,
-            });
-            a.click();
-            URL.revokeObjectURL(url);
-          }}
-          className="px-3 py-2 md:px-4 md:py-2 text-sm md:text-base rounded-md bg-indigo-600 text-white font-semibold …"
-          title="Export CSV"
-        >
-          <Download className="h-4 w-4" />
-          Export CSV
-        </button>
+      <button
+  onClick={() => {
+    const rows = [
+      ["name", "date", "countries", "description"].join(","),
+      ...filtered.map((e) =>
+        [
+          JSON.stringify(getDisplayName(e)),
+          JSON.stringify(e.date ?? ""),
+          JSON.stringify((e._countries && e._countries.join(" / ")) || ""),
+          JSON.stringify(e.description ?? ""),
+        ].join(",")
+      ),
+    ].join("\n");
+    const blob = new Blob([rows], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement("a"), {
+      href: url,
+      download: `seasonal-events-${month ? MONTHS[Number(month) - 1] : "all"}.csv`,
+    });
+    a.click();
+    URL.revokeObjectURL(url);
+  }}
+  className="inline-flex items-center gap-2 whitespace-nowrap
+  rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white
+  hover:bg-indigo-700 disabled:opacity-60"  
+  title="Export CSV"
+>
+<Download className="h-4 w-4 shrink-0" />
+<span>Export CSV</span>
+</button>
       </div>
 
       {/* Compact monthly list (unchanged) */}
