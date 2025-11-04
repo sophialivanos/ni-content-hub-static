@@ -1,22 +1,8 @@
-// components/Layout.tsx
-import React from "react";
-import NavDrawer from "./NavDrawer"; // NEW
+// components/Layout.tsx (or wherever you define the app shell)
+import * as React from "react";
+import CollapsibleSidebar from "../components/CollapsibleSidebar";
+import AppSidebar from "../components/AppSidebar";
 
-type Props = { children: React.ReactNode };
-
-export default function Layout({ children }: Props) {
-  return (
-    <NavDrawer
-      sidebar={
-        // ⬇️ Use your existing sidebar JSX here (unchanged)
-        <nav className="p-3 space-y-1">
-          {/* Content Hub / Welcome / Seasonal Events / ... exactly as you have it */}
-          {/* Keep all your existing classes and links */}
-        </nav>
-      }
-    >
-      {/* ⬇️ Your existing main content wrapper stays intact */}
-      <div className="p-4">{children}</div>
-    </NavDrawer>
-  );
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return <CollapsibleSidebar sidebar={<AppSidebar />}>{children}</CollapsibleSidebar>;
 }
