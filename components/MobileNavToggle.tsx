@@ -1,33 +1,28 @@
 // components/MobileNavToggle.tsx
+import React from "react";
 import { ChevronRight } from "lucide-react";
 
-type Props = {
+export default function MobileNavToggle({
+  onOpen,
+  isOpen,
+}: {
   onOpen: () => void;
   isOpen?: boolean;
-};
-
-export default function MobileNavToggle({ onOpen, isOpen }: Props) {
-  // Hidden on desktop and while drawer is open
-  if (isOpen) return null;
-
+}) {
   return (
-    <button
-      type="button"
-      onClick={onOpen}
-      aria-label="Open navigation"
-      aria-controls="app-sidebar-drawer"
-      aria-expanded="false"
-      className="
-        md:hidden fixed left-2 top-20 z-40 h-9 w-9 rounded-full
-        bg-indigo-600/80 text-white border border-white/10
-        shadow-md shadow-indigo-900/20 backdrop-blur
-        opacity-70 hover:opacity-100 focus-visible:outline-none
-        focus-visible:ring-2 focus-visible:ring-white/60
-        transition motion-safe:duration-200
-      "
-    >
-      <ChevronRight className="h-5 w-5 mx-auto" />
-      <span className="sr-only">Open menu</span>
-    </button>
+    <div className="md:hidden sticky top-0 z-30 bg-slate-50/90 backdrop-blur border-b border-slate-200">
+      <div className="max-w-screen-2xl mx-auto px-4 py-2">
+        <button
+          type="button"
+          onClick={onOpen}
+          aria-label="Open navigation"
+          aria-controls="mobile-drawer"
+          aria-expanded={isOpen ? "true" : "false"}
+          className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-slate-200 bg-white/70 text-slate-600 hover:bg-white/90 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+        >
+          <ChevronRight className="h-4 w-4" />
+        </button>
+      </div>
+    </div>
   );
 }
