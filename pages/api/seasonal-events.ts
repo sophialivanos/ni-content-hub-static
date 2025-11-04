@@ -1,10 +1,11 @@
 // pages/api/seasonal-events.ts
 import type { NextApiRequest, NextApiResponse } from "next";
+import Holidays from "date-holidays";
 import { isCommercialName } from "@/lib/commercial-events";
 import { syntheticForMonth } from "@/lib/synthetic-events";
 
-/** Server-side cache: `${year}:${country}:${lang}` -> Calendarific response */
-const yearCache = new Map<string, any>();
+/** Server-side cache: `${year}:${country}` -> normalized holidays list */
+const yearCache = new Map<string, any[]>();
 
 const SUPPORTED = [
   { code: "GB", label: "United Kingdom" },
@@ -20,52 +21,107 @@ const SUPPORTED = [
   { code: "DK", label: "Denmark" },
   { code: "NL", label: "Netherlands" },
 ];
-const SUPPORTED_CODES = new Set(SUPPORTED.map(c => c.code));
+const SUPPORTED_CODES = new Set(SUPPORTED.map((c) => c.code));
 
-/** Primary UI language per country (tweak as needed) */
+/** Primary UI language per country (kept for compatibility) */
 const LANG_BY_COUNTRY: Record<string, string> = {
-  GB: "en", IE: "en", US: "en", CA: "en",
-  FR: "fr", RO: "ro", SE: "sv", MX: "es", BR: "pt",
-  GR: "el", DK: "da", NL: "nl",
+  GB: "en",
+  IE: "en",
+  US: "en",
+  CA: "en",
+  FR: "fr",
+  RO: "ro",
+  SE: "sv",
+  MX: "es",
+  BR: "pt",
+  GR: "el",
+  DK: "da",
+  NL: "nl",
 };
 
-type CalendarificHoliday = {
+type DHRawHoliday = {
+  date?: string;      // e.g. "2025-12-25 00:00:00"
+  start?: Date;       // present in newer versions
+  end?: Date;
+  name?: string;      // English by default
+  nameLocal?: string; // if configured; often undefined
+  type?: string | string[];
+  rule?: string;
+  substitute?: boolean;
+  note?: string;
+};
+
+type UiHoliday = {
   name: string;
+  date: string;             // YYYY-MM-DD
   description?: string;
-  type?: string[];       // ["Observance","Religious",...]
-  date: { iso: string };
+  _country: string;
+  _nameEn: string;
+  _nameLocal?: string;
+  _rawType: string[];
 };
 
-function monthOf(dateStr: string): number {
-  const d = new Date(dateStr);
+function pad2(n: number) { return n < 10 ? `0${n}` : `${n}`; }
+function ymd(d: Date) {
+  return `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
+}
+function monthOf(iso: string): number {
+  const d = new Date(iso);
   return Number.isNaN(d.getTime()) ? -1 : d.getMonth() + 1;
 }
 
-async function fetchCalendarificYear(country: string, year: number, apiKey: string, language: string) {
-  const cacheKey = `${year}:${country}:${language}`;
-  if (yearCache.has(cacheKey)) return yearCache.get(cacheKey);
+/** Normalize a date-holidays item to our UI format */
+function normHoliday(h: DHRawHoliday, country: string): UiHoliday | null {
+  let d: Date | null = null;
+  if (h.start instanceof Date) d = h.start;
+  else if (h.date) d = new Date(h.date.replace(" ", "T") + "Z"); // be robust to "YYYY-MM-DD 00:00:00"
+  if (!d || Number.isNaN(d.getTime())) return null;
 
-  const url = new URL("https://calendarific.com/api/v2/holidays");
-  url.searchParams.set("api_key", apiKey);
-  url.searchParams.set("country", country);
-  url.searchParams.set("year", String(year));
-  url.searchParams.set("language", language);
+  const name = String(h.name ?? "").trim();
+  const typeArr = Array.isArray(h.type) ? h.type : h.type ? [h.type] : [];
 
-  const res = await fetch(url.toString());
-  if (!res.ok) {
-    const text = await res.text();
-    throw new Error(`Calendarific ${country} ${year} (${language}) failed: ${res.status} ${text}`);
+  // date-holidays does not ship descriptions; provide a neutral default
+  const desc =
+    typeArr.includes("public")
+      ? "Public holiday widely observed with time off work and local activities."
+      : "Widely observed date noted for cultural or seasonal activities.";
+
+  return {
+    name,
+    date: ymd(d),
+    description: desc,
+    _country: country,
+    _nameEn: name,
+    _nameLocal: h.nameLocal || name,
+    _rawType: typeArr.length ? typeArr : ["holiday"],
+  };
+}
+
+/** Get & cache all holidays for (year,country) from date-holidays */
+function getCountryYear(country: string, year: number): UiHoliday[] {
+  const key = `${year}:${country}`;
+  const cached = yearCache.get(key);
+  if (cached) return cached as UiHoliday[];
+
+  const hd = new Holidays(country);
+  // If library throws for an unsupported code, just return empty
+  let list: DHRawHoliday[] = [];
+  try {
+    list = (hd.getHolidays(year) as any[]) || [];
+  } catch {
+    list = [];
   }
-  const data = await res.json();
-  yearCache.set(cacheKey, data);
-  return data;
+
+  const normalized = list
+    .map((h) => normHoliday(h, country))
+    .filter((x): x is UiHoliday => !!x);
+
+  yearCache.set(key, normalized);
+  return normalized;
 }
 
 export default async function handler(req: NextApiRequest, res: NextApiResponse) {
   try {
-    const API_KEY = process.env.CALENDARIFIC_API_KEY;
-    if (!API_KEY) return res.status(400).json({ error: "Missing CALENDARIFIC_API_KEY" });
-
     const now = new Date();
     const year = now.getFullYear();
     const m = Math.max(1, Math.min(12, parseInt(String(req.query.month ?? now.getMonth() + 1), 10)));
@@ -80,7 +136,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
     if (typeof req.query.countries === "string" && req.query.countries.length > 0) {
       countries = countries.concat(
-        String(req.query.countries).split(",").map(s => s.trim()).filter(Boolean)
+        String(req.query.countries).split(",").map((s) => s.trim()).filter(Boolean)
       );
     }
     if (typeof req.query.commercialOnly === "string") {
@@ -88,89 +144,83 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     }
 
     // Blank → all supported
-    countries = (countries.length === 0 ? SUPPORTED.map(c => c.code) : countries)
-      .filter(c => SUPPORTED_CODES.has(c));
+    countries = (countries.length === 0 ? SUPPORTED.map((c) => c.code) : countries).filter((c) =>
+      SUPPORTED_CODES.has(c)
+    );
 
-    // Fetch EN + local per country; attach _nameEn/_nameLocal and _country
-    const combined: Array<CalendarificHoliday & {
-      _country: string;
-      _nameEn: string;
-      _nameLocal: string | undefined;
-    }> = [];
-
+    // Collect holidays per country from local library
+    let combined: UiHoliday[] = [];
     for (const code of countries) {
-      const lang = LANG_BY_COUNTRY[code] || "en";
-
-      const enData = await fetchCalendarificYear(code, year, API_KEY, "en");
-      const enList: CalendarificHoliday[] = enData?.response?.holidays ?? [];
-
-      let localList: CalendarificHoliday[] = [];
-      if (lang !== "en") {
-        const locData = await fetchCalendarificYear(code, year, API_KEY, lang);
-        localList = locData?.response?.holidays ?? [];
-      }
-
-      // Build (date+firstType) → local-name lookup
-      const localByKey = new Map<string, string>();
-      for (const h of localList) {
-        const iso = h?.date?.iso;
-        const t0 = String(h?.type?.[0] ?? "").toLowerCase();
-        if (iso) localByKey.set(`${iso}|${t0}`, String(h?.name ?? ""));
-      }
-
-      for (const h of enList) {
-        const iso = h?.date?.iso;
-        const t0 = String(h?.type?.[0] ?? "").toLowerCase();
-        const local = iso ? localByKey.get(`${iso}|${t0}`) : undefined;
-
-        combined.push({
-          ...h,
-          _country: code,
-          _nameEn: String(h?.name ?? ""),
-          _nameLocal: local || (h as any)?.name_local || String(h?.name ?? ""),
-        });
-      }
+      const list = getCountryYear(code, year);
+      combined = combined.concat(list);
     }
 
     // Filter for selected month
-    let filtered = combined.filter((ev) => monthOf(ev?.date?.iso || "") === m);
+    let filtered = combined.filter((ev) => monthOf(ev.date) === m);
 
-    // Commercial-only filter using allow-list (English/local name + country)
+    // Commercial-only filter using your allow-list helper
     if (commercialOnly) {
-      filtered = filtered.filter((ev) =>
-        isCommercialName(ev._nameEn, ev._nameLocal, ev._country)
-      );
+      filtered = filtered.filter((ev) => isCommercialName(ev._nameEn, ev._nameLocal, ev._country));
     }
 
-    // Inject synthetic events (Prime Day, BTS, Soldes, El Buen Fin)
-    const synthetic = syntheticForMonth(year, m, countries).map(s => ({
+    // Inject synthetic events (Prime Day, BTS, Soldes, El Buen Fin, etc.)
+    const synthetic = syntheticForMonth(year, m, countries).map((s) => ({
       name: s.name,
+      date: s.date, // already YYYY-MM-DD
       description: s.description,
-      type: ["Synthetic"],
-      date: { iso: s.date },
       _country: s.country,
       _nameEn: s.name,
       _nameLocal: s.localName ?? s.name,
-    }));
+      _rawType: ["Synthetic"],
+    })) as UiHoliday[];
     filtered = filtered.concat(synthetic);
 
-    // Format for UI
+    /* NEW: Guarantee New Year's Eve across selected countries (Calendarific gaps) */
+    if (m === 12) {
+      for (const code of countries) {
+        const exists = filtered.some((ev) => {
+          const name = String((ev as any)._nameEn || ev.name || (ev as any)._nameLocal || "");
+          const iso  = String((ev as any).date || "");
+          return /new\s*year/i.test(name) && iso.endsWith("-12-31") && String((ev as any)._country).toUpperCase() === code.toUpperCase();
+        });
+        if (!exists) {
+          filtered.push({
+            name: "New Year's Eve",
+            description: "Last day of the Gregorian year; countdowns, gatherings and travel are common.",
+            date: `${year}-12-31`,
+            _country: code,
+            _nameEn: "New Year's Eve",
+            _nameLocal: "New Year's Eve",
+            _rawType: ["Synthetic"],
+          } as UiHoliday);
+        }
+      }
+    }
+
+    // Format for UI (keep your front-end contract)
+    const toIso = (d: any): string => (typeof d === "string" ? d : String(d?.iso || ""));
+    const toTime = (d: any): number => {
+      const iso = toIso(d);
+      const t = Date.parse(iso);
+      return Number.isNaN(t) ? Number.MAX_SAFE_INTEGER : t;
+    };
     const result = filtered
-      .sort((a, b) => (a.date?.iso ?? "").localeCompare(b.date?.iso ?? ""))
-      .map(ev => ({
-        name: ev?._nameEn ?? ev?.name ?? "Untitled",
-        date: ev?.date?.iso ?? "",
-        description: ev?.description ?? "",
+      .sort((a, b) => toTime(a.date) - toTime(b.date))
+      .map((ev) => ({
+        name: ev._nameEn || ev.name || "Untitled",
+        date: toIso(ev.date),
+        description: ev.description ?? "",
         relevantVerticals: [] as string[],
         relevanceExplanation: "",
         bestPractices: [],
         contentSuggestions: undefined,
-        _country: ev?._country,
-        _rawType: ev?.type ?? [],
-        _nameEn: ev?._nameEn ?? "",
-        _nameLocal: ev?._nameLocal ?? "",
+        _country: ev._country,
+        _rawType: ev._rawType,
+        _nameEn: ev._nameEn || "",
+        _nameLocal: ev._nameLocal || "",
       }));
 
+    res.setHeader("Cache-Control", "public, max-age=3600, s-maxage=3600");
     res.status(200).json({
       month: m,
       year,

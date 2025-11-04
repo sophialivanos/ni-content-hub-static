@@ -1,0 +1,398 @@
+0 verbose cli /usr/local/bin/node /usr/local/bin/npm
+1 info using npm@10.9.3
+2 info using node@v22.20.0
+3 silly config load:file:/usr/local/lib/node_modules/npm/npmrc
+4 silly config load:file:/Users/sophialivanos/Documents/ni-content-hub/.npmrc
+5 silly config load:file:/Users/sophialivanos/.npmrc
+6 silly config load:file:/usr/local/etc/npmrc
+7 verbose title npm i date-holidays
+8 verbose argv "i" "date-holidays"
+9 verbose logfile logs-max:10 dir:/Users/sophialivanos/Documents/ni-content-hub/.npm-cache/_logs/2025-11-03T07_25_06_240Z-
+10 verbose logfile /Users/sophialivanos/Documents/ni-content-hub/.npm-cache/_logs/2025-11-03T07_25_06_240Z-debug-0.log
+11 silly logfile done cleaning log files
+12 silly packumentCache heap:4345298944 maxSize:1086324736 maxEntrySize:543162368
+13 silly idealTree buildDeps
+14 silly fetch manifest date-holidays@*
+15 silly packumentCache full:https://registry.npmjs.org/date-holidays cache-miss
+16 http fetch GET 200 https://registry.npmjs.org/date-holidays 125ms (cache miss)
+17 silly packumentCache full:https://registry.npmjs.org/date-holidays set size:undefined disposed:false
+18 silly placeDep ROOT date-holidays@3.26.5 OK for: ni-content-hub@0.1.0 want: *
+19 silly fetch manifest date-holidays-parser@^3.4.7
+20 silly packumentCache full:https://registry.npmjs.org/date-holidays-parser cache-miss
+21 silly fetch manifest js-yaml@^4.1.0
+22 silly packumentCache full:https://registry.npmjs.org/js-yaml cache-miss
+23 silly fetch manifest lodash@^4.17.21
+24 silly packumentCache full:https://registry.npmjs.org/lodash cache-miss
+25 silly fetch manifest prepin@^1.0.3
+26 silly packumentCache full:https://registry.npmjs.org/prepin cache-miss
+27 http fetch GET 200 https://registry.npmjs.org/npm 217ms
+28 http fetch GET 200 https://registry.npmjs.org/js-yaml 127ms (cache miss)
+29 silly packumentCache full:https://registry.npmjs.org/js-yaml set size:undefined disposed:false
+30 http fetch GET 200 https://registry.npmjs.org/lodash 129ms (cache miss)
+31 silly packumentCache full:https://registry.npmjs.org/lodash set size:undefined disposed:false
+32 http fetch GET 200 https://registry.npmjs.org/date-holidays-parser 620ms (cache miss)
+33 silly packumentCache full:https://registry.npmjs.org/date-holidays-parser set size:undefined disposed:false
+34 http fetch GET 200 https://registry.npmjs.org/prepin 851ms (cache miss)
+35 silly packumentCache full:https://registry.npmjs.org/prepin set size:undefined disposed:false
+36 silly placeDep ROOT date-holidays-parser@3.4.7 OK for: date-holidays@3.26.5 want: ^3.4.7
+37 silly placeDep ROOT js-yaml@4.1.0 OK for: date-holidays@3.26.5 want: ^4.1.0
+38 silly placeDep ROOT lodash@4.17.21 OK for: date-holidays@3.26.5 want: ^4.17.21
+39 silly placeDep ROOT prepin@1.0.3 OK for: date-holidays@3.26.5 want: ^1.0.3
+40 silly fetch manifest astronomia@^4.1.1
+41 silly packumentCache full:https://registry.npmjs.org/astronomia cache-miss
+42 silly fetch manifest caldate@^2.0.5
+43 silly packumentCache full:https://registry.npmjs.org/caldate cache-miss
+44 silly fetch manifest date-bengali-revised@^2.0.2
+45 silly packumentCache full:https://registry.npmjs.org/date-bengali-revised cache-miss
+46 silly fetch manifest date-chinese@^2.1.4
+47 silly packumentCache full:https://registry.npmjs.org/date-chinese cache-miss
+48 silly fetch manifest date-easter@^1.0.3
+49 silly packumentCache full:https://registry.npmjs.org/date-easter cache-miss
+50 silly fetch manifest deepmerge@^4.3.1
+51 silly packumentCache full:https://registry.npmjs.org/deepmerge cache-miss
+52 silly fetch manifest jalaali-js@^1.2.7
+53 silly packumentCache full:https://registry.npmjs.org/jalaali-js cache-miss
+54 http fetch GET 200 https://registry.npmjs.org/deepmerge 102ms (cache miss)
+55 silly packumentCache full:https://registry.npmjs.org/deepmerge set size:undefined disposed:false
+56 silly fetch manifest moment-timezone@^0.5.47
+57 silly packumentCache full:https://registry.npmjs.org/moment-timezone cache-miss
+58 http fetch GET 200 https://registry.npmjs.org/jalaali-js 202ms (cache miss)
+59 silly packumentCache full:https://registry.npmjs.org/jalaali-js set size:undefined disposed:false
+60 silly fetch manifest argparse@^2.0.1
+61 silly packumentCache full:https://registry.npmjs.org/argparse cache-miss
+62 http fetch GET 200 https://registry.npmjs.org/moment-timezone 100ms (cache miss)
+63 silly packumentCache full:https://registry.npmjs.org/moment-timezone set size:undefined disposed:false
+64 http fetch GET 200 https://registry.npmjs.org/argparse 52ms (cache miss)
+65 silly packumentCache full:https://registry.npmjs.org/argparse set size:undefined disposed:false
+66 http fetch GET 200 https://registry.npmjs.org/date-easter 649ms (cache miss)
+67 silly packumentCache full:https://registry.npmjs.org/date-easter set size:undefined disposed:false
+68 http fetch GET 200 https://registry.npmjs.org/caldate 673ms (cache miss)
+69 silly packumentCache full:https://registry.npmjs.org/caldate set size:undefined disposed:false
+70 http fetch GET 200 https://registry.npmjs.org/astronomia 695ms (cache miss)
+71 silly packumentCache full:https://registry.npmjs.org/astronomia set size:undefined disposed:false
+72 http fetch GET 200 https://registry.npmjs.org/date-chinese 729ms (cache miss)
+73 silly packumentCache full:https://registry.npmjs.org/date-chinese set size:undefined disposed:false
+74 http fetch GET 200 https://registry.npmjs.org/date-bengali-revised 761ms (cache miss)
+75 silly packumentCache full:https://registry.npmjs.org/date-bengali-revised set size:undefined disposed:false
+76 silly placeDep ROOT astronomia@4.2.0 OK for: date-holidays-parser@3.4.7 want: ^4.1.1
+77 silly placeDep ROOT caldate@2.0.5 OK for: date-holidays-parser@3.4.7 want: ^2.0.5
+78 silly placeDep ROOT date-bengali-revised@2.0.2 OK for: date-holidays-parser@3.4.7 want: ^2.0.2
+79 silly placeDep ROOT date-chinese@2.1.4 OK for: date-holidays-parser@3.4.7 want: ^2.1.4
+80 silly placeDep ROOT date-easter@1.0.3 OK for: date-holidays-parser@3.4.7 want: ^1.0.3
+81 silly placeDep ROOT deepmerge@4.3.1 OK for: date-holidays-parser@3.4.7 want: ^4.3.1
+82 silly placeDep ROOT jalaali-js@1.2.8 OK for: date-holidays-parser@3.4.7 want: ^1.2.7
+83 silly placeDep ROOT moment-timezone@0.5.48 OK for: date-holidays-parser@3.4.7 want: ^0.5.47
+84 silly fetch manifest moment-timezone@^0.5.43
+85 silly packumentCache full:https://registry.npmjs.org/moment-timezone cache-miss
+86 silly fetch manifest moment@^2.29.4
+87 silly packumentCache full:https://registry.npmjs.org/moment cache-miss
+88 http cache https://registry.npmjs.org/moment-timezone 6ms (cache hit)
+89 silly packumentCache full:https://registry.npmjs.org/moment-timezone set size:159913 disposed:false
+90 http fetch GET 200 https://registry.npmjs.org/moment 59ms (cache miss)
+91 silly packumentCache full:https://registry.npmjs.org/moment set size:undefined disposed:false
+92 silly placeDep ROOT argparse@2.0.1 OK for: js-yaml@4.1.0 want: ^2.0.1
+93 silly placeDep ROOT moment@2.30.1 OK for: moment-timezone@0.5.48 want: ^2.29.4
+94 silly reify moves {}
+95 silly audit bulk request {
+95 silly audit   '@alloc/quick-lru': [ '5.2.0' ],
+95 silly audit   '@fontsource/inter': [ '5.2.8' ],
+95 silly audit   '@isaacs/cliui': [ '8.0.2' ],
+95 silly audit   '@jridgewell/gen-mapping': [ '0.3.13' ],
+95 silly audit   '@jridgewell/resolve-uri': [ '3.1.2' ],
+95 silly audit   '@jridgewell/sourcemap-codec': [ '1.5.5' ],
+95 silly audit   '@jridgewell/trace-mapping': [ '0.3.31' ],
+95 silly audit   '@next/env': [ '14.2.33' ],
+95 silly audit   '@next/swc-darwin-arm64': [ '14.2.33' ],
+95 silly audit   '@next/swc-darwin-x64': [ '14.2.33' ],
+95 silly audit   '@next/swc-linux-arm64-gnu': [ '14.2.33' ],
+95 silly audit   '@next/swc-linux-arm64-musl': [ '14.2.33' ],
+95 silly audit   '@next/swc-linux-x64-gnu': [ '14.2.33' ],
+95 silly audit   '@next/swc-linux-x64-musl': [ '14.2.33' ],
+95 silly audit   '@next/swc-win32-arm64-msvc': [ '14.2.33' ],
+95 silly audit   '@next/swc-win32-ia32-msvc': [ '14.2.33' ],
+95 silly audit   '@next/swc-win32-x64-msvc': [ '14.2.33' ],
+95 silly audit   '@nodelib/fs.scandir': [ '2.1.5' ],
+95 silly audit   '@nodelib/fs.stat': [ '2.0.5' ],
+95 silly audit   '@nodelib/fs.walk': [ '1.2.8' ],
+95 silly audit   '@pkgjs/parseargs': [ '0.11.0' ],
+95 silly audit   '@radix-ui/number': [ '1.1.1' ],
+95 silly audit   '@radix-ui/primitive': [ '1.1.3' ],
+95 silly audit   '@radix-ui/react-compose-refs': [ '1.1.2' ],
+95 silly audit   '@radix-ui/react-context': [ '1.1.2' ],
+95 silly audit   '@radix-ui/react-dialog': [ '1.1.15' ],
+95 silly audit   '@radix-ui/react-direction': [ '1.1.1' ],
+95 silly audit   '@radix-ui/react-dismissable-layer': [ '1.1.11' ],
+95 silly audit   '@radix-ui/react-focus-guards': [ '1.1.3' ],
+95 silly audit   '@radix-ui/react-focus-scope': [ '1.1.7' ],
+95 silly audit   '@radix-ui/react-id': [ '1.1.1' ],
+95 silly audit   '@radix-ui/react-portal': [ '1.1.9' ],
+95 silly audit   '@radix-ui/react-presence': [ '1.1.5' ],
+95 silly audit   '@radix-ui/react-primitive': [ '2.1.3' ],
+95 silly audit   '@radix-ui/react-scroll-area': [ '1.2.10' ],
+95 silly audit   '@radix-ui/react-separator': [ '1.1.7' ],
+95 silly audit   '@radix-ui/react-slot': [ '1.2.3' ],
+95 silly audit   '@radix-ui/react-use-callback-ref': [ '1.1.1' ],
+95 silly audit   '@radix-ui/react-use-controllable-state': [ '1.2.2' ],
+95 silly audit   '@radix-ui/react-use-effect-event': [ '0.0.2' ],
+95 silly audit   '@radix-ui/react-use-escape-keydown': [ '1.1.1' ],
+95 silly audit   '@radix-ui/react-use-layout-effect': [ '1.1.1' ],
+95 silly audit   '@swc/counter': [ '0.1.3' ],
+95 silly audit   '@swc/helpers': [ '0.5.5' ],
+95 silly audit   '@types/node': [ '24.9.2' ],
+95 silly audit   '@types/react': [ '19.2.2' ],
+95 silly audit   '@types/react-dom': [ '19.2.2' ],
+95 silly audit   'ansi-regex': [ '6.2.2', '5.0.1' ],
+95 silly audit   'ansi-styles': [ '6.2.3', '4.3.0' ],
+95 silly audit   'any-promise': [ '1.3.0' ],
+95 silly audit   anymatch: [ '3.1.3' ],
+95 silly audit   arg: [ '5.0.2' ],
+95 silly audit   'aria-hidden': [ '1.2.6' ],
+95 silly audit   autoprefixer: [ '10.4.17' ],
+95 silly audit   'balanced-match': [ '1.0.2' ],
+95 silly audit   'baseline-browser-mapping': [ '2.8.21' ],
+95 silly audit   'binary-extensions': [ '2.3.0' ],
+95 silly audit   'brace-expansion': [ '2.0.2' ],
+95 silly audit   braces: [ '3.0.3' ],
+95 silly audit   browserslist: [ '4.27.0' ],
+95 silly audit   busboy: [ '1.6.0' ],
+95 silly audit   'camelcase-css': [ '2.0.1' ],
+95 silly audit   'caniuse-lite': [ '1.0.30001751' ],
+95 silly audit   chokidar: [ '3.6.0' ],
+95 silly audit   'glob-parent': [ '5.1.2', '6.0.2' ],
+95 silly audit   'class-variance-authority': [ '0.7.1' ],
+95 silly audit   'client-only': [ '0.0.1' ],
+95 silly audit   clsx: [ '2.1.1' ],
+95 silly audit   'color-convert': [ '2.0.1' ],
+95 silly audit   'color-name': [ '1.1.4' ],
+95 silly audit   commander: [ '4.1.1' ],
+95 silly audit   'cross-spawn': [ '7.0.6' ],
+95 silly audit   cssesc: [ '3.0.0' ],
+95 silly audit   csstype: [ '3.1.3' ],
+95 silly audit   'detect-node-es': [ '1.1.0' ],
+95 silly audit   didyoumean: [ '1.2.2' ],
+95 silly audit   dlv: [ '1.1.3' ],
+95 silly audit   eastasianwidth: [ '0.2.0' ],
+95 silly audit   'electron-to-chromium': [ '1.5.243' ],
+95 silly audit   'emoji-regex': [ '9.2.2', '8.0.0' ],
+95 silly audit   escalade: [ '3.2.0' ],
+95 silly audit   'fast-glob': [ '3.3.3' ],
+95 silly audit   fastq: [ '1.19.1' ],
+95 silly audit   'fill-range': [ '7.1.1' ],
+95 silly audit   'foreground-child': [ '3.3.1' ],
+95 silly audit   'fraction.js': [ '4.3.7' ],
+95 silly audit   fsevents: [ '2.3.3' ],
+95 silly audit   'function-bind': [ '1.1.2' ],
+95 silly audit   'get-nonce': [ '1.0.1' ],
+95 silly audit   glob: [ '10.4.5' ],
+95 silly audit   'graceful-fs': [ '4.2.11' ],
+95 silly audit   hasown: [ '2.0.2' ],
+95 silly audit   'is-binary-path': [ '2.1.0' ],
+95 silly audit   'is-core-module': [ '2.16.1' ],
+95 silly audit   'is-extglob': [ '2.1.1' ],
+95 silly audit   'is-fullwidth-code-point': [ '3.0.0' ],
+95 silly audit   'is-glob': [ '4.0.3' ],
+95 silly audit   'is-number': [ '7.0.0' ],
+95 silly audit   isexe: [ '2.0.0' ],
+95 silly audit   jackspeak: [ '3.4.3' ],
+95 silly audit   jiti: [ '1.21.7' ],
+95 silly audit   'js-tokens': [ '4.0.0' ],
+95 silly audit   lilconfig: [ '2.1.0', '3.1.3' ],
+95 silly audit   'lines-and-columns': [ '1.2.4' ],
+95 silly audit   'loose-envify': [ '1.4.0' ],
+95 silly audit   'lru-cache': [ '10.4.3' ],
+95 silly audit   'lucide-react': [ '0.552.0' ],
+95 silly audit   merge2: [ '1.4.1' ],
+95 silly audit   micromatch: [ '4.0.8' ],
+95 silly audit   minimatch: [ '9.0.5' ],
+95 silly audit   minipass: [ '7.1.2' ],
+95 silly audit   mz: [ '2.7.0' ],
+95 silly audit   nanoid: [ '3.3.11' ],
+95 silly audit   next: [ '14.2.33' ],
+95 silly audit   postcss: [ '8.4.31', '8.4.33' ],
+95 silly audit   'node-releases': [ '2.0.27' ],
+95 silly audit   'normalize-path': [ '3.0.0' ],
+95 silly audit   'normalize-range': [ '0.1.2' ],
+95 silly audit   'object-assign': [ '4.1.1' ],
+95 silly audit   'object-hash': [ '3.0.0' ],
+95 silly audit   'package-json-from-dist': [ '1.0.1' ],
+95 silly audit   'path-key': [ '3.1.1' ],
+95 silly audit   'path-parse': [ '1.0.7' ],
+95 silly audit   'path-scurry': [ '1.11.1' ],
+95 silly audit   picocolors: [ '1.1.1' ],
+95 silly audit   picomatch: [ '2.3.1' ],
+95 silly audit   pify: [ '2.3.0' ],
+95 silly audit   pirates: [ '4.0.7' ],
+95 silly audit   'postcss-import': [ '15.1.0' ],
+95 silly audit   'postcss-js': [ '4.1.0' ],
+95 silly audit   'postcss-nested': [ '6.2.0' ],
+95 silly audit   'postcss-selector-parser': [ '6.1.2' ],
+95 silly audit   'postcss-value-parser': [ '4.2.0' ],
+95 silly audit   'queue-microtask': [ '1.2.3' ],
+95 silly audit   react: [ '18.2.0' ],
+95 silly audit   'react-dom': [ '18.2.0' ],
+95 silly audit   'react-remove-scroll': [ '2.7.1' ],
+95 silly audit   'react-remove-scroll-bar': [ '2.3.8' ],
+95 silly audit   'react-style-singleton': [ '2.2.3' ],
+95 silly audit   'read-cache': [ '1.0.0' ],
+95 silly audit   readdirp: [ '3.6.0' ],
+95 silly audit   resolve: [ '1.22.11' ],
+95 silly audit   reusify: [ '1.1.0' ],
+95 silly audit   'run-parallel': [ '1.2.0' ],
+95 silly audit   scheduler: [ '0.23.2' ],
+95 silly audit   'shebang-command': [ '2.0.0' ],
+95 silly audit   'shebang-regex': [ '3.0.0' ],
+95 silly audit   'signal-exit': [ '4.1.0' ],
+95 silly audit   'source-map-js': [ '1.2.1' ],
+95 silly audit   streamsearch: [ '1.1.0' ],
+95 silly audit   'string-width': [ '5.1.2', '4.2.3' ],
+95 silly audit   'strip-ansi': [ '6.0.1', '7.1.2' ],
+95 silly audit   'styled-jsx': [ '5.1.1' ],
+95 silly audit   sucrase: [ '3.35.0' ],
+95 silly audit   'supports-preserve-symlinks-flag': [ '1.0.0' ],
+95 silly audit   'tailwind-merge': [ '3.3.1' ],
+95 silly audit   tailwindcss: [ '3.4.3' ],
+95 silly audit   'tailwindcss-animate': [ '1.0.7' ],
+95 silly audit   'postcss-load-config': [ '4.0.2' ],
+95 silly audit   thenify: [ '3.3.1' ],
+95 silly audit   'thenify-all': [ '1.6.0' ],
+95 silly audit   'to-regex-range': [ '5.0.1' ],
+95 silly audit   'ts-interface-checker': [ '0.1.13' ],
+95 silly audit   tslib: [ '2.8.1' ],
+95 silly audit   typescript: [ '5.9.3' ],
+95 silly audit   'undici-types': [ '7.16.0' ],
+95 silly audit   'update-browserslist-db': [ '1.1.4' ],
+95 silly audit   'use-callback-ref': [ '1.3.3' ],
+95 silly audit   'use-sidecar': [ '1.1.3' ],
+95 silly audit   'util-deprecate': [ '1.0.2' ],
+95 silly audit   which: [ '2.0.2' ],
+95 silly audit   'wrap-ansi': [ '8.1.0', '7.0.0' ],
+95 silly audit   yaml: [ '2.8.1' ],
+95 silly audit   'date-holidays': [ '3.26.5' ],
+95 silly audit   'date-holidays-parser': [ '3.4.7' ],
+95 silly audit   'js-yaml': [ '4.1.0' ],
+95 silly audit   lodash: [ '4.17.21' ],
+95 silly audit   prepin: [ '1.0.3' ],
+95 silly audit   astronomia: [ '4.2.0' ],
+95 silly audit   caldate: [ '2.0.5' ],
+95 silly audit   'date-bengali-revised': [ '2.0.2' ],
+95 silly audit   'date-chinese': [ '2.1.4' ],
+95 silly audit   'date-easter': [ '1.0.3' ],
+95 silly audit   deepmerge: [ '4.3.1' ],
+95 silly audit   'jalaali-js': [ '1.2.8' ],
+95 silly audit   'moment-timezone': [ '0.5.48' ],
+95 silly audit   argparse: [ '2.0.1' ],
+95 silly audit   moment: [ '2.30.1' ]
+95 silly audit }
+96 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-x64-msvc
+97 silly reify mark deleted [
+97 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-x64-msvc'
+97 silly reify ]
+98 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-ia32-msvc
+99 silly reify mark deleted [
+99 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-ia32-msvc'
+99 silly reify ]
+100 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-arm64-msvc
+101 silly reify mark deleted [
+101 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-win32-arm64-msvc'
+101 silly reify ]
+102 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-x64-musl
+103 silly reify mark deleted [
+103 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-x64-musl'
+103 silly reify ]
+104 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-x64-gnu
+105 silly reify mark deleted [
+105 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-x64-gnu'
+105 silly reify ]
+106 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-arm64-musl
+107 silly reify mark deleted [
+107 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-arm64-musl'
+107 silly reify ]
+108 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-arm64-gnu
+109 silly reify mark deleted [
+109 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-linux-arm64-gnu'
+109 silly reify ]
+110 verbose reify failed optional dependency /Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-darwin-x64
+111 silly reify mark deleted [
+111 silly reify   '/Users/sophialivanos/Documents/ni-content-hub/node_modules/@next/swc-darwin-x64'
+111 silly reify ]
+112 http cache argparse@https://registry.npmjs.org/argparse/-/argparse-2.0.1.tgz 0ms (cache hit)
+113 http cache moment@https://registry.npmjs.org/moment/-/moment-2.30.1.tgz 0ms (cache hit)
+114 http cache jalaali-js@https://registry.npmjs.org/jalaali-js/-/jalaali-js-1.2.8.tgz 0ms (cache hit)
+115 http cache deepmerge@https://registry.npmjs.org/deepmerge/-/deepmerge-4.3.1.tgz 0ms (cache hit)
+116 http cache date-easter@https://registry.npmjs.org/date-easter/-/date-easter-1.0.3.tgz 0ms (cache hit)
+117 http cache date-bengali-revised@https://registry.npmjs.org/date-bengali-revised/-/date-bengali-revised-2.0.2.tgz 0ms (cache hit)
+118 http cache date-chinese@https://registry.npmjs.org/date-chinese/-/date-chinese-2.1.4.tgz 0ms (cache hit)
+119 http cache prepin@https://registry.npmjs.org/prepin/-/prepin-1.0.3.tgz 0ms (cache hit)
+120 http cache astronomia@https://registry.npmjs.org/astronomia/-/astronomia-4.2.0.tgz 0ms (cache hit)
+121 http cache caldate@https://registry.npmjs.org/caldate/-/caldate-2.0.5.tgz 0ms (cache hit)
+122 http cache lodash@https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz 0ms (cache hit)
+123 http cache moment-timezone@https://registry.npmjs.org/moment-timezone/-/moment-timezone-0.5.48.tgz 0ms (cache hit)
+124 silly tarball no local data for argparse@https://registry.npmjs.org/argparse/-/argparse-2.0.1.tgz. Extracting by manifest.
+125 silly tarball no local data for moment@https://registry.npmjs.org/moment/-/moment-2.30.1.tgz. Extracting by manifest.
+126 silly tarball no local data for jalaali-js@https://registry.npmjs.org/jalaali-js/-/jalaali-js-1.2.8.tgz. Extracting by manifest.
+127 http cache js-yaml@https://registry.npmjs.org/js-yaml/-/js-yaml-4.1.0.tgz 0ms (cache hit)
+128 silly tarball no local data for deepmerge@https://registry.npmjs.org/deepmerge/-/deepmerge-4.3.1.tgz. Extracting by manifest.
+129 silly tarball no local data for date-easter@https://registry.npmjs.org/date-easter/-/date-easter-1.0.3.tgz. Extracting by manifest.
+130 silly tarball no local data for date-bengali-revised@https://registry.npmjs.org/date-bengali-revised/-/date-bengali-revised-2.0.2.tgz. Extracting by manifest.
+131 http cache date-holidays-parser@https://registry.npmjs.org/date-holidays-parser/-/date-holidays-parser-3.4.7.tgz 0ms (cache hit)
+132 silly tarball no local data for date-chinese@https://registry.npmjs.org/date-chinese/-/date-chinese-2.1.4.tgz. Extracting by manifest.
+133 silly tarball no local data for prepin@https://registry.npmjs.org/prepin/-/prepin-1.0.3.tgz. Extracting by manifest.
+134 silly tarball no local data for astronomia@https://registry.npmjs.org/astronomia/-/astronomia-4.2.0.tgz. Extracting by manifest.
+135 silly tarball no local data for caldate@https://registry.npmjs.org/caldate/-/caldate-2.0.5.tgz. Extracting by manifest.
+136 silly tarball no local data for lodash@https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz. Extracting by manifest.
+137 silly tarball no local data for moment-timezone@https://registry.npmjs.org/moment-timezone/-/moment-timezone-0.5.48.tgz. Extracting by manifest.
+138 http cache date-holidays@https://registry.npmjs.org/date-holidays/-/date-holidays-3.26.5.tgz 0ms (cache hit)
+139 silly tarball no local data for js-yaml@https://registry.npmjs.org/js-yaml/-/js-yaml-4.1.0.tgz. Extracting by manifest.
+140 silly tarball no local data for date-holidays-parser@https://registry.npmjs.org/date-holidays-parser/-/date-holidays-parser-3.4.7.tgz. Extracting by manifest.
+141 silly tarball no local data for date-holidays@https://registry.npmjs.org/date-holidays/-/date-holidays-3.26.5.tgz. Extracting by manifest.
+142 http fetch GET 200 https://registry.npmjs.org/deepmerge/-/deepmerge-4.3.1.tgz 48ms (cache miss)
+143 http fetch GET 200 https://registry.npmjs.org/argparse/-/argparse-2.0.1.tgz 56ms (cache miss)
+144 http fetch GET 200 https://registry.npmjs.org/date-easter/-/date-easter-1.0.3.tgz 74ms (cache miss)
+145 http fetch GET 200 https://registry.npmjs.org/date-bengali-revised/-/date-bengali-revised-2.0.2.tgz 75ms (cache miss)
+146 http fetch GET 200 https://registry.npmjs.org/jalaali-js/-/jalaali-js-1.2.8.tgz 129ms (cache miss)
+147 http fetch GET 200 https://registry.npmjs.org/date-chinese/-/date-chinese-2.1.4.tgz 174ms (cache miss)
+148 http fetch GET 200 https://registry.npmjs.org/caldate/-/caldate-2.0.5.tgz 193ms (cache miss)
+149 http fetch GET 200 https://registry.npmjs.org/js-yaml/-/js-yaml-4.1.0.tgz 218ms (cache miss)
+150 http fetch GET 200 https://registry.npmjs.org/date-holidays-parser/-/date-holidays-parser-3.4.7.tgz 289ms (cache miss)
+151 http fetch GET 200 https://registry.npmjs.org/prepin/-/prepin-1.0.3.tgz 308ms (cache miss)
+152 http fetch GET 200 https://registry.npmjs.org/moment/-/moment-2.30.1.tgz 313ms (cache miss)
+153 http fetch POST 200 https://registry.npmjs.org/-/npm/v1/security/advisories/bulk 347ms
+154 silly audit report {}
+155 http fetch GET 200 https://registry.npmjs.org/moment-timezone/-/moment-timezone-0.5.48.tgz 416ms (cache miss)
+156 http fetch GET 200 https://registry.npmjs.org/date-holidays/-/date-holidays-3.26.5.tgz 411ms (cache miss)
+157 http fetch GET 200 https://registry.npmjs.org/lodash/-/lodash-4.17.21.tgz 522ms (cache miss)
+158 http fetch GET 200 https://registry.npmjs.org/astronomia/-/astronomia-4.2.0.tgz 885ms (cache miss)
+159 silly ADD node_modules/moment
+160 silly ADD node_modules/argparse
+161 silly ADD node_modules/moment-timezone
+162 silly ADD node_modules/jalaali-js
+163 silly ADD node_modules/deepmerge
+164 silly ADD node_modules/date-easter
+165 silly ADD node_modules/date-chinese
+166 silly ADD node_modules/date-bengali-revised
+167 silly ADD node_modules/caldate
+168 silly ADD node_modules/astronomia
+169 silly ADD node_modules/prepin
+170 silly ADD node_modules/lodash
+171 silly ADD node_modules/js-yaml
+172 silly ADD node_modules/date-holidays-parser
+173 silly ADD node_modules/date-holidays
+174 silly ADD
+175 silly ADD
+176 silly ADD
+177 silly ADD
+178 silly ADD
+179 silly ADD
+180 silly ADD
+181 silly ADD
+182 verbose cwd /Users/sophialivanos/Documents/ni-content-hub
+183 verbose os Darwin 24.6.0
+184 verbose node v22.20.0
+185 verbose npm  v10.9.3
+186 notice
+186 notice New major version of npm available! 10.9.3 -> 11.6.2
+186 notice Changelog: https://github.com/npm/cli/releases/tag/v11.6.2
+186 notice To update run: npm install -g npm@11.6.2
+186 notice  { force: true, [Symbol(proc-log.meta)]: true }
+187 verbose exit 0
+188 info ok
