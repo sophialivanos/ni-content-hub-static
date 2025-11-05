@@ -1780,12 +1780,12 @@ export default function EventsPage() {
   return (
     <>
       {/* Header */}
-      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl p-5 mb-8 shadow-sm">
-        <div className="text-sm opacity-80">Seasonal Events</div>
-        <div className="text-lg md:text-xl font-semibold">
-          Research and prioritise the seasonal events that matter! Align your teams and implement content that moves the needle.
-        </div>
-      </div>
+      <div className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-xl p-4 md:p-5 mb-6 md:mb-8 shadow-sm">
+  <div className="text-xs md:text-sm opacity-80">Seasonal Events</div>
+  <div className="text-base md:text-xl font-semibold">
+    Research and prioritise the seasonal events that matter! Align your teams and implement content that moves the needle.
+  </div>
+</div>
 
       {/* Controls — inline labels with (Optional) beneath (unchanged) */}
       <div className="flex flex-wrap items-center gap-5 mb-6">
@@ -1794,7 +1794,7 @@ export default function EventsPage() {
             Month <span className="text-red-500">*</span>
           </span>
           <select
-            className="border rounded px-3 py-2 w-56"
+            className="border rounded px-3 py-2 h-10 text-sm w-56"
             value={month ?? ""}
             onChange={(e) => setMonth(e.target.value ? parseInt(e.target.value, 10) : "")}
           >
@@ -1850,11 +1850,10 @@ export default function EventsPage() {
 
         <button
           onClick={load}
-          className="px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold disabled:opacity-60 flex items-center gap-2"
-          disabled={!month || loadingLoad || loadingSearch}
+        className="px-3 py-2 h-10 text-sm rounded-md bg-indigo-600 text-white font-semibold disabled:opacity-60 flex items-center gap-2"          
+        disabled={!month || loadingLoad || loadingSearch}
           title="Load"
         >
-          {loadingLoad ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
           {loadingLoad ? "Loading…" : "Load"}
         </button>
       </div>
@@ -1864,18 +1863,18 @@ export default function EventsPage() {
         <div className="flex items-center gap-2 w-full md:w-auto flex-1 min-w-[260px]">
           <label className="font-semibold mr-2">Search</label>
           <input
-            className="border rounded px-3 py-2 w-full"
+            className="border rounded px-3 py-2 h-10 text-sm w-full"
             placeholder="Search name/description…"
             value={q}
             onChange={(e) => setQ(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && q.trim() && !loadingSearch) searchByText(); }}
           />
-          <button
-            onClick={searchByText}
-            className="px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold disabled:opacity-60 flex items-center gap-2"
-            disabled={loadingSearch || loadingLoad || q.trim().length === 0}
-            title="Search by text (month optional)"
-          >
+        <button
+          onClick={searchByText}
+          className="px-3 py-2 h-10 text-sm rounded-md bg-indigo-600 text-white font-semibold"
+          disabled={loadingSearch || loadingLoad || q.trim().length === 0}
+          title="Search by text (month optional)"
+        >
             {loadingSearch ? <Loader2 className="h-4 w-4 animate-spin" /> : null}
             {loadingSearch ? "Searching…" : "Search"}
           </button>
@@ -1884,34 +1883,36 @@ export default function EventsPage() {
 
       {/* Export CSV (unchanged) */}
       <div className="mb-6">
-        <button
-          onClick={() => {
-            const rows = [
-              ["name", "date", "countries", "description"].join(","),
-              ...filtered.map((e) =>
-                [
-                  JSON.stringify(getDisplayName(e)),
-                  JSON.stringify(e.date ?? ""),
-                  JSON.stringify((e._countries && e._countries.join(" / ")) || ""),
-                  JSON.stringify(e.description ?? ""),
-                ].join(",")
-              ),
-            ].join("\n");
-            const blob = new Blob([rows], { type: "text/csv;charset=utf-8" });
-            const url = URL.createObjectURL(blob);
-            const a = Object.assign(document.createElement("a"), {
-              href: url,
-              download: `seasonal-events-${month ? MONTHS[Number(month) - 1] : "all"}.csv`,
-            });
-            a.click();
-            URL.revokeObjectURL(url);
-          }}
-          className="px-4 py-2 rounded-md bg-indigo-600 text-white font-semibold disabled:opacity-60 flex items-center gap-2"
-          title="Export CSV"
-        >
-          <Download className="h-4 w-4" />
-          Export CSV
-        </button>
+      <button
+  onClick={() => {
+    const rows = [
+      ["name", "date", "countries", "description"].join(","),
+      ...filtered.map((e) =>
+        [
+          JSON.stringify(getDisplayName(e)),
+          JSON.stringify(e.date ?? ""),
+          JSON.stringify((e._countries && e._countries.join(" / ")) || ""),
+          JSON.stringify(e.description ?? ""),
+        ].join(",")
+      ),
+    ].join("\n");
+    const blob = new Blob([rows], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement("a"), {
+      href: url,
+      download: `seasonal-events-${month ? MONTHS[Number(month) - 1] : "all"}.csv`,
+    });
+    a.click();
+    URL.revokeObjectURL(url);
+  }}
+  className="inline-flex items-center gap-2 whitespace-nowrap
+  rounded-md bg-indigo-600 px-3 py-2 text-sm font-semibold text-white
+  hover:bg-indigo-700 disabled:opacity-60"  
+  title="Export CSV"
+>
+<Download className="h-4 w-4 shrink-0" />
+<span>Export CSV</span>
+</button>
       </div>
 
       {/* Compact monthly list (unchanged) */}

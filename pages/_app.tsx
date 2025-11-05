@@ -1,12 +1,12 @@
 // pages/_app.tsx
 import type { AppProps } from "next/app";
-import "@/styles/globals.css";
-import AppLayout from "@/components/AppLayout";
+import "../styles/globals.css";
+import AppFrame from "../components/AppFrame";
 
 export default function MyApp({ Component, pageProps }: AppProps) {
   return (
-    <AppLayout>
+    <AppFrame>
       <Component {...pageProps} />
-    </AppLayout>
+    </AppFrame>
   );
 }
