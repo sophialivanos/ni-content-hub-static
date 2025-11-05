@@ -14,7 +14,8 @@ import {
 } from "lucide-react";
 
 type Props = {
-  collapsed: boolean;       // desktop state: icons-only when true
+  open?: boolean;           // optional to support older callers
+  collapsed?: boolean;      // optional to support callers that don't pass it
   mobileOpen: boolean;      // mobile drawer visibility
   onCloseMobile: () => void;
 };
@@ -55,7 +56,8 @@ function NavList({ collapsed }: { collapsed: boolean }) {
   );
 }
 
-export default function AppSidebar({ collapsed, mobileOpen, onCloseMobile }: Props) {
+export default function AppSidebar({ collapsed = false, mobileOpen, onCloseMobile }: Props) {
+  // const collapsed = !open;
   // Desktop panel
   return (
     <>
