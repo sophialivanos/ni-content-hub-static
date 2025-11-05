@@ -14,7 +14,6 @@ import {
 } from "lucide-react";
 
 type Props = {
-  open?: boolean;           // optional to support older callers
   collapsed?: boolean;      // optional to support callers that don't pass it
   mobileOpen: boolean;      // mobile drawer visibility
   onCloseMobile: () => void;

@@ -9,7 +9,7 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
   const [collapsed, setCollapsed] = React.useState(false);
   // Mobile drawer: controlled by page-level chevron (e.g., near "Export CSV")
   const [mobileOpen, setMobileOpen] = React.useState(false);
-  const [open, setOpen] = React.useState(true);        // desktop default open
+  
 
   // Sidebar effective width (desktop)
   const desktopWidth = collapsed ? 64 : 256; // px (w-16 vs w-64)
@@ -18,7 +18,6 @@ export default function AppFrame({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-slate-50 text-slate-900">
       <AppSidebar
         collapsed={collapsed}
-        open={open}
         mobileOpen={mobileOpen}
         onCloseMobile={() => setMobileOpen(false)}
       />

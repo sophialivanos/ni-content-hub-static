@@ -11,9 +11,9 @@ export default function MobileNavToggle({
 }) {
   return (
    <button
-    onClick={() => setOpen(true)}
+    onClick={onOpen}
     aria-controls="app-sidebar"
-   aria-expanded={open}
+    aria-expanded={!!isOpen}
 /* Same colour on all breakpoints; smaller & higher so it doesn’t push content */
   className="fixed left-3 top-2 z-40 md:hidden
     inline-flex h-9 w-9 items-center justify-center rounded-full
