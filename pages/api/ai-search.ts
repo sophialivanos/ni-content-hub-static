@@ -107,7 +107,9 @@ async function bingWeb(q: string, mkt: string, freshness: "Day"|"Week"|"Month", 
   if (!r.ok) return [];
   const j = await r.json();
   const arr = j.webPages?.value ?? [];
-  return arr.map((v: any) => ({ title: v.name, snippet: v.snippet || "", url: v.url, source: host(v.url), date: toISO(v.dateLastCrawled) })).filter(i=>i.url);
+  return arr
+    .map((v: any) => ({ title: v.name, snippet: v.snippet || "", url: v.url, source: host(v.url), date: toISO(v.dateLastCrawled) }))
+    .filter((i: Item) => !!i.url);
 }
 async function bingNews(q: string, mkt: string, freshness: "Day"|"Week"|"Month", count=40): Promise<Item[]> {
   if (!BING_API_KEY) return [];
@@ -120,7 +122,9 @@ async function bingNews(q: string, mkt: string, freshness: "Day"|"Week"|"Month",
   if (!r.ok) return [];
   const j = await r.json();
   const arr = j.value ?? [];
-  return arr.map((v: any) => ({ title: v.name, snippet: v.description || "", url: v.url, source: host(v.url), date: toISO(v.datePublished) })).filter(i=>i.url);
+  return arr
+    .map((v: any) => ({ title: v.name, snippet: v.description || "", url: v.url, source: host(v.url), date: toISO(v.datePublished) }))
+    .filter((i: Item) => !!i.url);
 }
 
 // ---- Google Custom Search (Web) — requires GOOGLE_CSE_KEY + GOOGLE_CSE_ID
@@ -150,7 +154,7 @@ async function googleWeb(q: string, country: string, fromISO: string, toISO: str
     url: v.link,
     source: host(v.link),
     date: toISO(v?.pagemap?.metatags?.[0]?.["article:published_time"] || v.cacheId ? new Date() : undefined),
-  })).filter(i=>i.url);
+  })).filter((i: Item) => !!i.url);
 }
 
 // ---- Brave Search (optional)
@@ -170,7 +174,7 @@ async function braveWeb(q: string, country: string, count=20): Promise<Item[]> {
     url: v.url,
     source: host(v.url),
     date: toISO(v.page_fetched),
-  })).filter(i=>i.url);
+  })).filter((i: Item) => !!i.url);
 }
 
 // ---- Reddit (public JSON)
