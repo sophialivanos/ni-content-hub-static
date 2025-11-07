@@ -1,12 +1,67 @@
-import { computeSeasonalEvents } from '../../adapters/seasonal-events.js';
-import { fetchInsights } from '../../adapters/insights.js';
-import { CANONICAL_VERTICALS } from '../../lib/verticals.js';
-import { COUNTRIES } from '../../lib/country.js';
-// Sidebar toggle
+// Local, dependency-free fallbacks so the app works even if imports fail
+let CANONICAL_VERTICALS = [
+  'Online Banking','VPN','Website Builders','Sports Betting','Online Casino','Solar','Credit Cards','Personal Loans'
+];
+let COUNTRIES = [
+  { code:'GB', label:'United Kingdom' }, { code:'US', label:'United States' }, { code:'IE', label:'Ireland' },
+  { code:'CA', label:'Canada' }, { code:'FR', label:'France' }, { code:'NL', label:'Netherlands' }
+];
+let computeSeasonalEvents = ({ month, countries }) => ({ events: [] });
+let fetchInsights = async () => { throw new Error('proxy not wired'); };
+// Try to hydrate from external modules if available (non-fatal)
+try { const m = await import('../../lib/verticals.js'); if (m.CANONICAL_VERTICALS) CANONICAL_VERTICALS = m.CANONICAL_VERTICALS; } catch {}
+try { const m = await import('../../lib/country.js'); if (m.COUNTRIES) COUNTRIES = m.COUNTRIES; } catch {}
+try { const m = await import('../../adapters/seasonal-events.js'); if (m.computeSeasonalEvents) computeSeasonalEvents = m.computeSeasonalEvents; } catch {}
+try { const m = await import('../../adapters/insights.js'); if (m.fetchInsights) fetchInsights = m.fetchInsights; } catch {}
+// Sidebar toggle (edge button outside panel)
 const sidebar = document.getElementById('sidebar');
-const sidebarToggle = document.getElementById('sidebarToggle');
-sidebarToggle?.addEventListener('click', () => {
-  sidebar?.classList.toggle('collapsed');
+const layout = document.querySelector('.layout');
+const edgeToggle = document.getElementById('edgeToggle');
+function applyCollapsed(collapsed) {
+  if (!sidebar || !layout) return;
+  if (collapsed) {
+    sidebar.classList.add('collapsed');
+    layout.classList.add('collapsed');
+    layout.style.gridTemplateColumns = '64px 1fr';
+    sidebar.style.width = '64px';
+  } else {
+    sidebar.classList.remove('collapsed');
+    layout.classList.remove('collapsed');
+    layout.style.gridTemplateColumns = '240px 1fr';
+    sidebar.style.width = '240px';
+  }
+  if (edgeToggle) edgeToggle.textContent = collapsed ? '❯' : '❮';
+}
+function togglePane() {
+  const isCollapsed = sidebar?.classList.contains('collapsed');
+  applyCollapsed(!isCollapsed);
+}
+if (edgeToggle) {
+  edgeToggle.addEventListener('click', (e) => { e.preventDefault(); e.stopPropagation(); togglePane(); });
+  edgeToggle.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); togglePane(); }
+  });
+}
+// Fallback: delegate clicks anywhere on the edge button
+document.addEventListener('click', (e) => {
+  const btn = e.target && (e.target.id === 'edgeToggle' ? e.target : e.target.closest && e.target.closest('#edgeToggle'));
+  if (btn) { e.preventDefault(); togglePane(); }
+});
+document.addEventListener('touchstart', (e) => {
+  const btn = e.target && (e.target.id === 'edgeToggle' ? e.target : e.target.closest && e.target.closest('#edgeToggle'));
+  if (btn) { e.preventDefault(); togglePane(); }
+}, { passive: false });
+
+// Ensure initial explicit layout (expanded)
+applyCollapsed(false);
+
+// Simple router click delegation (ensures routing even if hashchange is missed)
+document.addEventListener('click', (e) => {
+  const a = e.target && (e.target.closest ? e.target.closest('a.nav-link') : null);
+  if (a && a.hash) {
+    e.preventDefault();
+    location.hash = a.hash;
+  }
 });
 
 // About modal
@@ -156,35 +211,58 @@ export function renderVerticalProfiles(root) {
 
 export function renderWelcome(root) {
   root.innerHTML = '';
-  const btn = h('button', { class: 'btn' }, 'Say hello');
+  const welcome = h('div', { class: 'welcome-wrap' },
+    h('div', { class: 'welcome-hero' },
+      h('h2', {}, 'Welcome to your content hub!'),
+      h('p', {}, 'Your one-stop destination to create, optimise, and brainstorm all things content. Explore the options on the left to supercharge your content strategy.')
+    )
+  );
+  root.append(welcome);
+}
+
+export function renderFunnel(root) {
+  root.innerHTML = '';
+  const q = h('input', { class: 'input', placeholder: 'Filter optimisation ideas…' });
   const grid = h('div', { class: 'card-grid' });
-  btn.addEventListener('click', () => {
-    grid.prepend(card('Hello!', 'Welcome to the demo.'));
-  });
-  root.append(section('Welcome', btn), grid);
+  const ideas = [
+    'Shorten forms',
+    'Sticky CTA on mobile',
+    'Trust signals above the fold',
+    'Comparison table',
+    'Reduce steps to checkout',
+  ].map(t => ({ t }));
+  function renderList() {
+    grid.innerHTML = '';
+    const term = (q.value || '').toLowerCase();
+    ideas.filter(x => x.t.toLowerCase().includes(term)).forEach(x => grid.append(card(x.t, 'Funnel idea')));
+  }
+  q.addEventListener('input', renderList);
+  renderList();
+  root.append(section('Funnel Optimisation', q), grid);
 }
 
 const ROUTES = {
-  '/home': renderHome,
+  '/welcome': renderWelcome,
+  '/seasonal-events': renderEvents,
   '/ai-search': renderAiSearch,
   '/articles': renderArticles,
-  '/events': renderEvents,
+  '/funnel': renderFunnel,
   '/vertical-profiles': renderVerticalProfiles,
-  '/welcome': renderWelcome,
 };
 
 // Router
 const app = document.getElementById('app');
 function renderRoute() {
-  const hash = location.hash || '#/home';
+  const hash = location.hash || '#/welcome';
   const path = hash.replace(/^#/, '');
-  const page = ROUTES[path] || renderHome;
+  const page = ROUTES[path] || renderWelcome;
   page(app);
   // Highlight active link
   document.querySelectorAll('.nav-link').forEach(a => {
     if (a.getAttribute('href') === `#${path}`) a.classList.add('active');
     else a.classList.remove('active');
   });
+  // view changed
 }
 window.addEventListener('hashchange', renderRoute);
 window.addEventListener('DOMContentLoaded', renderRoute);
