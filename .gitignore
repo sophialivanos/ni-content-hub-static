@@ -1,19 +1,8 @@
-# dependencies & build output
-node_modules/
-.next/
-dist/
-out/
-trace/
-cache/
-
-# env/secrets
+node_modules
+.dist
+build
+.next
+out
 .env
-.env.*
-.env.local
-!.env.example
-
-# logs & OS files
-npm-debug.log*
-yarn*.log
-pnpm-debug.log*
+*.log
 .DS_Store
