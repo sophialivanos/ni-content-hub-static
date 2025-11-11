@@ -187,7 +187,7 @@ export function renderEvents(root) {
   );
   const monthLabel = h('label', { class: 'label-required' }, 'Month');
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const monthSel = h('select', { class: 'select', style: 'min-width:140px' },
+  const monthSel = h('select', { class: 'select', style: 'width:160px' },
     h('option', { value: '' }, 'Select'),
     ...months.map((m) => h('option', { value: m }, m)),
   );
@@ -310,7 +310,7 @@ export function renderEvents(root) {
 
   loadBtn.addEventListener('click', doLoad);
   exportBtn.addEventListener('click', () => {
-    const month = Number(monthSel.value) || (new Date().getMonth() + 1);
+    const month = (months.indexOf(monthSel.value) + 1) || (new Date().getMonth() + 1);
     const selectedVertical = verticalSel.value || '';
     const events = lastEvents.filter(ev => ev._relevant || !selectedVertical);
     const rows = [
