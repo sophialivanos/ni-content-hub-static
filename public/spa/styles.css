@@ -179,6 +179,26 @@ body {
 .card.expanded .card-body { display:block; }
 .muted { color:#64748b; font-size:13px; }
 
+/* Page hero header */
+.page-hero {
+  background: linear-gradient(135deg, #7c3aed, #3b82f6);
+  color: #ffffff;
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 16px;
+  box-shadow: 0 8px 20px rgba(2,6,23,.12);
+}
+.page-hero h1 {
+  margin: 0 0 6px 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+.page-hero p {
+  margin: 0;
+  font-size: 13px;
+  opacity: .95;
+}
+
 /* Modal */
 .modal.hidden { display: none; }
 .modal { position: fixed; inset: 0; display: grid; place-items: center; }

@@ -180,6 +180,11 @@ export function renderArticles(root) {
 
 export function renderEvents(root) {
   root.innerHTML = '';
+  // Page header
+  const hero = h('div', { class: 'page-hero' },
+    h('h1', {}, 'Seasonal Events'),
+    h('p', {}, 'Research and curate seasonal events to optimise and implement into your workflow and content strategy.')
+  );
   const monthLabel = h('label', { class: 'label-required' }, 'Month');
   const monthSel = h('input', { class: 'input', type: 'number', min: '1', max: '12', value: String(new Date().getMonth() + 1), style: 'max-width:100px' });
   const prevBtn = h('button', { class: 'btn btn-outline', title: 'Previous month' }, '‹');
@@ -343,7 +348,7 @@ export function renderEvents(root) {
     + "searchBtn.disabled = false; searchBtn.textContent = 'Search';\n"
   + "});\n"
 
-  root.append(section('Seasonal Events', controls), presets, meta, grid);
+  root.append(hero, section('Seasonal Events', controls), presets, meta, grid);
 
   // initial selection and load
   Array.from(countriesSel.options).forEach(o => { if (['GB','US'].includes(o.value)) o.selected = true; });
