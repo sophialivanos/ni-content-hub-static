@@ -71,6 +71,10 @@ body {
   color: transparent;
 }
 .welcome-hero p { margin: 0; color: #0f172a; opacity: .9; }
+.welcome-hero .accent {
+  color: #7c3aed;         /* vivid purple */
+  font-weight: 800;       /* bold to match emphasis */
+}
 
 /* Buttons */
 .btn { cursor: pointer; border: 1px solid var(--ring); background: transparent; color: var(--text); border-radius: 10px; padding: 8px 12px; }

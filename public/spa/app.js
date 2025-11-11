@@ -8,11 +8,8 @@ let COUNTRIES = [
 ];
 let computeSeasonalEvents = ({ month, countries }) => ({ events: [] });
 let fetchInsights = async () => { throw new Error('proxy not wired'); };
-// Try to hydrate from external modules if available (non-fatal)
-try { const m = await import('../../lib/verticals.js'); if (m.CANONICAL_VERTICALS) CANONICAL_VERTICALS = m.CANONICAL_VERTICALS; } catch {}
-try { const m = await import('../../lib/country.js'); if (m.COUNTRIES) COUNTRIES = m.COUNTRIES; } catch {}
-try { const m = await import('../../adapters/seasonal-events.js'); if (m.computeSeasonalEvents) computeSeasonalEvents = m.computeSeasonalEvents; } catch {}
-try { const m = await import('../../adapters/insights.js'); if (m.fetchInsights) fetchInsights = m.fetchInsights; } catch {}
+// (Optional hydration from external modules was removed to avoid parse/await issues on some browsers.)
+
 // Sidebar toggle (edge button outside panel)
 const sidebar = document.getElementById('sidebar');
 const layout = document.querySelector('.layout');
@@ -60,7 +57,12 @@ document.addEventListener('click', (e) => {
   const a = e.target && (e.target.closest ? e.target.closest('a.nav-link') : null);
   if (a && a.hash) {
     e.preventDefault();
-    location.hash = a.hash;
+    const target = a.hash;
+    if (location.hash === target) {
+      renderRoute(); // re-render even when clicking the active tab
+    } else {
+      location.hash = target;
+    }
   }
 });
 
@@ -214,7 +216,15 @@ export function renderWelcome(root) {
   const welcome = h('div', { class: 'welcome-wrap' },
     h('div', { class: 'welcome-hero' },
       h('h2', {}, 'Welcome to your content hub!'),
-      h('p', {}, 'Your one-stop destination to create, optimise, and brainstorm all things content. Explore the options on the left to supercharge your content strategy.')
+      h('p', {}, [
+        'Your one-stop destination to ',
+        h('span', { class: 'accent' }, 'create'),
+        ', ',
+        h('span', { class: 'accent' }, 'optimise'),
+        ', and ',
+        h('span', { class: 'accent' }, 'brainstorm'),
+        ' all things content. Explore the options on the left to supercharge your content strategy.'
+      ])
     )
   );
   root.append(welcome);
@@ -262,7 +272,6 @@ function renderRoute() {
     if (a.getAttribute('href') === `#${path}`) a.classList.add('active');
     else a.classList.remove('active');
   });
-  // view changed
 }
 window.addEventListener('hashchange', renderRoute);
 window.addEventListener('DOMContentLoaded', renderRoute);
