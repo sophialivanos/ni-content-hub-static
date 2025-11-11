@@ -189,10 +189,9 @@ export function renderEvents(root) {
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
   const monthSel = h('select', { class: 'select', style: 'min-width:160px' },
     h('option', { value: '' }, 'Select'),
-    ...months.map((m,i) => h('option', { value: String(i+1) }, m)),
+    ...months.map((m) => h('option', { value: m }, m)),
   );
-  // Default to current month while still listing "Select" first
-  monthSel.value = String(new Date().getMonth() + 1);
+  // Leave as "Select" by default (required field)
   const prevBtn = h('button', { class: 'btn btn-outline', title: 'Previous month' }, '‹');
   const nextBtn = h('button', { class: 'btn btn-outline', title: 'Next month' }, '›');
   const countriesLabel = h('label', {}, 'Countries (Optional)');
@@ -215,10 +214,11 @@ export function renderEvents(root) {
   const searchBtn = h('button', { class: 'btn btn-outline' }, 'Search');
 
   function setMonth(delta) {
-    let m = Number(monthSel.value) || (new Date().getMonth() + 1);
+    // If no month is chosen, start from current month
+    let m = monthSel.value ? (months.indexOf(monthSel.value) + 1) : (new Date().getMonth() + 1);
     m += delta;
     if (m < 1) m = 12; if (m > 12) m = 1;
-    monthSel.value = String(m);
+    monthSel.value = months[m - 1];
   }
   prevBtn.addEventListener('click', () => { setMonth(-1); doLoad(); });
   nextBtn.addEventListener('click', () => { setMonth(1); doLoad(); });
@@ -236,7 +236,12 @@ export function renderEvents(root) {
   async function doLoad() {
     grid.innerHTML = '';
     meta.innerHTML = '';
-    const month = Number(monthSel.value) || (new Date().getMonth() + 1);
+    const mIdx = months.indexOf(monthSel.value) + 1;
+    if (mIdx <= 0) {
+      grid.append(card('Select a month', 'Month is required. Please choose a month from the dropdown.'));
+      return;
+    }
+    const month = mIdx;
     const countries = Array.from(countriesSel.selectedOptions).map(o => o.value).filter(Boolean);
     const vertical = verticalSel.value || '';
     const commercialOnly = !!commercialChk.checked;
