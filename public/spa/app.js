@@ -195,12 +195,12 @@ export function renderEvents(root) {
   const prevBtn = h('button', { class: 'btn btn-outline', title: 'Previous month' }, '‹');
   const nextBtn = h('button', { class: 'btn btn-outline', title: 'Next month' }, '›');
   const countriesLabel = h('label', {}, 'Countries (Optional)');
-  const countriesSel = h('select', { class: 'select', multiple: 'multiple', size: '6', style: 'min-width:220px' },
+  const countriesSel = h('select', { class: 'select', multiple: 'multiple', size: '5', style: 'min-width:200px' },
     h('option', { value: '' }, ''), // blank first row (interpreted as all)
     ...COUNTRIES.map(c => h('option', { value: c.code }, c.label))
   );
   const verticalLabel = h('label', {}, 'Vertical (Optional)');
-  const verticalSel = h('select', { class: 'select', style: 'min-width:240px' },
+  const verticalSel = h('select', { class: 'select', style: 'min-width:200px' },
     h('option', { value: '' }, ''),
     ...CANONICAL_VERTICALS.map(v => h('option', { value: v }, v))
   );
@@ -208,7 +208,7 @@ export function renderEvents(root) {
   const commercialWrap = h('label', { class: 'checkbox' }, commercialChk, 'Commercial only');
   const loadBtn = h('button', { class: 'btn btn-primary' }, 'Load');
   const exportBtn = h('button', { class: 'btn btn-outline' }, 'Export CSV');
-  const meta = h('div', { class: 'toolbar' });
+  // (meta row removed per feedback)
   const grid = h('div', { class: 'card-grid' });
   const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'min-width:240px' });
   const searchBtn = h('button', { class: 'btn btn-outline' }, 'Search');
@@ -235,7 +235,6 @@ export function renderEvents(root) {
 
   async function doLoad() {
     grid.innerHTML = '';
-    meta.innerHTML = '';
     const mIdx = months.indexOf(monthSel.value) + 1;
     if (mIdx <= 0) {
       grid.append(card('Select a month', 'Month is required. Please choose a month from the dropdown.'));
@@ -258,12 +257,6 @@ export function renderEvents(root) {
       return;
     }
     loadBtn.disabled = false; loadBtn.textContent = 'Load';
-    // meta info
-    meta.append(
-      h('span', { class: 'badge' }, `Month: ${month}`),
-      h('span', { class: 'badge' }, `Events: ${lastEvents.length}`),
-      h('span', { class: 'badge' }, `Countries: ${countries.join(', ') || 'All'}`),
-    );
     // render
     renderList();
     if (grid.children.length === 0) grid.append(card('No events', 'Try a different month or countries.'));
@@ -334,7 +327,8 @@ export function renderEvents(root) {
     ].join('\\n');
     const blob = new Blob([rows], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
-    const a = Object.assign(document.createElement('a'), { href: url, download: `seasonal-events-m${month}.csv` });
+    const monthName = months[(month-1+12)%12];
+    const a = Object.assign(document.createElement('a'), { href: url, download: `seasonal-events-${monthName}.csv` });
     a.click(); URL.revokeObjectURL(url);
   });
 
@@ -360,7 +354,7 @@ export function renderEvents(root) {
     searchBtn.disabled = false; searchBtn.textContent = 'Search';
   });
 
-  root.append(hero, section('Seasonal Events', controls), presets, meta, grid);
+  root.append(hero, section('Seasonal Events', controls), presets, grid);
 
   // initial selection and load
   Array.from(countriesSel.options).forEach(o => { if (['GB','US'].includes(o.value)) o.selected = true; });
