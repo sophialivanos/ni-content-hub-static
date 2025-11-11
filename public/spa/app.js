@@ -180,20 +180,96 @@ export function renderArticles(root) {
 
 export function renderEvents(root) {
   root.innerHTML = '';
-  const monthSel = h('input', { class: 'input', type: 'number', min: '1', max: '12', value: String(new Date().getMonth() + 1) });
-  const countriesSel = h('select', { class: 'select', multiple: 'multiple', size: '5' }, ...COUNTRIES.map(c => h('option', { value: c.code }, c.label)));
-  const btn = h('button', { class: 'btn' }, 'Load seasonal events');
-  const controls = h('div', { class: 'row' }, monthSel, countriesSel, btn);
+  const monthSel = h('input', { class: 'input', type: 'number', min: '1', max: '12', value: String(new Date().getMonth() + 1), style: 'max-width:100px' });
+  const prevBtn = h('button', { class: 'btn btn-outline', title: 'Previous month' }, '‹');
+  const nextBtn = h('button', { class: 'btn btn-outline', title: 'Next month' }, '›');
+  const countriesSel = h('select', { class: 'select', multiple: 'multiple', size: '6', style: 'min-width:220px' }, ...COUNTRIES.map(c => h('option', { value: c.code }, c.label)));
+  const commercialChk = h('input', { type: 'checkbox', checked: 'checked' });
+  const commercialWrap = h('label', { class: 'checkbox' }, commercialChk, 'Commercial only');
+  const loadBtn = h('button', { class: 'btn btn-primary' }, 'Load');
+  const exportBtn = h('button', { class: 'btn btn-outline' }, 'Export CSV');
+  const meta = h('div', { class: 'toolbar' });
   const grid = h('div', { class: 'card-grid' });
-  btn.addEventListener('click', () => {
+
+  function setMonth(delta) {
+    let m = Number(monthSel.value) || (new Date().getMonth() + 1);
+    m += delta;
+    if (m < 1) m = 12; if (m > 12) m = 1;
+    monthSel.value = String(m);
+  }
+  prevBtn.addEventListener('click', () => { setMonth(-1); doLoad(); });
+  nextBtn.addEventListener('click', () => { setMonth(1); doLoad(); });
+
+  function doLoad() {
     grid.innerHTML = '';
+    meta.innerHTML = '';
     const month = Number(monthSel.value) || (new Date().getMonth() + 1);
     const countries = Array.from(countriesSel.selectedOptions).map(o => o.value);
-    const { events } = computeSeasonalEvents({ month, countries, commercialOnly: true });
-    events.forEach(ev => grid.append(card(`${ev.name} — ${ev._country}`, ev.date)));
+    const commercialOnly = !!commercialChk.checked;
+    const { events } = computeSeasonalEvents({ month, countries, commercialOnly });
+    // meta info
+    meta.append(
+      h('span', { class: 'badge' }, `Month: ${month}`),
+      h('span', { class: 'badge' }, `Events: ${events.length}`),
+      h('span', { class: 'badge' }, `Countries: ${countries.join(', ') || '—'}`),
+    );
+    // render
+    events.forEach(ev => {
+      const top = h('div', { class: 'toolbar' },
+        h('span', { class: 'badge' }, ev._country || ev.country || ''),
+        h('span', { class: 'badge' }, ev.date || ''),
+      );
+      const cardEl = h('div', { class: 'card' },
+        top,
+        h('h3', {}, ev.name || 'Untitled'),
+        h('p', {}, ev.description || '')
+      );
+      grid.append(cardEl);
+    });
     if (grid.children.length === 0) grid.append(card('No events', 'Try a different month or countries.'));
+  }
+
+  loadBtn.addEventListener('click', doLoad);
+  exportBtn.addEventListener('click', () => {
+    const month = Number(monthSel.value) || (new Date().getMonth() + 1);
+    const countries = Array.from(countriesSel.selectedOptions).map(o => o.value);
+    const commercialOnly = !!commercialChk.checked;
+    const { events } = computeSeasonalEvents({ month, countries, commercialOnly });
+    const rows = [
+      ['name','date','country','description'].join(','),
+      ...events.map(ev => [
+        ev.name || '',
+        ev.date || '',
+        ev._country || ev.country || '',
+        ev.description || ''
+      ].map(v => JSON.stringify(v)).join(','))
+    ].join('\\n');
+    const blob = new Blob([rows], { type: 'text/csv;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = Object.assign(document.createElement('a'), { href: url, download: `seasonal-events-m${month}.csv` });
+    a.click(); URL.revokeObjectURL(url);
   });
-  root.append(section('Events', controls), grid);
+
+  // quick country presets
+  const presets = h('div', { class: 'toolbar' },
+    h('span', {}, 'Quick countries:'),
+    ...['GB','US','IE','FR','NL'].map(c =>
+      h('button', { class: 'btn btn-outline', onClick: () => {
+        Array.from(countriesSel.options).forEach(o => o.selected = (o.value === c));
+        doLoad();
+      } }, c)
+    )
+  );
+
+  const controls = h('div', { class: 'section' },
+    h('div', { class: 'toolbar' }, prevBtn, monthSel, nextBtn, countriesSel, commercialWrap, loadBtn, exportBtn)
+  );
+
+  root.append(section('Seasonal Events', controls), presets, meta, grid);
+
+  // initial selection and load
+  Array.from(countriesSel.options).forEach(o => { if (['GB','US'].includes(o.value)) o.selected = true; });
+  doLoad();
 }
 
 export function renderVerticalProfiles(root) {
