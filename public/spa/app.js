@@ -347,7 +347,7 @@ export function renderEvents(root) {
       commercialWrap, loadBtn, exportBtn
     ),
     // Second row: quick search inline with its button
-    h('div', { class: 'toolbar' }, searchInput, searchBtn)
+    h('div', { class: 'toolbar search-row' }, searchInput, searchBtn)
   );
 
   searchBtn.addEventListener('click', () => {
