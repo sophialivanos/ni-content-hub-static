@@ -32,7 +32,7 @@ body {
 }
 .layout.collapsed { grid-template-columns: 64px 1fr; }
 .sidebar.collapsed { width: 64px; }
-.sidebar-header { position: relative; display:flex; align-items:center; justify-content:center; text-align:center; height: 56px; padding: 0 8px; font-weight: 600; letter-spacing: .2px; }
+.sidebar-header { position: relative; display:flex; align-items:center; justify-content:center; text-align:center; height: 56px; padding: 0 8px; font-weight: 600; letter-spacing: .2px; color: var(--text); }
 .sidebar-brand { position:absolute; left:8px; right:8px; text-align:center; pointer-events:none; }
 .nav { display: flex; flex-direction: column; padding: 12px; gap: 6px; }
 .nav-link { color: var(--text); text-decoration: none; padding: 8px 10px; border-radius: 8px; }
