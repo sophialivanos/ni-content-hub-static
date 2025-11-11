@@ -342,12 +342,12 @@ export function renderEvents(root) {
   );
 
   const controls = h('div', { class: 'section' },
-    // Stack all controls vertically, compact widths
-    h('div', { style: 'display:flex; flex-direction:column; gap:10px; align-items:flex-start;' },
-      h('div', { style: 'display:flex; flex-direction:column; gap:6px;' }, monthLabel, monthSel),
-      h('div', { style: 'display:flex; flex-direction:column; gap:6px;' }, countriesLabel, countriesSel),
-      h('div', { style: 'display:flex; flex-direction:column; gap:6px;' }, verticalLabel, verticalSel),
-      h('div', { class: 'toolbar' }, commercialWrap, loadBtn, exportBtn)
+    // Single horizontal row: Month | Countries | Vertical | Commercial | Load | Export
+    h('div', { class: 'toolbar' },
+      monthLabel, monthSel,
+      countriesLabel, countriesSel,
+      verticalLabel, verticalSel,
+      commercialWrap, loadBtn, exportBtn
     ),
     h('div', { class: 'toolbar' }, searchInput, searchBtn)
   );
@@ -360,9 +360,7 @@ export function renderEvents(root) {
 
   root.append(hero, section('Seasonal Events', controls), presets, grid);
 
-  // initial selection and load
-  Array.from(countriesSel.options).forEach(o => { if (['GB','US'].includes(o.value)) o.selected = true; });
-  doLoad();
+  // initial state: require explicit selections (month required)
 }
 
 export function renderVerticalProfiles(root) {
