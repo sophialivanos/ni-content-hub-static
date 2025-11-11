@@ -186,7 +186,13 @@ export function renderEvents(root) {
     h('p', {}, 'Research and curate seasonal events to optimise and implement into your workflow and content strategy.')
   );
   const monthLabel = h('label', { class: 'label-required' }, 'Month');
-  const monthSel = h('input', { class: 'input', type: 'number', min: '1', max: '12', value: String(new Date().getMonth() + 1), style: 'max-width:100px' });
+  const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
+  const monthSel = h('select', { class: 'select', style: 'min-width:160px' },
+    h('option', { value: '' }, 'Select'),
+    ...months.map((m,i) => h('option', { value: String(i+1) }, m)),
+  );
+  // Default to current month while still listing "Select" first
+  monthSel.value = String(new Date().getMonth() + 1);
   const prevBtn = h('button', { class: 'btn btn-outline', title: 'Previous month' }, '‹');
   const nextBtn = h('button', { class: 'btn btn-outline', title: 'Next month' }, '›');
   const countriesLabel = h('label', {}, 'Countries (Optional)');
