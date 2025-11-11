@@ -310,6 +310,9 @@ export function renderEvents(root) {
 
   loadBtn.addEventListener('click', doLoad);
   exportBtn.addEventListener('click', () => {
+    const prevText = exportBtn.textContent;
+    exportBtn.disabled = true;
+    exportBtn.textContent = 'Exporting…';
     const month = (months.indexOf(monthSel.value) + 1) || (new Date().getMonth() + 1);
     const selectedVertical = verticalSel.value || '';
     const events = lastEvents.filter(ev => ev._relevant || !selectedVertical);
@@ -328,20 +331,22 @@ export function renderEvents(root) {
     const monthName = months[(month-1+12)%12];
     const a = Object.assign(document.createElement('a'), { href: url, download: `seasonal-events-${monthName}.csv` });
     a.click(); URL.revokeObjectURL(url);
+    exportBtn.disabled = false;
+    exportBtn.textContent = prevText;
   });
 
   // quick country presets removed per request
   const presets = null;
 
   const controls = h('div', { class: 'section' },
-    // Single horizontal row: Month | Countries | Vertical | Commercial | Load | Export
+    // Single horizontal row: Month | Countries | Vertical | Commercial | Load | Search
     h('div', { class: 'toolbar events-controls' },
       monthLabel, monthSel,
       countriesLabel, countriesSel,
       verticalLabel, verticalSel,
-      commercialWrap, loadBtn
-    ),
-    h('div', { class: 'toolbar' }, searchInput, searchBtn)
+      commercialWrap, loadBtn,
+      searchInput, searchBtn
+    )
   );
 
   searchBtn.addEventListener('click', () => {
