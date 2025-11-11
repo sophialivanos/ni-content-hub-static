@@ -60,6 +60,8 @@ body {
   border-radius: 16px;
   padding: 24px;
   box-shadow: 0 10px 30px rgba(2,6,23,.08);
+  position: relative;            /* for animated border */
+  overflow: hidden;
 }
 .welcome-hero h2 {
   margin: 0 0 8px 0;
@@ -74,6 +76,41 @@ body {
 .welcome-hero .accent {
   color: #7c3aed;         /* vivid purple */
   font-weight: 800;       /* bold to match emphasis */
+}
+
+/* Fancy animated gradient ring around the card */
+.welcome-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  padding: 2px;                       /* ring thickness */
+  border-radius: inherit;
+  background: conic-gradient(from 0deg, #7c3aed, #3b82f6, #ec4899, #7c3aed);
+  -webkit-mask: 
+    linear-gradient(#000 0 0) content-box, 
+    linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+          mask-composite: exclude;
+  animation: spin 8s linear infinite;
+  opacity: .7;
+}
+.welcome-hero::after {
+  content: "";
+  position: absolute;
+  inset: -20%;
+  background: radial-gradient(40% 40% at 50% 50%, rgba(124,58,237,.15), transparent 60%),
+              radial-gradient(30% 30% at 20% 20%, rgba(59,130,246,.12), transparent 70%),
+              radial-gradient(25% 25% at 80% 30%, rgba(236,72,153,.12), transparent 70%);
+  filter: blur(20px);
+  z-index: -1;
+  animation: drift 14s ease-in-out infinite alternate;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes drift {
+  0%   { transform: translateY(-4px); }
+  100% { transform: translateY(6px); }
 }
 
 /* Buttons */
