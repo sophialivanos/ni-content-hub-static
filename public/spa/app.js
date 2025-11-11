@@ -194,13 +194,13 @@ export function renderEvents(root) {
   // Leave as "Select" by default (required field)
   // Removed prev/next arrows per request
   const countriesLabel = h('label', {}, 'Countries (Optional)');
-  const countriesSel = h('select', { class: 'select', multiple: 'multiple', style: 'width:200px' },
-    h('option', { value: '' }, ''), // blank first row (interpreted as all)
+  const countriesSel = h('select', { class: 'select', style: 'width:160px' },
+    h('option', { value: '' }, 'Select'),
     ...COUNTRIES.map(c => h('option', { value: c.code }, c.label))
   );
   const verticalLabel = h('label', {}, 'Vertical (Optional)');
-  const verticalSel = h('select', { class: 'select', style: 'width:200px' },
-    h('option', { value: '' }, ''),
+  const verticalSel = h('select', { class: 'select', style: 'width:160px' },
+    h('option', { value: '' }, 'Select'),
     ...CANONICAL_VERTICALS.map(v => h('option', { value: v }, v))
   );
   const commercialChk = h('input', { type: 'checkbox', checked: 'checked' });
@@ -342,7 +342,13 @@ export function renderEvents(root) {
   );
 
   const controls = h('div', { class: 'section' },
-    h('div', { class: 'toolbar' }, monthLabel, monthSel, countriesLabel, countriesSel, verticalLabel, verticalSel, commercialWrap, loadBtn, exportBtn),
+    // Stack all controls vertically, compact widths
+    h('div', { style: 'display:flex; flex-direction:column; gap:10px; align-items:flex-start;' },
+      h('div', { style: 'display:flex; flex-direction:column; gap:6px;' }, monthLabel, monthSel),
+      h('div', { style: 'display:flex; flex-direction:column; gap:6px;' }, countriesLabel, countriesSel),
+      h('div', { style: 'display:flex; flex-direction:column; gap:6px;' }, verticalLabel, verticalSel),
+      h('div', { class: 'toolbar' }, commercialWrap, loadBtn, exportBtn)
+    ),
     h('div', { class: 'toolbar' }, searchInput, searchBtn)
   );
 
