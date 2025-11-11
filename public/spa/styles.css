@@ -86,15 +86,16 @@ body {
   padding: 2px;                       /* ring thickness */
   border-radius: inherit;
   /* Animated colour sweep along the frame (no rotation) */
-  background: linear-gradient(90deg, #7c3aed, #3b82f6, #ec4899, #7c3aed);
-  background-size: 300% 100%;
+  background: linear-gradient(90deg, #7c3aed, #06b6d4, #3b82f6, #ec4899, #7c3aed);
+  background-size: 400% 100%;
   -webkit-mask: 
     linear-gradient(#000 0 0) content-box, 
     linear-gradient(#000 0 0);
   -webkit-mask-composite: xor;
           mask-composite: exclude;
   opacity: .7;                        /* subtle glow on the border */
-  animation: moveBorder 8s linear infinite;
+  will-change: background-position;
+  animation: moveBorder 6s linear infinite;
 }
 /* Remove background glow/animation */
 .welcome-hero::after { content: none; }
