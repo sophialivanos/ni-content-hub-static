@@ -209,7 +209,7 @@ export function renderEvents(root) {
   const exportBtn = h('button', { class: 'btn btn-primary' }, 'Export CSV');
   // (meta row removed per feedback)
   const grid = h('div', { class: 'card-grid' });
-  const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'width:160px' });
+  const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'width:220px' });
   const searchBtn = h('button', { class: 'btn btn-primary' }, 'Search');
 
   function setMonth(delta) {
