@@ -187,20 +187,19 @@ export function renderEvents(root) {
   );
   const monthLabel = h('label', { class: 'label-required' }, 'Month');
   const months = ['January','February','March','April','May','June','July','August','September','October','November','December'];
-  const monthSel = h('select', { class: 'select', style: 'min-width:160px' },
+  const monthSel = h('select', { class: 'select', style: 'min-width:140px' },
     h('option', { value: '' }, 'Select'),
     ...months.map((m) => h('option', { value: m }, m)),
   );
   // Leave as "Select" by default (required field)
-  const prevBtn = h('button', { class: 'btn btn-outline', title: 'Previous month' }, '‹');
-  const nextBtn = h('button', { class: 'btn btn-outline', title: 'Next month' }, '›');
+  // Removed prev/next arrows per request
   const countriesLabel = h('label', {}, 'Countries (Optional)');
-  const countriesSel = h('select', { class: 'select', multiple: 'multiple', size: '5', style: 'min-width:200px' },
+  const countriesSel = h('select', { class: 'select', multiple: 'multiple', style: 'width:200px' },
     h('option', { value: '' }, ''), // blank first row (interpreted as all)
     ...COUNTRIES.map(c => h('option', { value: c.code }, c.label))
   );
   const verticalLabel = h('label', {}, 'Vertical (Optional)');
-  const verticalSel = h('select', { class: 'select', style: 'min-width:200px' },
+  const verticalSel = h('select', { class: 'select', style: 'width:200px' },
     h('option', { value: '' }, ''),
     ...CANONICAL_VERTICALS.map(v => h('option', { value: v }, v))
   );
@@ -220,8 +219,7 @@ export function renderEvents(root) {
     if (m < 1) m = 12; if (m > 12) m = 1;
     monthSel.value = months[m - 1];
   }
-  prevBtn.addEventListener('click', () => { setMonth(-1); doLoad(); });
-  nextBtn.addEventListener('click', () => { setMonth(1); doLoad(); });
+  // no arrow listeners
 
   function deriveRelevance(ev, vertical) {
     const txt = `${ev.name || ''} ${ev.description || ''}`.toLowerCase();
@@ -344,7 +342,7 @@ export function renderEvents(root) {
   );
 
   const controls = h('div', { class: 'section' },
-    h('div', { class: 'toolbar' }, monthLabel, prevBtn, monthSel, nextBtn, countriesLabel, countriesSel, verticalLabel, verticalSel, commercialWrap, loadBtn, exportBtn),
+    h('div', { class: 'toolbar' }, monthLabel, monthSel, countriesLabel, countriesSel, verticalLabel, verticalSel, commercialWrap, loadBtn, exportBtn),
     h('div', { class: 'toolbar' }, searchInput, searchBtn)
   );
 
