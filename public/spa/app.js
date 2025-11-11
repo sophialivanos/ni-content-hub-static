@@ -343,7 +343,7 @@ export function renderEvents(root) {
 
   const controls = h('div', { class: 'section' },
     // Single horizontal row: Month | Countries | Vertical | Commercial | Load | Export
-    h('div', { class: 'toolbar' },
+    h('div', { class: 'toolbar events-controls' },
       monthLabel, monthSel,
       countriesLabel, countriesSel,
       verticalLabel, verticalSel,
@@ -358,7 +358,8 @@ export function renderEvents(root) {
     searchBtn.disabled = false; searchBtn.textContent = 'Search';
   });
 
-  root.append(hero, section('Seasonal Events', controls), presets, grid);
+  // Remove left-side "Seasonal Events" label row; show controls directly
+  root.append(hero, controls, presets, grid);
 
   // initial state: require explicit selections (month required)
 }
