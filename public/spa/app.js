@@ -209,7 +209,7 @@ export function renderEvents(root) {
   const exportBtn = h('button', { class: 'btn btn-primary' }, 'Export CSV');
   // (meta row removed per feedback)
   const grid = h('div', { class: 'card-grid' });
-  const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'width:220px' });
+  const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'width:300px' });
   const searchBtn = h('button', { class: 'btn btn-primary' }, 'Search');
 
   function setMonth(delta) {
@@ -339,14 +339,15 @@ export function renderEvents(root) {
   const presets = null;
 
   const controls = h('div', { class: 'section' },
-    // Single horizontal row: Month | Countries | Vertical | Commercial | Load | Search
+    // Top row: fixed controls incl. Export
     h('div', { class: 'toolbar events-controls' },
       monthLabel, monthSel,
       countriesLabel, countriesSel,
       verticalLabel, verticalSel,
-      commercialWrap, loadBtn,
-      searchInput, searchBtn
-    )
+      commercialWrap, loadBtn, exportBtn
+    ),
+    // Second row: quick search inline with its button
+    h('div', { class: 'toolbar' }, searchInput, searchBtn)
   );
 
   searchBtn.addEventListener('click', () => {
@@ -355,9 +356,8 @@ export function renderEvents(root) {
     searchBtn.disabled = false; searchBtn.textContent = 'Search';
   });
 
-  // Remove left-side "Seasonal Events" label row; show controls directly
-  const bottomBar = h('div', { class: 'toolbar', style: 'justify-content:flex-end' }, exportBtn);
-  root.append(hero, controls, grid, bottomBar);
+  // Render main content
+  root.append(hero, controls, grid);
 
   // initial state: require explicit selections (month required)
 }
