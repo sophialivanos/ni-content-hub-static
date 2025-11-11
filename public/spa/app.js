@@ -279,32 +279,33 @@ export function renderEvents(root) {
           h('li', {}, 'Add brief compliance notes if needed'),
           h('li', {}, 'Mobile-first layout with scannable bullets')
         );
-        const suggestions = h('div', {},\n"
-          + "h('div', { class: 'muted' }, 'Content suggestions'),\n"
-          + "h('p', {}, ['H1: ', ev.name || '']),\n"
-          + "h('p', {}, ['DH1: ', 'Concise value proposition aligned to the event']),\n"
-          + "h('p', {}, ['H2: ', 'What, When, Eligibility']),\n"
-          + "h('p', {}, ['Article headline: ', ev.name || '']),\n"
-          + "h('p', {}, ['Ribbon copy: ', 'Limited window • Updated ' + (ev.date || '')]),\n"
-          + "h('p', {}, ['BTC paragraph: ', 'Short paragraph describing what visitors will get for this period'])\n"
-        + ");\n"
-        const body = h('div', { class: 'card-body' },\n"
-          + "h('p', {}, ev.description || ''),\n"
-          + "h('div', { class: 'section' }, h('strong', {}, 'Relevance'), relBlock),\n"
-          + "h('div', { class: 'section' }, h('strong', {}, 'Best practices'), bestPractices),\n"
-          + "h('div', { class: 'section' }, h('strong', {}, 'Content suggestions'), suggestions)\n"
-        + ");\n"
-        const header = h('div', { class: 'card-header', onClick: (e) => {\n"
-          + "const card = e.currentTarget.parentElement; card.classList.toggle('expanded');\n"
-        + "} },\n"
-          + "h('h3', { class: 'card-title' }, ev.name || 'Untitled'),\n"
-          + "h('div', { class: 'card-actions' }, top)\n"
-        + ");\n"
-        const cardEl = h('div', { class: 'card' }, header, body);\n"
-        grid.append(cardEl);\n"
-      });\n"
-  }\n"
-\n"
+        const suggestions = h('div', {},
+          h('div', { class: 'muted' }, 'Content suggestions'),
+          h('p', {}, ['H1: ', ev.name || '']),
+          h('p', {}, ['DH1: ', 'Concise value proposition aligned to the event']),
+          h('p', {}, ['H2: ', 'What, When, Eligibility']),
+          h('p', {}, ['Article headline: ', ev.name || '']),
+          h('p', {}, ['Ribbon copy: ', `Limited window • Updated ${ev.date || ''}`]),
+          h('p', {}, ['BTC paragraph: ', 'Short paragraph describing what visitors will get for this period']),
+        );
+        const body = h('div', { class: 'card-body' },
+          h('p', {}, ev.description || ''),
+          h('div', { class: 'section' }, h('strong', {}, 'Relevance'), relBlock),
+          h('div', { class: 'section' }, h('strong', {}, 'Best practices'), bestPractices),
+          h('div', { class: 'section' }, h('strong', {}, 'Content suggestions'), suggestions),
+        );
+        const header = h('div', {
+          class: 'card-header',
+          onClick: (e) => { const card = e.currentTarget.parentElement; card.classList.toggle('expanded'); }
+        },
+          h('h3', { class: 'card-title' }, ev.name || 'Untitled'),
+          h('div', { class: 'card-actions' }, top)
+        );
+        const cardEl = h('div', { class: 'card' }, header, body);
+        grid.append(cardEl);
+      });
+  }
+
   loadBtn.addEventListener('click', doLoad);
   exportBtn.addEventListener('click', () => {
     const month = Number(monthSel.value) || (new Date().getMonth() + 1);
@@ -337,16 +338,16 @@ export function renderEvents(root) {
     )
   );
 
-  const controls = h('div', { class: 'section' },\n"
-    + "h('div', { class: 'toolbar' }, monthLabel, prevBtn, monthSel, nextBtn, countriesLabel, countriesSel, verticalLabel, verticalSel, commercialWrap, loadBtn, exportBtn),\n"
-    + "h('div', { class: 'toolbar' }, searchInput, searchBtn)\n"
-  + ");\n"
-\n"
-  searchBtn.addEventListener('click', () => {\n"
-    + "searchBtn.disabled = true; searchBtn.textContent = 'Searching…';\n"
-    + "renderList();\n"
-    + "searchBtn.disabled = false; searchBtn.textContent = 'Search';\n"
-  + "});\n"
+  const controls = h('div', { class: 'section' },
+    h('div', { class: 'toolbar' }, monthLabel, prevBtn, monthSel, nextBtn, countriesLabel, countriesSel, verticalLabel, verticalSel, commercialWrap, loadBtn, exportBtn),
+    h('div', { class: 'toolbar' }, searchInput, searchBtn)
+  );
+
+  searchBtn.addEventListener('click', () => {
+    searchBtn.disabled = true; searchBtn.textContent = 'Searching…';
+    renderList();
+    searchBtn.disabled = false; searchBtn.textContent = 'Search';
+  });
 
   root.append(hero, section('Seasonal Events', controls), presets, meta, grid);
 
