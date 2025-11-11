@@ -423,15 +423,29 @@ const ROUTES = {
 // Router
 const app = document.getElementById('app');
 function renderRoute() {
-  const hash = location.hash || '#/welcome';
-  const path = hash.replace(/^#/, '');
-  const page = ROUTES[path] || renderWelcome;
-  page(app);
-  // Highlight active link
-  document.querySelectorAll('.nav-link').forEach(a => {
-    if (a.getAttribute('href') === `#${path}`) a.classList.add('active');
-    else a.classList.remove('active');
-  });
+  try {
+    const hash = location.hash || '#/welcome';
+    const path = hash.replace(/^#/, '');
+    const page = ROUTES[path] || renderWelcome;
+    page(app);
+    // Highlight active link
+    document.querySelectorAll('.nav-link').forEach(a => {
+      if (a.getAttribute('href') === `#${path}`) a.classList.add('active');
+      else a.classList.remove('active');
+    });
+  } catch (err) {
+    // Fail-safe: show a minimal welcome so the page never appears blank
+    console.error('Render error:', err);
+    app.innerHTML = '';
+    const fallback = document.createElement('div');
+    fallback.className = 'welcome-wrap';
+    fallback.innerHTML = `
+      <div class="welcome-hero">
+        <h2>Welcome to your content hub!</h2>
+        <p>Your one-stop destination to <strong>create</strong>, <strong>optimise</strong>, and <strong>brainstorm</strong> all things content.</p>
+      </div>`;
+    app.appendChild(fallback);
+  }
 }
 window.addEventListener('hashchange', renderRoute);
 window.addEventListener('DOMContentLoaded', renderRoute);
