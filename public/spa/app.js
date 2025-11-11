@@ -206,7 +206,7 @@ export function renderEvents(root) {
   const commercialChk = h('input', { type: 'checkbox', checked: 'checked' });
   const commercialWrap = h('label', { class: 'checkbox' }, commercialChk, 'Commercial only');
   const loadBtn = h('button', { class: 'btn btn-primary' }, 'Load');
-  const exportBtn = h('button', { class: 'btn btn-primary' }, 'Export CSV');
+  const exportBtn = h('button', { class: 'btn btn-primary' }, '⬇ Export CSV');
   // (meta row removed per feedback)
   const grid = h('div', { class: 'card-grid' });
   const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'width:300px' });
@@ -344,10 +344,12 @@ export function renderEvents(root) {
       monthLabel, monthSel,
       countriesLabel, countriesSel,
       verticalLabel, verticalSel,
-      commercialWrap, loadBtn, exportBtn
+      commercialWrap, loadBtn
     ),
     // Second row: quick search inline with its button
-    h('div', { class: 'toolbar search-row' }, searchInput, searchBtn)
+    h('div', { class: 'toolbar search-row' }, searchInput, searchBtn),
+    // Third row: export only (fixed position above results)
+    h('div', { class: 'toolbar export-row' }, exportBtn)
   );
 
   searchBtn.addEventListener('click', () => {

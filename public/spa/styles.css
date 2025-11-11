@@ -172,8 +172,9 @@ body {
 }
 .toolbar { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
 .toolbar .spacer { flex: 1 1 auto; }
-.search-row { flex-wrap: nowrap; }
-.search-row .input { width: 360px; }
+.search-row { flex-wrap: nowrap; margin-top: 14px; }
+.search-row .input { width: 380px; }
+.export-row { margin-top: 14px; }
 .checkbox { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; }
 .btn-outline { background:#ffffff; color:#0f172a; border:1px solid #cbd5e1; }
 .btn-outline:hover { background:#f8fafc; }
