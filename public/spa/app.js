@@ -206,11 +206,11 @@ export function renderEvents(root) {
   const commercialChk = h('input', { type: 'checkbox', checked: 'checked' });
   const commercialWrap = h('label', { class: 'checkbox' }, commercialChk, 'Commercial only');
   const loadBtn = h('button', { class: 'btn btn-primary' }, 'Load');
-  const exportBtn = h('button', { class: 'btn btn-outline' }, 'Export CSV');
+  const exportBtn = h('button', { class: 'btn btn-primary' }, 'Export CSV');
   // (meta row removed per feedback)
   const grid = h('div', { class: 'card-grid' });
-  const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'min-width:240px' });
-  const searchBtn = h('button', { class: 'btn btn-outline' }, 'Search');
+  const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'width:160px' });
+  const searchBtn = h('button', { class: 'btn btn-primary' }, 'Search');
 
   function setMonth(delta) {
     // If no month is chosen, start from current month
@@ -330,16 +330,8 @@ export function renderEvents(root) {
     a.click(); URL.revokeObjectURL(url);
   });
 
-  // quick country presets
-  const presets = h('div', { class: 'toolbar' },
-    h('span', {}, 'Quick countries:'),
-    ...['GB','US','IE','FR','NL'].map(c =>
-      h('button', { class: 'btn btn-outline', onClick: () => {
-        Array.from(countriesSel.options).forEach(o => o.selected = (o.value === c));
-        doLoad();
-      } }, c)
-    )
-  );
+  // quick country presets removed per request
+  const presets = null;
 
   const controls = h('div', { class: 'section' },
     // Single horizontal row: Month | Countries | Vertical | Commercial | Load | Export
@@ -347,7 +339,7 @@ export function renderEvents(root) {
       monthLabel, monthSel,
       countriesLabel, countriesSel,
       verticalLabel, verticalSel,
-      commercialWrap, loadBtn, exportBtn
+      commercialWrap, loadBtn
     ),
     h('div', { class: 'toolbar' }, searchInput, searchBtn)
   );
@@ -359,7 +351,8 @@ export function renderEvents(root) {
   });
 
   // Remove left-side "Seasonal Events" label row; show controls directly
-  root.append(hero, controls, presets, grid);
+  const bottomBar = h('div', { class: 'toolbar', style: 'justify-content:flex-end' }, exportBtn);
+  root.append(hero, controls, grid, bottomBar);
 
   // initial state: require explicit selections (month required)
 }
