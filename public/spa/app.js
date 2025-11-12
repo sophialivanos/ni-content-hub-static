@@ -132,10 +132,14 @@ export function renderAiSearch(root) {
     ...CANONICAL_VERTICALS.slice(0, 20).map(v => h('option', { value: v }, v))
   );
   const runBtn = h('button', { class: 'btn btn-primary' }, 'Get Insights');
-  const controls = h('div', { class: 'row' },
-    h('div', { style: 'display:flex; flex-direction:column; gap:6px;' }, h('label', {}, 'Industry'), industrySel),
-    h('div', { style: 'display:flex; flex-direction:column; gap:6px;' }, h('label', {}, 'Vertical'), verticalSel),
-    runBtn
+  const industryLabel = h('label', {}, 'Industry');
+  const verticalLabel = h('label', {}, 'Vertical');
+  const controls = h('div', { class: 'section' },
+    h('div', { class: 'toolbar ai-controls' },
+      industryLabel, industrySel,
+      verticalLabel, verticalSel,
+      runBtn
+    )
   );
   const grid = h('div', { class: 'card-grid' });
 
@@ -205,7 +209,7 @@ export function renderAiSearch(root) {
     runBtn.disabled = false; runBtn.textContent = prev;
   });
 
-  // Render without the left title row; keep controls left-aligned
+  // Render hero, boxed controls, then grid
   root.append(hero, controls, grid);
 }
 

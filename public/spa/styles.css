@@ -122,6 +122,9 @@ body {
 .events-controls { flex-wrap: nowrap; }
 .events-controls label { white-space: nowrap; }
 .events-controls .select { width: auto; min-width: 140px; }
+.ai-controls { flex-wrap: nowrap; }
+.ai-controls label { white-space: nowrap; }
+.ai-controls .select { width: auto; min-width: 160px; }
 
 /* Cards */
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
