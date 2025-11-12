@@ -133,9 +133,9 @@ export function renderAiSearch(root) {
     h('option', { value: '' }, 'Select'),
     ...CANONICAL_VERTICALS.slice(0, 20).map(v => h('option', { value: v }, v))
   );
-  const runBtn = h('button', { class: 'btn btn-primary' }, 'Get Insights');
-  const industryLabel = h('label', {}, 'Industry');
-  const verticalLabel = h('label', {}, 'Vertical');
+  const runBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Get Insights');
+  const industryLabel = h('label', { class: 'label-required' }, 'Industry');
+  const verticalLabel = h('label', { class: 'label-required' }, 'Vertical');
   const controls = h('div', { class: 'section' },
     h('div', { class: 'toolbar ai-controls' },
       industryLabel, industrySel,
@@ -203,7 +203,16 @@ export function renderAiSearch(root) {
     grid.append(left, right);
   }
 
+  function updateReady() {
+    const ready = !!industrySel.value && !!verticalSel.value;
+    runBtn.disabled = !ready;
+  }
+  industrySel.addEventListener('change', updateReady);
+  verticalSel.addEventListener('change', updateReady);
+  updateReady();
+
   runBtn.addEventListener('click', async () => {
+    if (runBtn.disabled) return;
     const prev = runBtn.textContent;
     runBtn.disabled = true; runBtn.textContent = 'Generating…';
     await new Promise(r => setTimeout(r, 500));
