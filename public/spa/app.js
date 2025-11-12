@@ -123,12 +123,14 @@ export function renderAiSearch(root) {
     h('p', {}, 'Select an industry and vertical to analyse trends, research insights, and content optimisation opportunities.')
   );
   const industrySel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select'),
     h('option', { value: 'Finance' }, 'Finance'),
     h('option', { value: 'Technology' }, 'Technology'),
     h('option', { value: 'Health' }, 'Health'),
     h('option', { value: 'Travel' }, 'Travel'),
   );
   const verticalSel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select'),
     ...CANONICAL_VERTICALS.slice(0, 20).map(v => h('option', { value: v }, v))
   );
   const runBtn = h('button', { class: 'btn btn-primary' }, 'Get Insights');
