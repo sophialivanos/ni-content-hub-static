@@ -119,7 +119,7 @@ export function renderHome(root) {
 export function renderAiSearch(root) {
   root.innerHTML = '';
   const hero = h('div', { class: 'page-hero' },
-    h('h1', {}, 'AISearch (AIO & AIM)'),
+    h('h1', { style: 'font-size:18px;font-weight:400' }, 'AISearch (AIO & AIM)'),
     h('p', {}, 'Select an industry and vertical to analyze trends, research insights, and content optimization opportunities.')
   );
   const industrySel = h('select', { class: 'select' },
@@ -205,7 +205,8 @@ export function renderAiSearch(root) {
     runBtn.disabled = false; runBtn.textContent = prev;
   });
 
-  root.append(hero, section('AISearch (AIO & AIM)', controls), grid);
+  // Render without the left title row; keep controls left-aligned
+  root.append(hero, controls, grid);
 }
 
 export function renderArticles(root) {
