@@ -118,40 +118,94 @@ export function renderHome(root) {
 
 export function renderAiSearch(root) {
   root.innerHTML = '';
-  const verticalSel = h('select', { class: 'select' }, ...CANONICAL_VERTICALS.slice(0, 50).map(v => h('option', { value: v }, v)));
-  const countrySel = h('select', { class: 'select' }, ...COUNTRIES.map(c => h('option', { value: c.code }, c.label)));
-  const recencySel = h('select', { class: 'select' },
-    h('option', { value: '24h' }, '24h'),
-    h('option', { value: '7d', selected: 'selected' }, '7d'),
-    h('option', { value: '30d' }, '30d'),
+  const hero = h('div', { class: 'page-hero' },
+    h('h1', {}, 'AIO + AIM'),
+    h('p', {}, 'Select an industry and vertical to analyze trends, research insights, and content optimization opportunities.')
   );
-  const btn = h('button', { class: 'btn btn-primary' }, 'Find Trends & Insights');
-  const controls = h('div', { class: 'row' }, verticalSel, countrySel, recencySel, btn);
+  const industrySel = h('select', { class: 'select' },
+    h('option', { value: 'Finance' }, 'Finance'),
+    h('option', { value: 'Technology' }, 'Technology'),
+    h('option', { value: 'Health' }, 'Health'),
+    h('option', { value: 'Travel' }, 'Travel'),
+  );
+  const verticalSel = h('select', { class: 'select' },
+    ...CANONICAL_VERTICALS.slice(0, 20).map(v => h('option', { value: v }, v))
+  );
+  const runBtn = h('button', { class: 'btn btn-primary' }, 'Get Insights');
+  const controls = h('div', { class: 'row' },
+    h('div', { style: 'display:flex; flex-direction:column; gap:6px;' }, h('label', {}, 'Industry'), industrySel),
+    h('div', { style: 'display:flex; flex-direction:column; gap:6px;' }, h('label', {}, 'Vertical'), verticalSel),
+    runBtn
+  );
   const grid = h('div', { class: 'card-grid' });
-  const errorBox = h('div', { class: 'card', style: 'display:none' });
 
-  btn.addEventListener('click', async () => {
+  function ul(items) {
+    return h('ul', {}, ...items.map(t => h('li', {}, t)));
+  }
+
+  function renderInsights() {
     grid.innerHTML = '';
-    errorBox.style.display = 'none';
-    const vertical = verticalSel.value;
-    const country = countrySel.value;
-    const recency = recencySel.value;
-    try {
-      // TODO: fetchInsights currently throws until you deploy apps-script/Code.gs.
-      const res = await fetchInsights({ vertical, country, recency, limit: 8 });
-      (res.results || []).forEach((r) => {
-        grid.append(card(r.title || r.source || 'Result', r.snippet || r.url || ''));
-      });
-      if (grid.children.length === 0) grid.append(card('No results', 'Try different inputs.'));
-    } catch (err) {
-      errorBox.style.display = '';
-      errorBox.innerHTML = '';
-      errorBox.append(h('h3', {}, 'Connect the proxy'));
-      errorBox.append(h('p', {}, 'Deploy apps-script/Code.gs as a Web App and replace fetchInsights to call it. Showing demo items meanwhile.'));
-      ;['Trends', 'Reddit', 'Aggregator', 'Visuals'].forEach((k, i) => grid.append(card(`${k} #${i+1}`, 'Demo item')));
-    }
+    const v = verticalSel.value || 'Personal Finance';
+    const currentTrends = [
+      'Increased focus on financial literacy programs',
+      'Rise of automated savings tools',
+      'Growing interest in ESG investing',
+    ];
+    const redditFindings = [
+      'Most upvoted topics: budgeting tips, best practices for saving for retirement',
+      'Frequent questions on emergency funds and debt repayment strategies',
+    ];
+    const aggregatorInsights = [
+      'Competitors creating comprehensive guides on ESG investing',
+      'Investopedia recently updated its budgeting tools comparison page',
+    ];
+    const faqs = [
+      'How can I start investing with a small amount of money?',
+      'What are the benefits of automated savings?',
+      'How do I build an emergency fund?',
+      'What is ESG investing?',
+    ];
+    const pageUpdates = [
+      'Improve visibility of the budgeting tools section',
+      'Add a quick start guide on establishing an emergency fund',
+      'Update the ESG investing guide with new statistics',
+    ];
+    const recIdeas = [
+      'Chart illustrating steps to building an emergency fund',
+      'Infographic comparing automated savings tools',
+      'Illustration of ESG investment categories',
+    ];
+    grid.append(
+      card('Current Trends', ul(currentTrends)),
+      card('Reddit Research', h('div', {}, h('div', { class: 'muted' }, `Findings from the finds r/${v.toLowerCase().replace(/\s+/g,'')}`), ul(redditFindings))),
+      card('Aggregator/Competitor Insights', ul(aggregatorInsights)),
+      card('Suggested FAQs', ul(faqs)),
+      card('Page Update Suggestions', ul(pageUpdates)),
+    );
+    const left = h('div', { class: 'card' },
+      h('h3', {}, 'Steps to Build an Emergency Fund'),
+      h('div', { class: 'muted' }, 'Recommendations ideas'),
+      ul(recIdeas),
+    );
+    const right = h('div', { class: 'card' },
+      h('h3', {}, 'Steps to Build an Emergency Fund'),
+      h('button', { class: 'btn btn-outline btn-block' }, 'Set a target amount'),
+      h('button', { class: 'btn btn-outline btn-block' }, 'Track your expenses'),
+      h('button', { class: 'btn btn-outline btn-block' }, 'Start saving monthly'),
+      h('button', { class: 'btn btn-outline btn-block' }, 'Reach your goal')
+    );
+    grid.append(left, right);
+  }
+
+  runBtn.addEventListener('click', async () => {
+    const prev = runBtn.textContent;
+    runBtn.disabled = true; runBtn.textContent = 'Generating…';
+    await new Promise(r => setTimeout(r, 500));
+    renderInsights();
+    runBtn.disabled = false; runBtn.textContent = prev;
   });
-  root.append(section('AI Search', controls), errorBox, grid);
+
+  root.append(hero, section('AI Search', controls), grid);
 }
 
 export function renderArticles(root) {
