@@ -131,6 +131,9 @@ body {
 /* AISearch - single column stacked cards (force) */
 .ai-stack { display: flex !important; flex-direction: column !important; gap: 12px !important; }
 .ai-stack > .card { width: 100% !important; max-width: none !important; }
+
+/* AISearch - explicit grid rows on wide screens */
+.ai-rows { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
 .hidden { display: none !important; }
 .card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 14px; }
 .card h3 { margin: 0 0 6px 0; font-size: 16px; }
