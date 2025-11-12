@@ -181,7 +181,7 @@ export function renderAiSearch(root) {
       'Infographic comparing automated savings tools',
       'Illustration of ESG investment categories',
     ];
-    const r1 = h('div', { class: 'line-row' },
+    grid.append(
       card('Current Trends', ul(currentTrends)),
       h('div', { class: 'card' },
         h('h3', {}, 'Steps to Build an Emergency Fund'),
@@ -189,7 +189,6 @@ export function renderAiSearch(root) {
         ul(recIdeas),
       )
     );
-    grid.append(r1);
     const left = h('div', { class: 'card' },
       h('h3', {}, 'Steps to Build an Emergency Fund'),
       h('div', { class: 'muted' }, 'Recommendations ideas'),
@@ -202,11 +201,10 @@ export function renderAiSearch(root) {
       h('button', { class: 'btn btn-outline btn-block' }, 'Start saving monthly'),
       h('button', { class: 'btn btn-outline btn-block' }, 'Reach your goal')
     );
-    const r2 = h('div', { class: 'line-row' },
+    grid.append(
       card('Reddit Research', h('div', {}, h('div', { class: 'muted' }, `Findings from the finds r/${v.toLowerCase().replace(/\s+/g,'')}`), ul(redditFindings))),
       right
     );
-    grid.append(r2);
 
     // Visual enhancements: images and infographics
     const visualOut = h('div', { class: 'muted' }, 'No visuals generated yet.');
@@ -247,19 +245,11 @@ export function renderAiSearch(root) {
       h('div', { class: 'toolbar' }, createImgBtn, createInfBtn, regenImgBtn, regenInfBtn),
       h('div', {}, visualOut)
     );
-    const r3 = h('div', { class: 'line-row' },
+    grid.append(
       card('Aggregator/Competitor Insights', ul(aggregatorInsights)),
-      visualCard
-    );
-    grid.append(r3);
-
-    const r4 = h('div', { class: 'line-row' },
+      visualCard,
       card('Suggested FAQs', ul(faqs)),
-      card('Page Update Suggestions', ul(pageUpdates))
-    );
-    grid.append(r4);
-
-    const r5 = h('div', { class: 'line-row' },
+      card('Page Update Suggestions', ul(pageUpdates)),
       h('div', { class: 'card' },
         h('h3', {}, 'BTC content'),
         h('div', { class: 'toolbar' }, urlInput, pullBtn),
@@ -312,7 +302,6 @@ export function renderAiSearch(root) {
         output
       )
     );
-    grid.append(r5);
   }
 
   function updateReady() {
