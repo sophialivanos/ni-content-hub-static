@@ -14,6 +14,12 @@ let CANONICAL_VERTICALS = [
   'TV Services / Streaming','Vitamins','VoIP','VPN','Walk-in Tubs','Web Design','Website Builders','Weight Loss',
   'Invoicing'
 ];
+// Broad industry categories for AISearch
+let INDUSTRIES = [
+  'Finance','Insurance','Software / SaaS','Security','Telecom','Health & Wellness','Home Services','Education',
+  'E-commerce','Legal','Travel & Mobility','Entertainment / Gaming','Dating','Pets','Food & Meal','Gambling / Betting',
+  'Business Services','Marketing & CRM','Hosting & Web','Utilities'
+];
 let COUNTRIES = [
   { code:'AU', label:'Australia' },
   { code:'BE', label:'Belgium' },
@@ -156,22 +162,25 @@ export function renderAiSearch(root) {
   );
   const industrySel = h('select', { class: 'select' },
     h('option', { value: '' }, 'Select'),
-    h('option', { value: 'Finance' }, 'Finance'),
-    h('option', { value: 'Technology' }, 'Technology'),
-    h('option', { value: 'Health' }, 'Health'),
-    h('option', { value: 'Travel' }, 'Travel'),
+    ...INDUSTRIES.map(i => h('option', { value: i }, i))
   );
   const verticalSel = h('select', { class: 'select' },
     h('option', { value: '' }, 'Select'),
     ...CANONICAL_VERTICALS.map(v => h('option', { value: v }, v))
   );
+  const countrySel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select'),
+    ...COUNTRIES.map(c => h('option', { value: c.code }, c.code))
+  );
   const runBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Get Insights');
   const industryLabel = h('label', { class: 'label-required' }, 'Industry');
   const verticalLabel = h('label', { class: 'label-required' }, 'Vertical');
+  const countryLabel = h('label', {}, 'Country');
   const controls = h('div', { class: 'section' },
     h('div', { class: 'toolbar ai-controls' },
       industryLabel, industrySel,
       verticalLabel, verticalSel,
+      countryLabel, countrySel,
       runBtn
     )
   );
@@ -343,6 +352,7 @@ export function renderAiSearch(root) {
   }
   industrySel.addEventListener('change', updateReady);
   verticalSel.addEventListener('change', updateReady);
+  countrySel.addEventListener('change', () => {});
   updateReady();
 
   runBtn.addEventListener('click', async () => {
@@ -400,7 +410,7 @@ export function renderEvents(root) {
   const countriesLabel = h('label', {}, 'Countries (Optional)');
   const countriesSel = h('select', { class: 'select', style: 'width:160px' },
     h('option', { value: '' }, 'Select'),
-    ...COUNTRIES.map(c => h('option', { value: c.code }, c.label))
+    ...COUNTRIES.map(c => h('option', { value: c.code }, c.code))
   );
   const verticalLabel = h('label', {}, 'Vertical (Optional)');
   const verticalSel = h('select', { class: 'select', style: 'width:160px' },
