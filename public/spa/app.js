@@ -201,6 +201,85 @@ export function renderAiSearch(root) {
       h('button', { class: 'btn btn-outline btn-block' }, 'Reach your goal')
     );
     grid.append(left, right);
+
+    // Visual enhancements: images and infographics
+    const visualOut = h('div', { class: 'muted' }, 'No visuals generated yet.');
+    const createImgBtn = h('button', { class: 'btn btn-primary' }, 'Create image');
+    const createInfBtn = h('button', { class: 'btn btn-primary' }, 'Create infographic');
+    const regenImgBtn = h('button', { class: 'btn btn-primary' }, 'Regenerate image');
+    const regenInfBtn = h('button', { class: 'btn btn-primary' }, 'Regenerate infographic');
+    [createImgBtn, createInfBtn, regenImgBtn, regenInfBtn].forEach((btn) => {
+      btn.addEventListener('click', async () => {
+        const prev = btn.textContent;
+        btn.disabled = true; btn.textContent = `${prev.replace(/e?$/, '')}ing…`;
+        await new Promise(r => setTimeout(r, 600));
+        visualOut.textContent = `${prev} generated for ${v}.`;
+        btn.disabled = false; btn.textContent = prev;
+      });
+    });
+    grid.append(
+      h('div', { class: 'card' },
+        h('h3', {}, 'Suggested images and infographics for visual enhancement'),
+        h('div', { class: 'toolbar' }, createImgBtn, createInfBtn, regenImgBtn, regenInfBtn),
+        h('div', {}, visualOut)
+      )
+    );
+
+    // BTC content pull/paste
+    let btcContent = '';
+    const btcPreview = h('div', { class: 'muted' }, 'No BTC content loaded yet.');
+    const urlInput = h('input', { class: 'input', placeholder: 'Internal page URL (optional)' });
+    const pullBtn = h('button', { class: 'btn btn-primary' }, 'Pull BTC content');
+    const btcArea = h('textarea', { class: 'input', placeholder: 'Or paste BTC content here…', rows: '6' });
+    pullBtn.addEventListener('click', async () => {
+      pullBtn.disabled = true; const prev = pullBtn.textContent; pullBtn.textContent = 'Pulling…';
+      await new Promise(r => setTimeout(r, 600));
+      // Demo placeholder content
+      btcContent = `BTC excerpt for ${v} pulled from ${urlInput.value || 'internal source'}.`;
+      btcArea.value = btcContent;
+      btcPreview.textContent = btcContent;
+      pullBtn.disabled = false; pullBtn.textContent = prev;
+    });
+    btcArea.addEventListener('input', () => {
+      btcContent = btcArea.value;
+      btcPreview.textContent = btcContent ? btcContent : 'No BTC content loaded yet.';
+    });
+    grid.append(
+      h('div', { class: 'card' },
+        h('h3', {}, 'BTC content'),
+        h('div', { class: 'toolbar' }, urlInput, pullBtn),
+        btcArea,
+        h('div', { class: 'muted' }, 'Preview:'), btcPreview
+      )
+    );
+
+    // Create or optimise content based on BTC
+    const output = h('div', { class: 'muted' }, 'No output yet.');
+    const createBtn = h('button', { class: 'btn btn-primary' }, 'Create content');
+    const optimiseBtn = h('button', { class: 'btn btn-primary' }, 'Optimise content');
+    function fabricateCopy(kind) {
+      const base = btcContent || `Key points for ${v}: trending topics and user questions.`;
+      return `${kind} based on BTC and insights: ${base.slice(0, 160)}…`;
+    }
+    createBtn.addEventListener('click', async () => {
+      const prev = createBtn.textContent; createBtn.disabled = true; createBtn.textContent = 'Creating…';
+      await new Promise(r => setTimeout(r, 600));
+      output.textContent = fabricateCopy('Draft content');
+      createBtn.disabled = false; createBtn.textContent = prev;
+    });
+    optimiseBtn.addEventListener('click', async () => {
+      const prev = optimiseBtn.textContent; optimiseBtn.disabled = true; optimiseBtn.textContent = 'Optimising…';
+      await new Promise(r => setTimeout(r, 600));
+      output.textContent = fabricateCopy('Optimised content');
+      optimiseBtn.disabled = false; optimiseBtn.textContent = prev;
+    });
+    grid.append(
+      h('div', { class: 'card' },
+        h('h3', {}, 'Create or optimise content'),
+        h('div', { class: 'toolbar' }, createBtn, optimiseBtn),
+        output
+      )
+    );
   }
 
   function updateReady() {
