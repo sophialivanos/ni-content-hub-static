@@ -119,7 +119,7 @@ export function renderHome(root) {
 export function renderAiSearch(root) {
   root.innerHTML = '';
   const hero = h('div', { class: 'page-hero' },
-    h('h1', {}, 'AIO + AIM'),
+    h('h1', {}, 'AISearch (AIO & AIM)'),
     h('p', {}, 'Select an industry and vertical to analyze trends, research insights, and content optimization opportunities.')
   );
   const industrySel = h('select', { class: 'select' },
@@ -205,7 +205,7 @@ export function renderAiSearch(root) {
     runBtn.disabled = false; runBtn.textContent = prev;
   });
 
-  root.append(hero, section('AI Search', controls), grid);
+  root.append(hero, section('AISearch (AIO & AIM)', controls), grid);
 }
 
 export function renderArticles(root) {
