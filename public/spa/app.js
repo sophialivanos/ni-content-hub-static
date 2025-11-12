@@ -206,8 +206,7 @@ export function renderEvents(root) {
   const commercialChk = h('input', { type: 'checkbox', checked: 'checked' });
   const commercialWrap = h('label', { class: 'checkbox' }, commercialChk, 'Commercial only');
   const loadBtn = h('button', { class: 'btn btn-primary' }, 'Load');
-  const exportIcon = h('span', { 'aria-hidden': 'true', style: 'margin-right:6px' }, '🧾');
-  const exportBtn = h('button', { class: 'btn btn-primary' }, exportIcon, 'Export CSV');
+  const exportBtn = h('button', { class: 'btn btn-primary' }, '⬇ Export CSV');
   // (meta row removed per feedback)
   const grid = h('div', { class: 'card-grid' });
   const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'width:300px' });
