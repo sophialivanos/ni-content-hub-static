@@ -181,13 +181,15 @@ export function renderAiSearch(root) {
       'Infographic comparing automated savings tools',
       'Illustration of ESG investment categories',
     ];
-    grid.append(
+    const row1 = h('div', { class: 'line-row' });
+    row1.append(
       card('Current Trends', ul(currentTrends)),
       card('Reddit Research', h('div', {}, h('div', { class: 'muted' }, `Findings from the finds r/${v.toLowerCase().replace(/\s+/g,'')}`), ul(redditFindings))),
       card('Aggregator/Competitor Insights', ul(aggregatorInsights)),
       card('Suggested FAQs', ul(faqs)),
       card('Page Update Suggestions', ul(pageUpdates)),
     );
+    grid.append(row1);
     const left = h('div', { class: 'card' },
       h('h3', {}, 'Steps to Build an Emergency Fund'),
       h('div', { class: 'muted' }, 'Recommendations ideas'),
@@ -200,7 +202,8 @@ export function renderAiSearch(root) {
       h('button', { class: 'btn btn-outline btn-block' }, 'Start saving monthly'),
       h('button', { class: 'btn btn-outline btn-block' }, 'Reach your goal')
     );
-    grid.append(left, right);
+    const row2 = h('div', { class: 'line-row' });
+    row2.append(left, right);
 
     // Visual enhancements: images and infographics
     const visualOut = h('div', { class: 'muted' }, 'No visuals generated yet.');
@@ -236,7 +239,7 @@ export function renderAiSearch(root) {
       await withWorkingText(regenInfBtn, 'Regenerating infographic…', 'Regenerate infographic');
       visualOut.textContent = `Infographic regenerated for ${v}.`;
     });
-    grid.append(
+    row2.append(
       h('div', { class: 'card' },
         h('h3', {}, 'Suggested images and infographics for visual enhancement'),
         h('div', { class: 'toolbar' }, createImgBtn, createInfBtn, regenImgBtn, regenInfBtn),
@@ -263,7 +266,7 @@ export function renderAiSearch(root) {
       btcContent = btcArea.value;
       btcPreview.textContent = btcContent ? btcContent : 'No BTC content loaded yet.';
     });
-    grid.append(
+    row2.append(
       h('div', { class: 'card' },
         h('h3', {}, 'BTC content'),
         h('div', { class: 'toolbar' }, urlInput, pullBtn),
@@ -292,13 +295,14 @@ export function renderAiSearch(root) {
       output.textContent = fabricateCopy('Optimised content');
       optimiseBtn.disabled = false; optimiseBtn.textContent = prev;
     });
-    grid.append(
+    row2.append(
       h('div', { class: 'card' },
         h('h3', {}, 'Create or optimise content'),
         h('div', { class: 'toolbar' }, createBtn, optimiseBtn),
         output
       )
     );
+    grid.append(row2);
   }
 
   function updateReady() {
