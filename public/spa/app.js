@@ -244,8 +244,8 @@ export function renderEvents(root) {
     const vertical = verticalSel.value || '';
     const commercialOnly = !!commercialChk.checked;
     loadBtn.disabled = true; loadBtn.textContent = 'Loading…';
-    // small delay so users can see the loading state
-    await new Promise(r => setTimeout(r, 120));
+    // brief delay so the loading state is visible
+    await new Promise(r => setTimeout(r, 500));
     try {
       const { events } = computeSeasonalEvents({ month, countries: countries.length ? countries : COUNTRIES.map(c=>c.code), commercialOnly });
       lastEvents = events.map(ev => {
@@ -316,7 +316,7 @@ export function renderEvents(root) {
     const prevText = exportBtn.textContent;
     exportBtn.disabled = true;
     exportBtn.textContent = 'Exporting…';
-    await new Promise(r => setTimeout(r, 120));
+    await new Promise(r => setTimeout(r, 500));
     const month = (months.indexOf(monthSel.value) + 1) || (new Date().getMonth() + 1);
     const selectedVertical = verticalSel.value || '';
     const events = lastEvents.filter(ev => ev._relevant || !selectedVertical);
@@ -360,7 +360,7 @@ export function renderEvents(root) {
     searchBtn.disabled = true;
     const prevText = searchBtn.textContent;
     searchBtn.textContent = 'Searching…';
-    await new Promise(r => setTimeout(r, 120));
+    await new Promise(r => setTimeout(r, 500));
     renderList();
     searchBtn.disabled = false;
     searchBtn.textContent = prevText;

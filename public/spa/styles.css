@@ -111,6 +111,7 @@ body {
 .btn:hover { background: rgba(148,163,184,.08); }
 .btn-primary { background: var(--primary); border-color: var(--primary); color: white; }
 .btn-primary:hover { background: var(--primary-900); }
+.btn:disabled, .btn[disabled] { opacity: .6; cursor: not-allowed; }
 .btn-ghost { border-color: transparent; background: transparent; }
 
 /* Inputs */
