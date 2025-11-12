@@ -206,8 +206,8 @@ export function renderAiSearch(root) {
     const visualOut = h('div', { class: 'muted' }, 'No visuals generated yet.');
     const createImgBtn = h('button', { class: 'btn btn-primary' }, 'Create image');
     const createInfBtn = h('button', { class: 'btn btn-primary' }, 'Create infographic');
-    const regenImgBtn = h('button', { class: 'btn btn-primary', style: 'display:none' }, 'Regenerate image');
-    const regenInfBtn = h('button', { class: 'btn btn-primary', style: 'display:none' }, 'Regenerate infographic');
+    const regenImgBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate image');
+    const regenInfBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate infographic');
 
     function withWorkingText(btn, workingText, doneText) {
       return (async () => {
@@ -221,12 +221,12 @@ export function renderAiSearch(root) {
     createImgBtn.addEventListener('click', async () => {
       await withWorkingText(createImgBtn, 'Creating image…', 'Create image');
       visualOut.textContent = `Image created for ${v}.`;
-      regenImgBtn.style.display = '';
+      regenImgBtn.classList.remove('hidden');
     });
     createInfBtn.addEventListener('click', async () => {
       await withWorkingText(createInfBtn, 'Creating infographic…', 'Create infographic');
       visualOut.textContent = `Infographic created for ${v}.`;
-      regenInfBtn.style.display = '';
+      regenInfBtn.classList.remove('hidden');
     });
     regenImgBtn.addEventListener('click', async () => {
       await withWorkingText(regenImgBtn, 'Regenerating image…', 'Regenerate image');
