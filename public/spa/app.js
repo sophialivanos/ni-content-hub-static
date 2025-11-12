@@ -104,7 +104,7 @@ function section(title, controlsEl) {
 export function renderHome(root) {
   root.innerHTML = '';
   const q = h('input', { class: 'input', placeholder: 'Search cards…' });
-  const grid = h('div', { class: 'card-grid' });
+  const grid = h('div', { class: 'card-grid ai-grid' });
   const data = Array.from({ length: 8 }).map((_, i) => ({ t: `Home Card ${i+1}`, d: 'Demo content' }));
   function renderList() {
     grid.innerHTML = '';
@@ -206,16 +206,35 @@ export function renderAiSearch(root) {
     const visualOut = h('div', { class: 'muted' }, 'No visuals generated yet.');
     const createImgBtn = h('button', { class: 'btn btn-primary' }, 'Create image');
     const createInfBtn = h('button', { class: 'btn btn-primary' }, 'Create infographic');
-    const regenImgBtn = h('button', { class: 'btn btn-primary' }, 'Regenerate image');
-    const regenInfBtn = h('button', { class: 'btn btn-primary' }, 'Regenerate infographic');
-    [createImgBtn, createInfBtn, regenImgBtn, regenInfBtn].forEach((btn) => {
-      btn.addEventListener('click', async () => {
+    const regenImgBtn = h('button', { class: 'btn btn-primary', style: 'display:none' }, 'Regenerate image');
+    const regenInfBtn = h('button', { class: 'btn btn-primary', style: 'display:none' }, 'Regenerate infographic');
+
+    function withWorkingText(btn, workingText, doneText) {
+      return (async () => {
         const prev = btn.textContent;
-        btn.disabled = true; btn.textContent = `${prev.replace(/e?$/, '')}ing…`;
+        btn.disabled = true; btn.textContent = workingText;
         await new Promise(r => setTimeout(r, 600));
-        visualOut.textContent = `${prev} generated for ${v}.`;
-        btn.disabled = false; btn.textContent = prev;
-      });
+        if (doneText) btn.textContent = doneText; else btn.textContent = prev;
+        btn.disabled = false;
+      })();
+    }
+    createImgBtn.addEventListener('click', async () => {
+      await withWorkingText(createImgBtn, 'Creating image…', 'Create image');
+      visualOut.textContent = `Image created for ${v}.`;
+      regenImgBtn.style.display = '';
+    });
+    createInfBtn.addEventListener('click', async () => {
+      await withWorkingText(createInfBtn, 'Creating infographic…', 'Create infographic');
+      visualOut.textContent = `Infographic created for ${v}.`;
+      regenInfBtn.style.display = '';
+    });
+    regenImgBtn.addEventListener('click', async () => {
+      await withWorkingText(regenImgBtn, 'Regenerating image…', 'Regenerate image');
+      visualOut.textContent = `Image regenerated for ${v}.`;
+    });
+    regenInfBtn.addEventListener('click', async () => {
+      await withWorkingText(regenInfBtn, 'Regenerating infographic…', 'Regenerate infographic');
+      visualOut.textContent = `Infographic regenerated for ${v}.`;
     });
     grid.append(
       h('div', { class: 'card' },
