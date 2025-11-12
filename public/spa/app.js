@@ -104,7 +104,10 @@ function section(title, controlsEl) {
 export function renderHome(root) {
   root.innerHTML = '';
   const q = h('input', { class: 'input', placeholder: 'Search cards…' });
-  const grid = h('div', { class: 'card-grid ai-rows' });
+  const grid = h('div', {
+    class: 'card-grid ai-rows',
+    style: 'display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px'
+  });
   const data = Array.from({ length: 8 }).map((_, i) => ({ t: `Home Card ${i+1}`, d: 'Demo content' }));
   function renderList() {
     grid.innerHTML = '';
