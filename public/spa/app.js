@@ -1,10 +1,39 @@
 // Local, dependency-free fallbacks so the app works even if imports fail
 let CANONICAL_VERTICALS = [
-  'Online Banking','VPN','Website Builders','Sports Betting','Online Casino','Solar','Credit Cards','Personal Loans'
+  'Accounting Software','Anti Virus','Background Checks','Banking','Braces','Business Applications Hub',
+  'Business Insurance','Business Loans','Business VoIP','Car Insurance','Car Loans','Car Selling','Car Warranty',
+  'CCP','Contact Lenses','Credit Cards','CRM','Cyber Security Hub','Data Analysis Software','Dating',
+  'Debt Consolidation','Debt Funnel','DNA','E-commerce','ED','Editing Apps','Flower Delivery','Gaming',
+  'Gold and Silver','Hair Loss','Hearing Aid','Home Insurance','Home Security','Home Warranty','Hosting',
+  'ID Theft','In-App','Internet Providers','Investments','Lab Grown Diamonds','Language Learning','Legal Services',
+  'Life Insurance','LLC','Marketing Tools Hub','Meal Delivery','Medical Alerts','Mobile Plans','Money Transfer',
+  'Mortgage','Mortgage Loans','Moving Companies','Online Banking','Online Degrees','Online Therapy','Parental Control',
+  'Password Manager','Payroll','Pet Food Delivery','Pet Insurance','Pet Subscription Boxes','POS','PGR',
+  'Printing Services','Private Student Loans','Project Management','Psychic Reading','Remote Access','Resume Builders',
+  'Solar','Student Loans','Tax Relief','Tax Software','Tech Bootcamps','Teeth Whitening','Telecom',
+  'TV Services / Streaming','Vitamins','VoIP','VPN','Walk-in Tubs','Web Design','Website Builders','Weight Loss',
+  'Invoicing'
 ];
 let COUNTRIES = [
-  { code:'GB', label:'United Kingdom' }, { code:'US', label:'United States' }, { code:'IE', label:'Ireland' },
-  { code:'CA', label:'Canada' }, { code:'FR', label:'France' }, { code:'NL', label:'Netherlands' }
+  { code:'AU', label:'Australia' },
+  { code:'BE', label:'Belgium' },
+  { code:'BR', label:'Brazil' },
+  { code:'CA', label:'Canada' },
+  { code:'DE', label:'Germany' },
+  { code:'ES', label:'Spain' },
+  { code:'FR', label:'France' },
+  { code:'GR', label:'Greece' },
+  { code:'IE', label:'Ireland' },
+  { code:'IT', label:'Italy' },
+  { code:'MX', label:'Mexico' },
+  { code:'NL', label:'Netherlands' },
+  { code:'PT', label:'Portugal' },
+  { code:'RO', label:'Romania' },
+  { code:'RU', label:'Russia' },
+  { code:'SE', label:'Sweden' },
+  { code:'SP', label:'Spain (SP)' },
+  { code:'UK', label:'United Kingdom' },
+  { code:'US', label:'United States' }
 ];
 let computeSeasonalEvents = ({ month, countries }) => ({ events: [] });
 let fetchInsights = async () => { throw new Error('proxy not wired'); };
@@ -134,7 +163,7 @@ export function renderAiSearch(root) {
   );
   const verticalSel = h('select', { class: 'select' },
     h('option', { value: '' }, 'Select'),
-    ...CANONICAL_VERTICALS.slice(0, 20).map(v => h('option', { value: v }, v))
+    ...CANONICAL_VERTICALS.map(v => h('option', { value: v }, v))
   );
   const runBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Get Insights');
   const industryLabel = h('label', { class: 'label-required' }, 'Industry');
