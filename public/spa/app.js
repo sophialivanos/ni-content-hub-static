@@ -245,19 +245,8 @@ export function renderAiSearch(root) {
       h('div', { class: 'toolbar' }, createImgBtn, createInfBtn, regenImgBtn, regenInfBtn),
       h('div', {}, visualOut)
     );
-    grid.append(
-      card('Aggregator/Competitor Insights', ul(aggregatorInsights)),
-      visualCard,
-      card('Suggested FAQs', ul(faqs)),
-      card('Page Update Suggestions', ul(pageUpdates)),
-      h('div', { class: 'card' },
-        h('h3', {}, 'BTC content'),
-        h('div', { class: 'toolbar' }, urlInput, pullBtn),
-        btcArea,
-        h('div', { class: 'muted' }, 'Preview:'), btcPreview
-      ),
 
-    // BTC content pull/paste
+    // BTC content pull/paste (declare BEFORE using in card layout)
     let btcContent = '';
     const btcPreview = h('div', { class: 'muted' }, 'No BTC content loaded yet.');
     const urlInput = h('input', { class: 'input', placeholder: 'Internal page URL (optional)' });
@@ -276,7 +265,7 @@ export function renderAiSearch(root) {
       btcContent = btcArea.value;
       btcPreview.textContent = btcContent ? btcContent : 'No BTC content loaded yet.';
     });
-      // Create or optimise content based on BTC
+    // Create or optimise content based on BTC
     const output = h('div', { class: 'muted' }, 'No output yet.');
     const createBtn = h('button', { class: 'btn btn-primary' }, 'Create content');
     const optimiseBtn = h('button', { class: 'btn btn-primary' }, 'Optimise content');
@@ -296,6 +285,18 @@ export function renderAiSearch(root) {
       output.textContent = fabricateCopy('Optimised content');
       optimiseBtn.disabled = false; optimiseBtn.textContent = prev;
     });
+    // Append remaining cards in single-column order
+    grid.append(
+      card('Aggregator/Competitor Insights', ul(aggregatorInsights)),
+      visualCard,
+      card('Suggested FAQs', ul(faqs)),
+      card('Page Update Suggestions', ul(pageUpdates)),
+      h('div', { class: 'card' },
+        h('h3', {}, 'BTC content'),
+        h('div', { class: 'toolbar' }, urlInput, pullBtn),
+        btcArea,
+        h('div', { class: 'muted' }, 'Preview:'), btcPreview
+      ),
       h('div', { class: 'card' },
         h('h3', {}, 'Create or optimise content'),
         h('div', { class: 'toolbar' }, createBtn, optimiseBtn),
