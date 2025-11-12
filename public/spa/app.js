@@ -181,13 +181,15 @@ export function renderAiSearch(root) {
       'Infographic comparing automated savings tools',
       'Illustration of ESG investment categories',
     ];
-    grid.append(
+    const r1 = h('div', { class: 'line-row' },
       card('Current Trends', ul(currentTrends)),
-      card('Reddit Research', h('div', {}, h('div', { class: 'muted' }, `Findings from the finds r/${v.toLowerCase().replace(/\s+/g,'')}`), ul(redditFindings))),
-      card('Aggregator/Competitor Insights', ul(aggregatorInsights)),
-      card('Suggested FAQs', ul(faqs)),
-      card('Page Update Suggestions', ul(pageUpdates)),
+      h('div', { class: 'card' },
+        h('h3', {}, 'Steps to Build an Emergency Fund'),
+        h('div', { class: 'muted' }, 'Recommendations ideas'),
+        ul(recIdeas),
+      )
     );
+    grid.append(r1);
     const left = h('div', { class: 'card' },
       h('h3', {}, 'Steps to Build an Emergency Fund'),
       h('div', { class: 'muted' }, 'Recommendations ideas'),
@@ -200,7 +202,11 @@ export function renderAiSearch(root) {
       h('button', { class: 'btn btn-outline btn-block' }, 'Start saving monthly'),
       h('button', { class: 'btn btn-outline btn-block' }, 'Reach your goal')
     );
-    grid.append(left, right);
+    const r2 = h('div', { class: 'line-row' },
+      card('Reddit Research', h('div', {}, h('div', { class: 'muted' }, `Findings from the finds r/${v.toLowerCase().replace(/\s+/g,'')}`), ul(redditFindings))),
+      right
+    );
+    grid.append(r2);
 
     // Visual enhancements: images and infographics
     const visualOut = h('div', { class: 'muted' }, 'No visuals generated yet.');
@@ -236,13 +242,30 @@ export function renderAiSearch(root) {
       await withWorkingText(regenInfBtn, 'Regenerating infographic…', 'Regenerate infographic');
       visualOut.textContent = `Infographic regenerated for ${v}.`;
     });
-    grid.append(
-      h('div', { class: 'card' },
-        h('h3', {}, 'Suggested images and infographics for visual enhancement'),
-        h('div', { class: 'toolbar' }, createImgBtn, createInfBtn, regenImgBtn, regenInfBtn),
-        h('div', {}, visualOut)
-      )
+    const visualCard = h('div', { class: 'card' },
+      h('h3', {}, 'Suggested images and infographics for visual enhancement'),
+      h('div', { class: 'toolbar' }, createImgBtn, createInfBtn, regenImgBtn, regenInfBtn),
+      h('div', {}, visualOut)
     );
+    const r3 = h('div', { class: 'line-row' },
+      card('Aggregator/Competitor Insights', ul(aggregatorInsights)),
+      visualCard
+    );
+    grid.append(r3);
+
+    const r4 = h('div', { class: 'line-row' },
+      card('Suggested FAQs', ul(faqs)),
+      card('Page Update Suggestions', ul(pageUpdates))
+    );
+    grid.append(r4);
+
+    const r5 = h('div', { class: 'line-row' },
+      h('div', { class: 'card' },
+        h('h3', {}, 'BTC content'),
+        h('div', { class: 'toolbar' }, urlInput, pullBtn),
+        btcArea,
+        h('div', { class: 'muted' }, 'Preview:'), btcPreview
+      ),
 
     // BTC content pull/paste
     let btcContent = '';
@@ -263,16 +286,7 @@ export function renderAiSearch(root) {
       btcContent = btcArea.value;
       btcPreview.textContent = btcContent ? btcContent : 'No BTC content loaded yet.';
     });
-    grid.append(
-      h('div', { class: 'card' },
-        h('h3', {}, 'BTC content'),
-        h('div', { class: 'toolbar' }, urlInput, pullBtn),
-        btcArea,
-        h('div', { class: 'muted' }, 'Preview:'), btcPreview
-      )
-    );
-
-    // Create or optimise content based on BTC
+      // Create or optimise content based on BTC
     const output = h('div', { class: 'muted' }, 'No output yet.');
     const createBtn = h('button', { class: 'btn btn-primary' }, 'Create content');
     const optimiseBtn = h('button', { class: 'btn btn-primary' }, 'Optimise content');
@@ -292,13 +306,13 @@ export function renderAiSearch(root) {
       output.textContent = fabricateCopy('Optimised content');
       optimiseBtn.disabled = false; optimiseBtn.textContent = prev;
     });
-    grid.append(
       h('div', { class: 'card' },
         h('h3', {}, 'Create or optimise content'),
         h('div', { class: 'toolbar' }, createBtn, optimiseBtn),
         output
       )
     );
+    grid.append(r5);
   }
 
   function updateReady() {
