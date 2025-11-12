@@ -119,7 +119,7 @@ export function renderHome(root) {
 export function renderAiSearch(root) {
   root.innerHTML = '';
   const hero = h('div', { class: 'page-hero' },
-    h('h1', { style: 'font-size:18px;font-weight:400' }, 'AISearch (AIO & AIM)'),
+    h('h1', { style: 'font-size:18px;font-weight:400' }, h('strong', {}, 'AISearch'), ' (AIO & AIM)'),
     h('p', {}, 'Select an industry and vertical to analyse trends, research insights, and content optimisation opportunities.')
   );
   const industrySel = h('select', { class: 'select' },
