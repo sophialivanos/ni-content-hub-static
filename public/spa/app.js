@@ -206,7 +206,8 @@ export function renderEvents(root) {
   const commercialChk = h('input', { type: 'checkbox', checked: 'checked' });
   const commercialWrap = h('label', { class: 'checkbox' }, commercialChk, 'Commercial only');
   const loadBtn = h('button', { class: 'btn btn-primary' }, 'Load');
-  const exportBtn = h('button', { class: 'btn btn-primary' }, '⬇ Export CSV');
+  const exportIcon = h('span', { 'aria-hidden': 'true', style: 'margin-right:6px' }, '🧾');
+  const exportBtn = h('button', { class: 'btn btn-primary' }, exportIcon, 'Export CSV');
   // (meta row removed per feedback)
   const grid = h('div', { class: 'card-grid' });
   const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'width:300px' });
@@ -243,6 +244,8 @@ export function renderEvents(root) {
     const vertical = verticalSel.value || '';
     const commercialOnly = !!commercialChk.checked;
     loadBtn.disabled = true; loadBtn.textContent = 'Loading…';
+    // small delay so users can see the loading state
+    await new Promise(r => setTimeout(r, 120));
     try {
       const { events } = computeSeasonalEvents({ month, countries: countries.length ? countries : COUNTRIES.map(c=>c.code), commercialOnly });
       lastEvents = events.map(ev => {
@@ -309,10 +312,11 @@ export function renderEvents(root) {
   }
 
   loadBtn.addEventListener('click', doLoad);
-  exportBtn.addEventListener('click', () => {
+  exportBtn.addEventListener('click', async () => {
     const prevText = exportBtn.textContent;
     exportBtn.disabled = true;
     exportBtn.textContent = 'Exporting…';
+    await new Promise(r => setTimeout(r, 120));
     const month = (months.indexOf(monthSel.value) + 1) || (new Date().getMonth() + 1);
     const selectedVertical = verticalSel.value || '';
     const events = lastEvents.filter(ev => ev._relevant || !selectedVertical);
@@ -352,10 +356,14 @@ export function renderEvents(root) {
     h('div', { class: 'toolbar export-row' }, exportBtn)
   );
 
-  searchBtn.addEventListener('click', () => {
-    searchBtn.disabled = true; searchBtn.textContent = 'Searching…';
+  searchBtn.addEventListener('click', async () => {
+    searchBtn.disabled = true;
+    const prevText = searchBtn.textContent;
+    searchBtn.textContent = 'Searching…';
+    await new Promise(r => setTimeout(r, 120));
     renderList();
-    searchBtn.disabled = false; searchBtn.textContent = 'Search';
+    searchBtn.disabled = false;
+    searchBtn.textContent = prevText;
   });
 
   // Render main content
