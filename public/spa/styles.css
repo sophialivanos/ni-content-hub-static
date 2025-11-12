@@ -128,9 +128,9 @@ body {
 
 /* Cards */
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
-/* AISearch - single column stacked cards */
-.ai-stack { display: flex; flex-direction: column; gap: 12px; }
-.ai-stack > .card { width: 100%; }
+/* AISearch - single column stacked cards (force) */
+.ai-stack { display: flex !important; flex-direction: column !important; gap: 12px !important; }
+.ai-stack > .card { width: 100% !important; max-width: none !important; }
 .hidden { display: none !important; }
 .card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 14px; }
 .card h3 { margin: 0 0 6px 0; font-size: 16px; }
