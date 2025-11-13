@@ -459,26 +459,247 @@ export function renderAiSearch(root) {
 
 export function renderArticles(root) {
   root.innerHTML = '';
-  const select = h('select', { class: 'select' },
-    h('option', { value: 'all' }, 'All categories'),
-    h('option', { value: 'howto' }, 'How-to'),
-    h('option', { value: 'comparison' }, 'Comparisons')
+  const hero = h('div', { class: 'page-hero' },
+    h('h1', {}, 'Article Creation'),
+    h('p', {}, 'Generate trend-based article suggestions and customise your inputs and outputs.')
   );
-  const grid = h('div', { class: 'card-grid' });
-  const data = [
-    { t: 'How to budget', c: 'howto' },
-    { t: 'Best VPNs', c: 'comparison' },
-    { t: 'Install solar panels', c: 'howto' },
-    { t: 'Hosting vs SaaS', c: 'comparison' },
-  ];
-  function renderList() {
-    grid.innerHTML = '';
-    const val = select.value;
-    data.filter(x => val === 'all' || x.c === val).forEach(x => grid.append(card(x.t, `Category: ${x.c}`)));
+
+  // Modes
+  const MODE_EVENT = 'event';
+  const MODE_MANUAL = 'manual';
+  let currentMode = MODE_MANUAL;
+  const eventTab = h('button', { class: 'tab' }, 'Event-triggered');
+  const manualTab = h('button', { class: 'tab active' }, 'Manual input');
+  function setMode(mode) {
+    currentMode = mode;
+    if (mode === MODE_EVENT) {
+      eventTab.classList.add('active'); manualTab.classList.remove('active');
+      eventRow.style.display = ''; manualRow.style.display = 'none';
+    } else {
+      manualTab.classList.add('active'); eventTab.classList.remove('active');
+      manualRow.style.display = ''; eventRow.style.display = 'none';
+    }
   }
-  select.addEventListener('change', renderList);
-  renderList();
-  root.append(section('Articles', select), grid);
+  eventTab.addEventListener('click', () => setMode(MODE_EVENT));
+  manualTab.addEventListener('click', () => setMode(MODE_MANUAL));
+  const tabs = h('div', { class: 'tabs' }, eventTab, manualTab);
+
+  // Event-triggered row
+  const sampleEvents = [
+    'Black Friday deals in Banking',
+    'Tax season guide',
+    'Home security holiday checklist',
+    'Back-to-school tech essentials'
+  ];
+  const eventSel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select an event'),
+    ...sampleEvents.map(e => h('option', { value: e }, e))
+  );
+  const eventRow = h('div', { class: 'section', style: '' },
+    h('div', { class: 'row' },
+      h('label', { class: 'label-required' }, 'Event'),
+      eventSel
+    )
+  );
+
+  // Manual input row
+  const industrySel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select industry'),
+    ...INDUSTRIES.map(i => h('option', { value: i }, i))
+  );
+  const verticalSel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select vertical')
+  );
+  const countrySel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select country'),
+    ...COUNTRIES.map(c => h('option', { value: c.code }, c.label))
+  );
+  function updateVerticalsFromIndustryArticles() {
+    const ind = industrySel.value;
+    const verts = (INDUSTRY_TO_VERTICALS[ind] || CANONICAL_VERTICALS).slice(0, 20);
+    verticalSel.innerHTML = '';
+    verticalSel.append(h('option', { value: '' }, 'Select vertical'));
+    verts.forEach(v => verticalSel.append(h('option', { value: v }, v)));
+  }
+  industrySel.addEventListener('change', updateVerticalsFromIndustryArticles);
+  const manualRow = h('div', { class: 'section' },
+    h('div', { class: 'row' },
+      h('label', { class: 'label-required' }, 'Industry'), industrySel,
+      h('label', { class: 'label-required' }, 'Vertical'), verticalSel,
+      h('label', {}, 'Country'), countrySel
+    )
+  );
+  setMode(MODE_MANUAL);
+
+  // Background input
+  const aioBrief = h('textarea', { class: 'input', rows: '3', placeholder: 'AIO research + brief' });
+  const articleBrief = h('textarea', { class: 'input', rows: '2', placeholder: 'Ido article brief' });
+  const bgSection = h('div', { class: 'section' },
+    h('div', { class: 'row' }, h('label', {}, 'AIO Brief')), aioBrief,
+    h('div', { class: 'row' }, h('label', {}, 'Article Brief')), articleBrief
+  );
+
+  // Customisation
+  const tones = ['Warm & conversational','Slightly more formal','Upbeat and cheeky','Inspiring & Empowering','Gentle and warm','Informative and direct','Emotional and inspiring','Confident, expert, factual (Authoritative)','Warm, understanding, emotionally in-tune (Empathetic)','Casual, relaxed, friendly (Conversational)','Uplifting, motivational, purpose-driven (Inspiring)','Polished, neutral, minimal fluff (Professional)','Humorous, clever, youth-targeted (Witty/Playful)','Gentle, comforting, calm and grounded (Reassuring)','Stats-focused, analytical, objective (Data-driven)'];
+  const styles = ['Narrative / Story-Driven','Conversational','Instructional / How-To','Persuasive / Conversion-Oriented','Analytical / Data-Led','Editorial / Journalistic','Narrative + Persuasive','Instructional + Conversational','Analytical + Third-Person','Narrative + First-Person','Poetic + Journalistic','Comparative + Listicle'];
+  const toneSel = h('select', { class: 'select' }, h('option', { value: '' }, 'Tone'), ...tones.map(t => h('option', { value: t }, t)));
+  const styleSel = h('select', { class: 'select' }, h('option', { value: '' }, 'Style'), ...styles.map(s => h('option', { value: s }, s)));
+  const bannedWords = h('input', { class: 'input', placeholder: 'Banned words' });
+  const keywordsIn = h('input', { class: 'input', placeholder: 'Keywords to include' });
+  const keywordsOut = h('input', { class: 'input', placeholder: 'Keywords to avoid' });
+  const customSection = h('div', { class: 'section' },
+    h('div', { class: 'row' },
+      h('label', {}, 'Banned words'), bannedWords,
+      h('label', {}, 'Tone'), toneSel,
+      h('label', {}, 'Style'), styleSel
+    ),
+    h('div', { class: 'row' },
+      h('label', {}, 'Keywords to include'), keywordsIn,
+      h('label', {}, 'Keywords to avoid'), keywordsOut
+    )
+  );
+
+  // Step 1: Get trends + insights
+  const insightsList = h('ul', {});
+  const getTrendsBtn = h('button', { class: 'btn btn-primary' }, 'Get Trends + Insights');
+  getTrendsBtn.addEventListener('click', async () => {
+    getTrendsBtn.disabled = true; const prev = getTrendsBtn.textContent; getTrendsBtn.textContent = 'Generating…';
+    await new Promise(r => setTimeout(r, 600));
+    const base = currentMode === MODE_EVENT ? eventSel.value || 'Selected event' : (verticalSel.value || 'Selected vertical');
+    const items = [
+      `Market activity rising around ${base.toLowerCase()}`,
+      `User search queries spike for ${base.toLowerCase()}`,
+      `Competitive content gaps present opportunities`,
+      `Common user objections and questions identified`,
+      `Fresh angles suitable for ${styleSel.value || 'your chosen style'}`
+    ];
+    insightsList.innerHTML = '';
+    items.forEach(x => insightsList.append(h('li', {}, x)));
+    getTrendsBtn.textContent = prev; getTrendsBtn.disabled = false;
+    headlinesCard.style.display = '';
+  });
+  const insightsCard = h('div', { class: 'card full' },
+    h('h3', {}, 'Step 1 — Trends & Insights'),
+    h('div', { class: 'toolbar' }, getTrendsBtn),
+    h('div', {}, insightsList)
+  );
+
+  // Step 2: Create headlines
+  const headlineList = h('div', {});
+  const selectedHeadline = h('input', { class: 'input', placeholder: 'Selected headline (editable)' });
+  const regenHeadlinesBtn = h('button', { class: 'btn btn-outline' }, 'Regenerate headlines');
+  const createHeadlinesBtn = h('button', { class: 'btn btn-primary' }, 'Create Headlines');
+  function fabricateHeadlines() {
+    const base = (verticalSel.value || eventSel.value || 'Your Topic').replace(/\s+/g, ' ');
+    return [
+      `The Future of ${base}: Trends You Should Know`,
+      `How ${base} Is Transforming Consumer Decision-Making`,
+      `${base}: 5 Key Insights From Recent Data`,
+      `Beginner’s Guide: Getting Started with ${base}`,
+      `Expert Tips to Optimise Your Strategy for ${base}`
+    ];
+  }
+  function renderHeadlines() {
+    headlineList.innerHTML = '';
+    fabricateHeadlines().forEach((hln, i) => {
+      const id = `h-${i}-${Date.now()}`;
+      const radio = h('input', { type: 'radio', name: 'headline', id });
+      radio.addEventListener('change', () => { selectedHeadline.value = hln; });
+      const label = h('label', { for: id, style: 'cursor:pointer' }, hln);
+      headlineList.append(h('div', { class: 'row' }, radio, label));
+    });
+  }
+  createHeadlinesBtn.addEventListener('click', async () => {
+    createHeadlinesBtn.disabled = true; const prev = createHeadlinesBtn.textContent; createHeadlinesBtn.textContent = 'Creating…';
+    await new Promise(r => setTimeout(r, 500));
+    renderHeadlines();
+    if (!selectedHeadline.value) selectedHeadline.value = fabricateHeadlines()[0];
+    createHeadlinesBtn.textContent = prev; createHeadlinesBtn.disabled = false;
+    articleCard.style.display = '';
+  });
+  regenHeadlinesBtn.addEventListener('click', () => renderHeadlines());
+  const headlinesCard = h('div', { class: 'card full', style: 'display:none' },
+    h('h3', {}, 'Step 2 — Create Headlines'),
+    h('div', { class: 'toolbar' }, createHeadlinesBtn, regenHeadlinesBtn),
+    headlineList,
+    h('div', { class: 'row', style: 'margin-top:10px' }, selectedHeadline)
+  );
+
+  // Step 3: Generate article (editable) + export + visuals
+  const articleArea = h('textarea', { class: 'input', rows: '12', placeholder: 'Generated article will appear here. You can edit freely.' });
+  const exportBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, '⬇ Export doc');
+  function exportDocFile(filename, content) {
+    try {
+      const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 300);
+    } catch {}
+  }
+  exportBtn.addEventListener('click', () => {
+    if (!(articleArea.value || '').trim()) return;
+    const name = (selectedHeadline.value || 'article').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-+|-+$/g,'');
+    exportDocFile(`${name || 'article'}.doc`, articleArea.value);
+  });
+  const genArticleBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Generate Article');
+  function updateArticleEnabled() {
+    genArticleBtn.disabled = !(selectedHeadline.value || '').trim();
+    exportBtn.disabled = !(articleArea.value || '').trim();
+  }
+  selectedHeadline.addEventListener('input', updateArticleEnabled);
+  articleArea.addEventListener('input', updateArticleEnabled);
+  genArticleBtn.addEventListener('click', async () => {
+    genArticleBtn.disabled = true; const prev = genArticleBtn.textContent; genArticleBtn.textContent = 'Generating…';
+    await new Promise(r => setTimeout(r, 700));
+    const head = selectedHeadline.value || 'Your Article';
+    const tone = toneSel.value || 'Professional';
+    const style = styleSel.value || 'Conversational';
+    articleArea.value =
+`# ${head}
+
+Introduction — In this ${style.toLowerCase()} piece, we explore the latest developments with a ${tone.toLowerCase()} tone.
+
+- Trend 1: Context and why it matters
+- Trend 2: User needs and search intent
+- Trend 3: Actionable recommendations
+
+Conclusion — Clear next steps and a concise wrap-up.`;
+    genArticleBtn.textContent = prev; genArticleBtn.disabled = false; updateArticleEnabled();
+    visualsCard.style.display = '';
+  });
+  const articleCard = h('div', { class: 'card full', style: 'display:none' },
+    h('h3', {}, 'Step 3 — Generate Article'),
+    h('div', { class: 'toolbar' }, genArticleBtn, exportBtn),
+    articleArea
+  );
+
+  // Visuals
+  const imgCreate = h('button', { class: 'btn btn-primary' }, 'Create image');
+  const imgRegen = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate image');
+  const infCreate = h('button', { class: 'btn btn-primary' }, 'Create infographic');
+  const infRegen = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate infographic');
+  function withWorking(btn, text, done) {
+    return (async () => {
+      const prev = btn.textContent; btn.disabled = true; btn.textContent = text;
+      await new Promise(r => setTimeout(r, 600));
+      btn.textContent = done || prev; btn.disabled = false;
+    })();
+  }
+  imgCreate.addEventListener('click', async () => { await withWorking(imgCreate, 'Creating image…', 'Create image'); imgRegen.classList.remove('hidden'); });
+  imgRegen.addEventListener('click', async () => { await withWorking(imgRegen, 'Regenerating…', 'Regenerate image'); });
+  infCreate.addEventListener('click', async () => { await withWorking(infCreate, 'Creating infographic…', 'Create infographic'); infRegen.classList.remove('hidden'); });
+  infRegen.addEventListener('click', async () => { await withWorking(infRegen, 'Regenerating…', 'Regenerate infographic'); });
+  const visualsCard = h('div', { class: 'card full', style: 'display:none' },
+    h('h3', {}, 'Step 4 — Visuals'),
+    h('div', { class: 'split-2' },
+      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'Header image'), h('div', { class: 'toolbar' }, imgCreate, imgRegen)),
+      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'Infographic'), h('div', { class: 'toolbar' }, infCreate, infRegen))
+    )
+  );
+
+  // Compose page
+  root.append(hero, tabs, eventRow, manualRow, bgSection, customSection, insightsCard, headlinesCard, articleCard, visualsCard);
 }
 
 export function renderEvents(root) {
