@@ -365,7 +365,10 @@ export function renderAiSearch(root) {
       h('h3', {}, 'BTC content'),
       h('div', { class: 'toolbar' }, urlInput, pullBtn),
       btcArea,
-      h('div', { class: 'muted' }, 'Preview:'), btcPreview
+      h('div', { class: 'muted' }, 'Preview:'),
+      btcPreview,
+      h('div', { class: 'toolbar' }, createBtn, optimiseBtn),
+      output
     );
 
     // Append rows in order:
@@ -391,14 +394,7 @@ export function renderAiSearch(root) {
     );
     // Row 2: full-width BTC
     grid.append(btcCard);
-    // Row 3: Create/Optimise content
-    grid.append(
-      h('div', { class: 'card' },
-        h('h3', {}, 'Create or optimise content (from BTC)'),
-        h('div', { class: 'toolbar' }, createBtn, optimiseBtn),
-        output
-      )
-    );
+    // Row 3: (merged inside BTC card)
     // Row 4: full-width visuals
     grid.append(visualCard);
   }
