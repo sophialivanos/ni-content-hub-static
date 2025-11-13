@@ -256,7 +256,7 @@ body {
 .split-2 .card .toolbar { margin-bottom: 10px; }
 
 /* Tabs */
-.tabs { display:inline-flex; gap:8px; margin-bottom:10px; }
+.tabs { display:none !important; gap:8px; margin-bottom:10px; }
 .tabs .tab { border:1px solid #cbd5e1; background:#ffffff; color:#0f172a; border-radius:9999px; padding:6px 12px; cursor:pointer; }
 .tabs .tab.active { background:#eef2ff; border-color:#c7d2fe; color:#3730a3; }
 
