@@ -273,11 +273,12 @@ export function renderAiSearch(root) {
     );
     // (Row 1 will be appended below; avoid early appends here)
 
-    // Visual enhancements: images and infographics
-    const visualOut = h('div', { class: 'muted' }, 'No visuals generated yet.');
+    // Visual enhancements: images and infographics (split into two inner cards)
+    const imgOut = h('div', { class: 'muted' }, 'No image generated yet.');
+    const infOut = h('div', { class: 'muted' }, 'No infographic generated yet.');
     const createImgBtn = h('button', { class: 'btn btn-primary' }, 'Create image');
-    const createInfBtn = h('button', { class: 'btn btn-primary' }, 'Create infographic');
     const regenImgBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate image');
+    const createInfBtn = h('button', { class: 'btn btn-primary' }, 'Create infographic');
     const regenInfBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate infographic');
 
     function withWorkingText(btn, workingText, doneText) {
@@ -291,26 +292,37 @@ export function renderAiSearch(root) {
     }
     createImgBtn.addEventListener('click', async () => {
       await withWorkingText(createImgBtn, 'Creating image…', 'Create image');
-      visualOut.textContent = `Image created for ${v}.`;
+      imgOut.textContent = `Image created for ${v}.`;
       regenImgBtn.classList.remove('hidden');
     });
     createInfBtn.addEventListener('click', async () => {
       await withWorkingText(createInfBtn, 'Creating infographic…', 'Create infographic');
-      visualOut.textContent = `Infographic created for ${v}.`;
+      infOut.textContent = `Infographic created for ${v}.`;
       regenInfBtn.classList.remove('hidden');
     });
     regenImgBtn.addEventListener('click', async () => {
       await withWorkingText(regenImgBtn, 'Regenerating image…', 'Regenerate image');
-      visualOut.textContent = `Image regenerated for ${v}.`;
+      imgOut.textContent = `Image regenerated for ${v}.`;
     });
     regenInfBtn.addEventListener('click', async () => {
       await withWorkingText(regenInfBtn, 'Regenerating infographic…', 'Regenerate infographic');
-      visualOut.textContent = `Infographic regenerated for ${v}.`;
+      infOut.textContent = `Infographic regenerated for ${v}.`;
     });
+    const visualsSplit = h('div', { class: 'split-2' },
+      h('div', { class: 'card' },
+        h('h4', { class: 'card-title' }, 'Images'),
+        h('div', { class: 'toolbar' }, createImgBtn, regenImgBtn),
+        h('div', {}, imgOut)
+      ),
+      h('div', { class: 'card' },
+        h('h4', { class: 'card-title' }, 'Infographics'),
+        h('div', { class: 'toolbar' }, createInfBtn, regenInfBtn),
+        h('div', {}, infOut)
+      )
+    );
     const visualCard = h('div', { class: 'card full' },
       h('h3', {}, 'Suggested images and infographics for visual enhancement'),
-      h('div', { class: 'toolbar' }, createImgBtn, createInfBtn, regenImgBtn, regenInfBtn),
-      h('div', {}, visualOut)
+      visualsSplit
     );
 
     // BTC content pull/paste (declare BEFORE using in card layout)

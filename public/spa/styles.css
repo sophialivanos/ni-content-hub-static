@@ -237,6 +237,10 @@ body {
 @media (max-width: 920px) {
   .layout { grid-template-columns: 64px 1fr; }
   .sidebar { width: 64px; }
+  .split-2 { grid-template-columns: 1fr; }
 }
+
+/* Two-column split inside a card (e.g., visuals) */
+.split-2 { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 
 
