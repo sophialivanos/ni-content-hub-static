@@ -335,7 +335,7 @@ export function renderAiSearch(root) {
     // Create or optimise content based on BTC
     const outputArea = h('textarea', { class: 'input', rows: '10', placeholder: 'Generated content will appear here. You can edit freely.' });
     outputArea.value = '';
-    const exportBtn = h('button', { class: 'btn btn-outline', disabled: 'disabled' }, 'Export doc');
+    const exportBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, '⬇ Export doc');
     function exportDocFile(filename, content) {
       try {
         const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
@@ -393,14 +393,13 @@ export function renderAiSearch(root) {
       btcArea,
       h('div', { class: 'toolbar' }, createBtn, optimiseBtn)
     );
-    // Output card (hidden until content is generated)
-    const outputCard = h('div', { class: 'card full', style: 'display:none' },
+    // Output card (always visible; textarea is editable)
+    const outputCard = h('div', { class: 'card full' },
       h('div', { class: 'row' },
-        h('h3', { style: 'margin:0' }, 'Generated content'),
-        h('div', { class: 'spacer' }),
-        exportBtn
+        h('h3', { style: 'margin:0' }, 'Generated content')
       ),
-      outputArea
+      outputArea,
+      h('div', { class: 'toolbar export-row' }, exportBtn)
     );
 
     // Append rows in order:

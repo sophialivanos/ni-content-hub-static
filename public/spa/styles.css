@@ -116,8 +116,8 @@ body {
 .btn-block { width: 100%; }
 
 /* Inputs */
-.input { width: 100%; background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px 10px; }
-.select { width: 100%; background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px 10px; }
+.input { width: 100%; background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px 10px; font: inherit; }
+.select { width: 100%; background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px 10px; font: inherit; }
 /* Input group with inline action button (e.g., Pull BTC) */
 .input-group { position: relative; }
 .input-group .input { width: 100%; padding-right: 140px; }
@@ -131,7 +131,7 @@ body {
 .toolbar.ai-controls .select { display: inline-block; width: auto !important; min-width: 180px; }
 
 /* Cards */
-.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 12px; }
+.card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
 /* AISearch - single column stacked cards (force) */
 .ai-stack { display: flex !important; flex-direction: column !important; gap: 12px !important; }
 .ai-stack > .card { width: 100% !important; max-width: none !important; }
