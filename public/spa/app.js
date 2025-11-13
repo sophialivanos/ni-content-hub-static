@@ -315,9 +315,9 @@ export function renderAiSearch(root) {
 
     // BTC content pull/paste (declare BEFORE using in card layout)
     let btcContent = '';
-    const urlInput = h('input', { class: 'input', placeholder: 'Internal page URL (optional)' });
-    const pullBtn = h('button', { class: 'btn btn-primary btn-inline' }, 'Pull BTC content');
-    const urlGroup = h('div', { class: 'input-group' }, urlInput, pullBtn);
+    const urlInput = h('input', { class: 'input btc-url-input', placeholder: 'Internal page URL (optional)' });
+    const pullBtn = h('button', { class: 'btn btn-primary' }, 'Pull BTC content');
+    const urlRow = h('div', { class: 'toolbar btc-url-row' }, urlInput, pullBtn);
     const btcArea = h('textarea', { class: 'input', placeholder: 'Or paste BTC content here…', rows: '6' });
     pullBtn.addEventListener('click', async () => {
       pullBtn.disabled = true; const prev = pullBtn.textContent; pullBtn.textContent = 'Pulling…';
@@ -389,7 +389,7 @@ export function renderAiSearch(root) {
     // BTC content card (placed under Trends, first column)
     const btcCard = h('div', { class: 'card full' },
       h('h3', {}, 'BTC content'),
-      urlGroup,
+      urlRow,
       btcArea,
       h('div', { class: 'toolbar' }, createBtn, optimiseBtn)
     );

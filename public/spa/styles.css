@@ -119,9 +119,9 @@ body {
 .input { width: 100%; background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px 10px; font: inherit; }
 .select { width: 100%; background: #ffffff; color: #0f172a; border: 1px solid #cbd5e1; border-radius: 10px; padding: 8px 10px; font: inherit; }
 /* Input group with inline action button (e.g., Pull BTC) */
-.input-group { position: relative; }
-.input-group .input { width: 100%; padding-right: 140px; }
-.input-group .btn-inline { position: absolute; right: 6px; top: 50%; transform: translateY(-50%); }
+.input-group { position: relative; } /* legacy - unused now */
+.btc-url-input { width: 520px; max-width: 100%; }
+.btc-url-row { margin-bottom: 8px; }
 /* Seasonal Events controls - keep single line and compact selects */
 .events-controls { flex-wrap: nowrap; }
 .events-controls label { white-space: nowrap; }
