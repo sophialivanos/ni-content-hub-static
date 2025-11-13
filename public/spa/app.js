@@ -583,8 +583,9 @@ export function renderArticles(root) {
   // Step 2: Create headlines
   const headlineList = h('div', {});
   const selectedHeadline = h('input', { class: 'input', placeholder: 'Selected headline (editable)' });
-  const regenHeadlinesBtn = h('button', { class: 'btn btn-outline' }, 'Regenerate headlines');
+  const regenHeadlinesBtn = h('button', { class: 'btn btn-primary' }, 'Regenerate headlines');
   const createHeadlinesBtn = h('button', { class: 'btn btn-primary' }, 'Create Headlines');
+  let genFromHeadlinesBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Generate Article');
   function fabricateHeadlines() {
     const base = (verticalSel.value || eventSel.value || 'Your Topic').replace(/\s+/g, ' ');
     return [
@@ -614,10 +615,10 @@ export function renderArticles(root) {
     articleCard.style.display = '';
     updateArticleEnabled();
   });
-  regenHeadlinesBtn.addEventListener('click', () => renderHeadlines());
+  regenHeadlinesBtn.addEventListener('click', () => { renderHeadlines(); selectedHeadline.value = fabricateHeadlines()[0]; updateArticleEnabled(); });
   const headlinesCard = h('div', { class: 'card full', style: 'display:none' },
     h('h3', {}, 'Step 2 — Create Headlines'),
-    h('div', { class: 'toolbar' }, createHeadlinesBtn, regenHeadlinesBtn),
+    h('div', { class: 'toolbar' }, createHeadlinesBtn, regenHeadlinesBtn, genFromHeadlinesBtn),
     headlineList,
     h('div', { class: 'row', style: 'margin-top:10px' }, selectedHeadline)
   );
@@ -643,6 +644,7 @@ export function renderArticles(root) {
   function updateArticleEnabled() {
     genArticleBtn.disabled = !(selectedHeadline.value || '').trim();
     exportBtn.disabled = !(articleArea.value || '').trim();
+    if (genFromHeadlinesBtn) genFromHeadlinesBtn.disabled = genArticleBtn.disabled;
   }
   selectedHeadline.addEventListener('input', updateArticleEnabled);
   articleArea.addEventListener('input', updateArticleEnabled);
@@ -670,6 +672,8 @@ Conclusion — Clear next steps and a concise wrap-up.`;
     h('div', { class: 'toolbar' }, genArticleBtn, exportBtn),
     articleArea
   );
+  // Wire the Generate button in the headlines step to trigger the same action
+  genFromHeadlinesBtn.addEventListener('click', () => genArticleBtn.click());
 
   // Visuals
   const imgCreate = h('button', { class: 'btn btn-primary' }, 'Create image');
