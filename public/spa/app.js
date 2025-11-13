@@ -535,13 +535,7 @@ export function renderArticles(root) {
   // Populate verticals on initial render (when no industry selected)
   updateVerticalsFromIndustryArticles();
 
-  // Background input
-  const aioBrief = h('textarea', { class: 'input', rows: '3', placeholder: 'AIO research + brief' });
-  const articleBrief = h('textarea', { class: 'input', rows: '2', placeholder: 'Ido article brief' });
-  const bgSection = h('div', { class: 'section' },
-    h('div', { class: 'row' }, h('label', {}, 'AIO Brief')), aioBrief,
-    h('div', { class: 'row' }, h('label', {}, 'Article Brief')), articleBrief
-  );
+  // Background inputs removed per request
 
   // Customisation
   const tones = ['Warm & conversational','Slightly more formal','Upbeat and cheeky','Inspiring & Empowering','Gentle and warm','Informative and direct','Emotional and inspiring','Confident, expert, factual (Authoritative)','Warm, understanding, emotionally in-tune (Empathetic)','Casual, relaxed, friendly (Conversational)','Uplifting, motivational, purpose-driven (Inspiring)','Polished, neutral, minimal fluff (Professional)','Humorous, clever, youth-targeted (Witty/Playful)','Gentle, comforting, calm and grounded (Reassuring)','Stats-focused, analytical, objective (Data-driven)'];
@@ -606,7 +600,7 @@ export function renderArticles(root) {
     fabricateHeadlines().forEach((hln, i) => {
       const id = `h-${i}-${Date.now()}`;
       const radio = h('input', { type: 'radio', name: 'headline', id });
-      radio.addEventListener('change', () => { selectedHeadline.value = hln; });
+      radio.addEventListener('change', () => { selectedHeadline.value = hln; updateArticleEnabled(); });
       const label = h('label', { for: id, style: 'cursor:pointer' }, hln);
       headlineList.append(h('div', { class: 'row' }, radio, label));
     });
@@ -615,9 +609,10 @@ export function renderArticles(root) {
     createHeadlinesBtn.disabled = true; const prev = createHeadlinesBtn.textContent; createHeadlinesBtn.textContent = 'Creating…';
     await new Promise(r => setTimeout(r, 500));
     renderHeadlines();
-    if (!selectedHeadline.value) selectedHeadline.value = fabricateHeadlines()[0];
+    if (!selectedHeadline.value) { selectedHeadline.value = fabricateHeadlines()[0]; }
     createHeadlinesBtn.textContent = prev; createHeadlinesBtn.disabled = false;
     articleCard.style.display = '';
+    updateArticleEnabled();
   });
   regenHeadlinesBtn.addEventListener('click', () => renderHeadlines());
   const headlinesCard = h('div', { class: 'card full', style: 'display:none' },
@@ -701,7 +696,7 @@ Conclusion — Clear next steps and a concise wrap-up.`;
   );
 
   // Compose page
-  root.append(hero, tabs, eventRow, manualRow, bgSection, customSection, insightsCard, headlinesCard, articleCard, visualsCard);
+  root.append(hero, tabs, eventRow, manualRow, customSection, insightsCard, headlinesCard, articleCard, visualsCard);
 }
 
 export function renderEvents(root) {
