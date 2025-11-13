@@ -203,6 +203,9 @@ body {
 .card.expanded .card-body { display:block; }
 .muted { color:#64748b; font-size:13px; }
 
+/* Add extra spacing between sub-card titles and their controls in visuals split */
+.split-2 .card .card-title { margin: 0 0 12px 0; }
+
 /* Page hero header */
 .page-hero {
   background: linear-gradient(135deg, #7c3aed, #3b82f6);
