@@ -130,6 +130,12 @@ body {
 .toolbar.ai-controls label { white-space: nowrap; margin-right: 4px; }
 .toolbar.ai-controls .select { display: inline-block; width: auto !important; min-width: 180px; }
 
+/* Articles controls - single line, compact inputs */
+.articles-controls { flex-wrap: nowrap; }
+.articles-controls label { white-space: nowrap; margin-right: 4px; }
+.articles-controls .select { width: auto; min-width: 180px; }
+.articles-controls .input { width: auto; min-width: 220px; }
+
 /* Cards */
 .card-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 24px; }
 /* AISearch - single column stacked cards (force) */

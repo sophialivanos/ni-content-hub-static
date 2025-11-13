@@ -523,7 +523,7 @@ export function renderArticles(root) {
   }
   industrySel.addEventListener('change', updateVerticalsFromIndustryArticles);
   const manualRow = h('div', { class: 'section' },
-    h('div', { class: 'row' },
+    h('div', { class: 'row articles-controls' },
       h('label', { class: 'label-required' }, 'Industry'), industrySel,
       h('label', { class: 'label-required' }, 'Vertical'), verticalSel,
       h('label', {}, 'Country'), countrySel
@@ -542,20 +542,18 @@ export function renderArticles(root) {
   // Customisation
   const tones = ['Warm & conversational','Slightly more formal','Upbeat and cheeky','Inspiring & Empowering','Gentle and warm','Informative and direct','Emotional and inspiring','Confident, expert, factual (Authoritative)','Warm, understanding, emotionally in-tune (Empathetic)','Casual, relaxed, friendly (Conversational)','Uplifting, motivational, purpose-driven (Inspiring)','Polished, neutral, minimal fluff (Professional)','Humorous, clever, youth-targeted (Witty/Playful)','Gentle, comforting, calm and grounded (Reassuring)','Stats-focused, analytical, objective (Data-driven)'];
   const styles = ['Narrative / Story-Driven','Conversational','Instructional / How-To','Persuasive / Conversion-Oriented','Analytical / Data-Led','Editorial / Journalistic','Narrative + Persuasive','Instructional + Conversational','Analytical + Third-Person','Narrative + First-Person','Poetic + Journalistic','Comparative + Listicle'];
-  const toneSel = h('select', { class: 'select' }, h('option', { value: '' }, 'Tone'), ...tones.map(t => h('option', { value: t }, t)));
-  const styleSel = h('select', { class: 'select' }, h('option', { value: '' }, 'Style'), ...styles.map(s => h('option', { value: s }, s)));
+  const toneSel = h('select', { class: 'select' }, h('option', { value: '' }, 'Select...'), ...tones.map(t => h('option', { value: t }, t)));
+  const styleSel = h('select', { class: 'select' }, h('option', { value: '' }, 'Select...'), ...styles.map(s => h('option', { value: s }, s)));
   const bannedWords = h('input', { class: 'input', placeholder: 'Banned words' });
   const keywordsIn = h('input', { class: 'input', placeholder: 'Keywords to include' });
-  const keywordsOut = h('input', { class: 'input', placeholder: 'Keywords to avoid' });
   const customSection = h('div', { class: 'section' },
-    h('div', { class: 'row' },
+    h('div', { class: 'row articles-controls' },
       h('label', {}, 'Banned words'), bannedWords,
       h('label', {}, 'Tone'), toneSel,
       h('label', {}, 'Style'), styleSel
     ),
     h('div', { class: 'row' },
-      h('label', {}, 'Keywords to include'), keywordsIn,
-      h('label', {}, 'Keywords to avoid'), keywordsOut
+      h('label', {}, 'Keywords to include'), keywordsIn
     )
   );
 
