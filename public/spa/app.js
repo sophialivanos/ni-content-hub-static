@@ -478,6 +478,8 @@ export function renderArticles(root) {
     } else {
       manualTab.classList.add('active'); eventTab.classList.remove('active');
       manualRow.style.display = ''; eventRow.style.display = 'none';
+      // Ensure verticals are populated when switching to Manual mode
+      updateVerticalsFromIndustryArticles();
     }
   }
   eventTab.addEventListener('click', () => setMode(MODE_EVENT));
@@ -530,6 +532,8 @@ export function renderArticles(root) {
     )
   );
   setMode(MODE_MANUAL);
+  // Populate verticals on initial render (when no industry selected)
+  updateVerticalsFromIndustryArticles();
 
   // Background input
   const aioBrief = h('textarea', { class: 'input', rows: '3', placeholder: 'AIO research + brief' });
