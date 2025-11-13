@@ -10,7 +10,7 @@ let CANONICAL_VERTICALS = [
   'Weight Loss','Hair Loss','ED','Website Builders','Hosting','E-commerce','ID Theft','Investments','Gold and Silver',
   'Mortgage','Mortgage Loans','Money Transfer','Online Banking','Debt Funnel','Debt Consolidation',
   'Private Student Loans','Student Loans','Student Loans Refinance','Tax Relief','Life Insurance','Pet Insurance',
-  'Renters Insurance','Home LG Insurance','Travel Insurance','Sports Betting','Casino','Slots','Bingo','Poker','PGR',
+  'Renters Insurance','Home LG Insurance','Travel Insurance','Sports Betting','Casino','Slots','Bingo','PGR',
   'Pet Food Delivery','Pet Subscription Boxes','Internet Providers','Moving Companies','Solar'
 ];
 // Broad industry categories for AISearch
@@ -21,7 +21,7 @@ let INDUSTRIES = [
 ];
 // Map industries to relevant verticals (subset of CANONICAL_VERTICALS)
 const INDUSTRY_TO_VERTICALS = {
-  'Gambling / Betting': ['Sports Betting','Casino','Slots','Bingo','Poker'],
+  'Gambling / Betting': ['Sports Betting','Casino','Slots','Bingo'],
   'Finance': ['Banking','Online Banking','Credit Cards','Car Loans','Mortgage','Mortgage Loans','Money Transfer','Investments','Student Loans','Student Loans Refinance','Private Student Loans','Tax Relief','Tax Software','Debt Consolidation','Gold and Silver'],
   'Insurance': ['Life Insurance','Pet Insurance','Home Insurance','Car Insurance','Travel Insurance','Renters Insurance','Home LG Insurance'],
   'Software / SaaS': ['Accounting Software','Invoicing','Project Management','CRM','Password Manager','Parental Control','Data Analysis Software','Business VoIP','Remote Access','VPN','Website Builders','Hosting','Web Design'],
@@ -33,7 +33,7 @@ const INDUSTRY_TO_VERTICALS = {
   'E-commerce': ['E-commerce','Printing Services','Resume Builders','Pet Subscription Boxes','Pet Food Delivery','Flower Delivery','Editing Apps','Lab Grown Diamonds'],
   'Legal': ['Legal Services','LLC'],
   'Travel & Mobility': ['Car Insurance','Car Loans','Mobile Plans','Online Banking'],
-  'Entertainment / Gaming': ['Sports Betting','Casino','Slots','Bingo','Poker','TV Services / Streaming'],
+  'Entertainment / Gaming': ['TV Services / Streaming'],
   'Dating': ['Dating'],
   'Pets': ['Pet Insurance','Pet Food Delivery','Pet Subscription Boxes'],
   'Food & Meal': ['Meal Delivery','Vitamins'],
@@ -316,7 +316,7 @@ export function renderAiSearch(root) {
       await withWorkingText(regenInfBtn, 'Regenerating infographic…', 'Regenerate infographic');
       visualOut.textContent = `Infographic regenerated for ${v}.`;
     });
-    const visualCard = h('div', { class: 'card' },
+    const visualCard = h('div', { class: 'card', style: 'grid-column:1' },
       h('h3', {}, 'Suggested images and infographics for visual enhancement'),
       h('div', { class: 'toolbar' }, createImgBtn, createInfBtn, regenImgBtn, regenInfBtn),
       h('div', {}, visualOut)
@@ -361,18 +361,22 @@ export function renderAiSearch(root) {
       output.textContent = fabricateCopy('Optimised content');
       optimiseBtn.disabled = false; optimiseBtn.textContent = prev;
     });
-    // Append remaining cards in single-column order
+    // BTC content card (placed under Trends, first column)
+    const btcCard = h('div', { class: 'card', style: 'grid-column:1' },
+      h('h3', {}, 'BTC content'),
+      h('div', { class: 'toolbar' }, urlInput, pullBtn),
+      btcArea,
+      h('div', { class: 'muted' }, 'Preview:'), btcPreview
+    );
+
+    // Place BTC and Visuals directly under Current Trends
+    grid.append(btcCard, visualCard);
+
+    // Append remaining cards in order
     grid.append(
       card('Aggregator/Competitor Insights', ul(aggregatorInsights)),
-      visualCard,
       card('Suggested FAQs', ul(faqs)),
       card('Page Update Suggestions', ul(pageUpdates)),
-      h('div', { class: 'card' },
-        h('h3', {}, 'BTC content'),
-        h('div', { class: 'toolbar' }, urlInput, pullBtn),
-        btcArea,
-        h('div', { class: 'muted' }, 'Preview:'), btcPreview
-      ),
       h('div', { class: 'card' },
         h('h3', {}, 'Create or optimise content'),
         h('div', { class: 'toolbar' }, createBtn, optimiseBtn),
