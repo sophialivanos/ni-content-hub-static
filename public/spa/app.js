@@ -696,7 +696,7 @@ Conclusion — Clear next steps and a concise wrap-up.`;
   );
 
   // Compose page
-  root.append(hero, tabs, eventRow, manualRow, customSection, insightsCard, headlinesCard, articleCard, visualsCard);
+  root.append(hero, manualRow, customSection, insightsCard, headlinesCard, articleCard, visualsCard);
 }
 
 export function renderEvents(root) {
