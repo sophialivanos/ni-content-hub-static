@@ -316,7 +316,8 @@ export function renderAiSearch(root) {
     // BTC content pull/paste (declare BEFORE using in card layout)
     let btcContent = '';
     const urlInput = h('input', { class: 'input', placeholder: 'Internal page URL (optional)' });
-    const pullBtn = h('button', { class: 'btn btn-primary' }, 'Pull BTC content');
+    const pullBtn = h('button', { class: 'btn btn-primary btn-inline' }, 'Pull BTC content');
+    const urlGroup = h('div', { class: 'input-group' }, urlInput, pullBtn);
     const btcArea = h('textarea', { class: 'input', placeholder: 'Or paste BTC content here…', rows: '6' });
     pullBtn.addEventListener('click', async () => {
       pullBtn.disabled = true; const prev = pullBtn.textContent; pullBtn.textContent = 'Pulling…';
@@ -332,7 +333,29 @@ export function renderAiSearch(root) {
       updateCreateEnabled();
     });
     // Create or optimise content based on BTC
-    const output = h('div', { class: 'muted' }, 'No output yet.');
+    const outputArea = h('textarea', { class: 'input', rows: '10', placeholder: 'Generated content will appear here. You can edit freely.' });
+    outputArea.value = '';
+    const exportBtn = h('button', { class: 'btn btn-outline', disabled: 'disabled' }, 'Export doc');
+    function exportDocFile(filename, content) {
+      try {
+        const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(url), 500);
+      } catch (e) {
+        console.error(e);
+      }
+    }
+    exportBtn.addEventListener('click', () => {
+      const content = outputArea.value || '';
+      if (!content.trim()) return;
+      exportDocFile(`${v}-generated.doc`, content);
+    });
     const createBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Create content');
     const optimiseBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Optimise content');
     function fabricateCopy(kind) {
@@ -343,33 +366,41 @@ export function renderAiSearch(root) {
       const has = (btcContent || '').trim().length > 0;
       createBtn.disabled = !has;
       optimiseBtn.disabled = !has;
+      exportBtn.disabled = !(outputArea.value || '').trim().length;
     }
     updateCreateEnabled();
+    outputArea.addEventListener('input', updateCreateEnabled);
     createBtn.addEventListener('click', async () => {
       const prev = createBtn.textContent; createBtn.disabled = true; createBtn.textContent = 'Creating…';
       await new Promise(r => setTimeout(r, 600));
-      output.textContent = fabricateCopy('Draft content');
+      outputArea.value = fabricateCopy('Draft content');
       createBtn.textContent = prev; updateCreateEnabled();
       outputCard.style.display = '';
+      updateCreateEnabled();
     });
     optimiseBtn.addEventListener('click', async () => {
       const prev = optimiseBtn.textContent; optimiseBtn.disabled = true; optimiseBtn.textContent = 'Optimising…';
       await new Promise(r => setTimeout(r, 600));
-      output.textContent = fabricateCopy('Optimised content');
+      outputArea.value = fabricateCopy('Optimised content');
       optimiseBtn.textContent = prev; updateCreateEnabled();
       outputCard.style.display = '';
+      updateCreateEnabled();
     });
     // BTC content card (placed under Trends, first column)
     const btcCard = h('div', { class: 'card full' },
       h('h3', {}, 'BTC content'),
-      h('div', { class: 'toolbar' }, urlInput, pullBtn),
+      urlGroup,
       btcArea,
       h('div', { class: 'toolbar' }, createBtn, optimiseBtn)
     );
     // Output card (hidden until content is generated)
     const outputCard = h('div', { class: 'card full', style: 'display:none' },
-      h('h3', {}, 'Generated content'),
-      output
+      h('div', { class: 'row' },
+        h('h3', { style: 'margin:0' }, 'Generated content'),
+        h('div', { class: 'spacer' }),
+        exportBtn
+      ),
+      outputArea
     );
 
     // Append rows in order:
