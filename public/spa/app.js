@@ -257,14 +257,8 @@ export function renderAiSearch(root) {
       'Infographic comparing automated savings tools',
       'Illustration of ESG investment categories',
     ];
-    grid.append(
-      card('Current Trends', ul(currentTrends)),
-      h('div', { class: 'card' },
-        h('h3', {}, 'Steps to Build an Emergency Fund'),
-        h('div', { class: 'muted' }, 'Recommendations ideas'),
-        ul(recIdeas),
-      )
-    );
+    // Build top row cards
+    const trendsCard = card('Current Trends', ul(currentTrends));
     const left = h('div', { class: 'card' },
       h('h3', {}, 'Steps to Build an Emergency Fund'),
       h('div', { class: 'muted' }, 'Recommendations ideas'),
@@ -277,10 +271,7 @@ export function renderAiSearch(root) {
       h('button', { class: 'btn btn-outline btn-block' }, 'Start saving monthly'),
       h('button', { class: 'btn btn-outline btn-block' }, 'Reach your goal')
     );
-    grid.append(
-      card('Reddit Research', h('div', {}, h('div', { class: 'muted' }, `Findings from the finds r/${v.toLowerCase().replace(/\s+/g,'')}`), ul(redditFindings))),
-      right
-    );
+    // (Row 1 will be appended below; avoid early appends here)
 
     // Visual enhancements: images and infographics
     const visualOut = h('div', { class: 'muted' }, 'No visuals generated yet.');
@@ -316,7 +307,7 @@ export function renderAiSearch(root) {
       await withWorkingText(regenInfBtn, 'Regenerating infographic…', 'Regenerate infographic');
       visualOut.textContent = `Infographic regenerated for ${v}.`;
     });
-    const visualCard = h('div', { class: 'card', style: 'grid-column:1' },
+    const visualCard = h('div', { class: 'card full' },
       h('h3', {}, 'Suggested images and infographics for visual enhancement'),
       h('div', { class: 'toolbar' }, createImgBtn, createInfBtn, regenImgBtn, regenInfBtn),
       h('div', {}, visualOut)
@@ -336,53 +327,80 @@ export function renderAiSearch(root) {
       btcArea.value = btcContent;
       btcPreview.textContent = btcContent;
       pullBtn.disabled = false; pullBtn.textContent = prev;
+      updateCreateEnabled();
     });
     btcArea.addEventListener('input', () => {
       btcContent = btcArea.value;
       btcPreview.textContent = btcContent ? btcContent : 'No BTC content loaded yet.';
+      updateCreateEnabled();
     });
     // Create or optimise content based on BTC
     const output = h('div', { class: 'muted' }, 'No output yet.');
-    const createBtn = h('button', { class: 'btn btn-primary' }, 'Create content');
-    const optimiseBtn = h('button', { class: 'btn btn-primary' }, 'Optimise content');
+    const createBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Create content');
+    const optimiseBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Optimise content');
     function fabricateCopy(kind) {
       const base = btcContent || `Key points for ${v}: trending topics and user questions.`;
       return `${kind} based on BTC and insights: ${base.slice(0, 160)}…`;
     }
+    function updateCreateEnabled() {
+      const has = (btcContent || '').trim().length > 0;
+      createBtn.disabled = !has;
+      optimiseBtn.disabled = !has;
+    }
+    updateCreateEnabled();
     createBtn.addEventListener('click', async () => {
       const prev = createBtn.textContent; createBtn.disabled = true; createBtn.textContent = 'Creating…';
       await new Promise(r => setTimeout(r, 600));
       output.textContent = fabricateCopy('Draft content');
-      createBtn.disabled = false; createBtn.textContent = prev;
+      createBtn.textContent = prev; updateCreateEnabled();
     });
     optimiseBtn.addEventListener('click', async () => {
       const prev = optimiseBtn.textContent; optimiseBtn.disabled = true; optimiseBtn.textContent = 'Optimising…';
       await new Promise(r => setTimeout(r, 600));
       output.textContent = fabricateCopy('Optimised content');
-      optimiseBtn.disabled = false; optimiseBtn.textContent = prev;
+      optimiseBtn.textContent = prev; updateCreateEnabled();
     });
     // BTC content card (placed under Trends, first column)
-    const btcCard = h('div', { class: 'card', style: 'grid-column:1' },
+    const btcCard = h('div', { class: 'card full' },
       h('h3', {}, 'BTC content'),
       h('div', { class: 'toolbar' }, urlInput, pullBtn),
       btcArea,
       h('div', { class: 'muted' }, 'Preview:'), btcPreview
     );
 
-    // Place BTC and Visuals directly under Current Trends
-    grid.append(btcCard, visualCard);
-
-    // Append remaining cards in order
+    // Append rows in order:
+    // Row 1: Trends, Steps (rec), Reddit, Steps (actions), Aggregator, FAQs, Page Updates
     grid.append(
+      trendsCard,
+      h('div', { class: 'card' },
+        h('h3', {}, 'Steps to Build an Emergency Fund'),
+        h('div', { class: 'muted' }, 'Recommendations ideas'),
+        ul(recIdeas),
+      ),
+      card('Reddit Research', h('div', {}, h('div', { class: 'muted' }, `Findings from the finds r/${v.toLowerCase().replace(/\s+/g,'')}`), ul(redditFindings))),
+      h('div', { class: 'card' },
+        h('h3', {}, 'Steps to Build an Emergency Fund'),
+        h('button', { class: 'btn btn-outline btn-block' }, 'Set a target amount'),
+        h('button', { class: 'btn btn-outline btn-block' }, 'Track your expenses'),
+        h('button', { class: 'btn btn-outline btn-block' }, 'Start saving monthly'),
+        h('button', { class: 'btn btn-outline btn-block' }, 'Reach your goal')
+      ),
       card('Aggregator/Competitor Insights', ul(aggregatorInsights)),
       card('Suggested FAQs', ul(faqs)),
-      card('Page Update Suggestions', ul(pageUpdates)),
+      card('Page Update Suggestions', ul(pageUpdates))
+    );
+    // Row 2: full-width BTC
+    grid.append(btcCard);
+    // Row 3: Create/Optimise content
+    grid.append(
       h('div', { class: 'card' },
-        h('h3', {}, 'Create or optimise content'),
+        h('h3', {}, 'Create or optimise content (from BTC)'),
         h('div', { class: 'toolbar' }, createBtn, optimiseBtn),
         output
       )
     );
+    // Row 4: full-width visuals
+    grid.append(visualCard);
   }
 
   function updateReady() {

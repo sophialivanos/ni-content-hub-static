@@ -134,6 +134,7 @@ body {
 
 /* AISearch - explicit grid rows on wide screens */
 .ai-rows { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.card.full { grid-column: 1 / -1; }
 .hidden { display: none !important; }
 .card { background: #ffffff; border: 1px solid #e5e7eb; border-radius: 14px; padding: 14px; }
 .card h3 { margin: 0 0 6px 0; font-size: 16px; }
