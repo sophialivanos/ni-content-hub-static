@@ -315,7 +315,6 @@ export function renderAiSearch(root) {
 
     // BTC content pull/paste (declare BEFORE using in card layout)
     let btcContent = '';
-    const btcPreview = h('div', { class: 'muted' }, 'No BTC content loaded yet.');
     const urlInput = h('input', { class: 'input', placeholder: 'Internal page URL (optional)' });
     const pullBtn = h('button', { class: 'btn btn-primary' }, 'Pull BTC content');
     const btcArea = h('textarea', { class: 'input', placeholder: 'Or paste BTC content here…', rows: '6' });
@@ -325,13 +324,11 @@ export function renderAiSearch(root) {
       // Demo placeholder content
       btcContent = `BTC excerpt for ${v} pulled from ${urlInput.value || 'internal source'}.`;
       btcArea.value = btcContent;
-      btcPreview.textContent = btcContent;
       pullBtn.disabled = false; pullBtn.textContent = prev;
       updateCreateEnabled();
     });
     btcArea.addEventListener('input', () => {
       btcContent = btcArea.value;
-      btcPreview.textContent = btcContent ? btcContent : 'No BTC content loaded yet.';
       updateCreateEnabled();
     });
     // Create or optimise content based on BTC
@@ -353,21 +350,25 @@ export function renderAiSearch(root) {
       await new Promise(r => setTimeout(r, 600));
       output.textContent = fabricateCopy('Draft content');
       createBtn.textContent = prev; updateCreateEnabled();
+      outputCard.style.display = '';
     });
     optimiseBtn.addEventListener('click', async () => {
       const prev = optimiseBtn.textContent; optimiseBtn.disabled = true; optimiseBtn.textContent = 'Optimising…';
       await new Promise(r => setTimeout(r, 600));
       output.textContent = fabricateCopy('Optimised content');
       optimiseBtn.textContent = prev; updateCreateEnabled();
+      outputCard.style.display = '';
     });
     // BTC content card (placed under Trends, first column)
     const btcCard = h('div', { class: 'card full' },
       h('h3', {}, 'BTC content'),
       h('div', { class: 'toolbar' }, urlInput, pullBtn),
       btcArea,
-      h('div', { class: 'muted' }, 'Preview:'),
-      btcPreview,
-      h('div', { class: 'toolbar' }, createBtn, optimiseBtn),
+      h('div', { class: 'toolbar' }, createBtn, optimiseBtn)
+    );
+    // Output card (hidden until content is generated)
+    const outputCard = h('div', { class: 'card full', style: 'display:none' },
+      h('h3', {}, 'Generated content'),
       output
     );
 
@@ -394,7 +395,8 @@ export function renderAiSearch(root) {
     );
     // Row 2: full-width BTC
     grid.append(btcCard);
-    // Row 3: (merged inside BTC card)
+    // Row 3: show output below BTC
+    grid.append(outputCard);
     // Row 4: full-width visuals
     grid.append(visualCard);
   }
