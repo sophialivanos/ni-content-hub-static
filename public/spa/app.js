@@ -1,18 +1,17 @@
 // Local, dependency-free fallbacks so the app works even if imports fail
 let CANONICAL_VERTICALS = [
-  'Accounting Software','Anti Virus','Background Checks','Banking','Braces','Business Applications Hub',
-  'Business Insurance','Business Loans','Business VoIP','Car Insurance','Car Loans','Car Selling','Car Warranty',
-  'CCP','Contact Lenses','Credit Cards','CRM','Cyber Security Hub','Data Analysis Software','Dating',
-  'Debt Consolidation','Debt Funnel','DNA','E-commerce','ED','Editing Apps','Flower Delivery','Gaming',
-  'Gold and Silver','Hair Loss','Hearing Aid','Home Insurance','Home Security','Home Warranty','Hosting',
-  'ID Theft','In-App','Internet Providers','Investments','Lab Grown Diamonds','Language Learning','Legal Services',
-  'Life Insurance','LLC','Marketing Tools Hub','Meal Delivery','Medical Alerts','Mobile Plans','Money Transfer',
-  'Mortgage','Mortgage Loans','Moving Companies','Online Banking','Online Degrees','Online Therapy','Parental Control',
-  'Password Manager','Payroll','Pet Food Delivery','Pet Insurance','Pet Subscription Boxes','POS','PGR',
-  'Printing Services','Private Student Loans','Project Management','Psychic Reading','Remote Access','Resume Builders',
-  'Solar','Student Loans','Tax Relief','Tax Software','Tech Bootcamps','Teeth Whitening','Telecom',
-  'TV Services / Streaming','Vitamins','VoIP','VPN','Walk-in Tubs','Web Design','Website Builders','Weight Loss',
-  'Invoicing'
+  'Accounting Software','Anti Virus','Background Checks','Banking','Braces','Business Applications Hub','Business Insurance',
+  'Business Loans','Business VoIP','Car Insurance','Car Loans','Car Selling','Car Warranty','CCP','Contact Lenses',
+  'Credit Cards','CRM','Cyber Security Hub','Parental Control','Password Manager','Project Management',
+  'Marketing Tools Hub','Language Learning','Online Degrees','LLC','VPN','Web Design','Remote Access',
+  'Data Analysis Software','Payroll','Home Warranty','Home Security','Medical Alerts','POS','Walk-in Tubs','Mobile Plans',
+  'Hearing Aid','Invoicing','Dating','Psychic Reading','Legal Services','Meal Delivery','DNA','Online Therapy',
+  'TV Services / Streaming','Printing Services','Resume Builders','Flower Delivery','Editing Apps','Lab Grown Diamonds',
+  'Weight Loss','Hair Loss','ED','Website Builders','Hosting','E-commerce','ID Theft','Investments','Gold and Silver',
+  'Mortgage','Mortgage Loans','Money Transfer','Online Banking','Debt Funnel','Debt Consolidation',
+  'Private Student Loans','Student Loans','Student Loans Refinance','Tax Relief','Life Insurance','Pet Insurance',
+  'Renters Insurance','Home LG Insurance','Travel Insurance','Sports Betting','Casino','Slots','Bingo','Poker','PGR',
+  'Pet Food Delivery','Pet Subscription Boxes','Internet Providers','Moving Companies','Solar'
 ];
 // Broad industry categories for AISearch
 let INDUSTRIES = [
@@ -20,6 +19,29 @@ let INDUSTRIES = [
   'E-commerce','Legal','Travel & Mobility','Entertainment / Gaming','Dating','Pets','Food & Meal','Gambling / Betting',
   'Business Services','Marketing & CRM','Hosting & Web','Utilities'
 ];
+// Map industries to relevant verticals (subset of CANONICAL_VERTICALS)
+const INDUSTRY_TO_VERTICALS = {
+  'Gambling / Betting': ['Sports Betting','Casino','Slots','Bingo','Poker'],
+  'Finance': ['Banking','Online Banking','Credit Cards','Car Loans','Mortgage','Mortgage Loans','Money Transfer','Investments','Student Loans','Student Loans Refinance','Private Student Loans','Tax Relief','Tax Software','Debt Consolidation','Gold and Silver'],
+  'Insurance': ['Life Insurance','Pet Insurance','Home Insurance','Car Insurance','Travel Insurance','Renters Insurance','Home LG Insurance'],
+  'Software / SaaS': ['Accounting Software','Invoicing','Project Management','CRM','Password Manager','Parental Control','Data Analysis Software','Business VoIP','Remote Access','VPN','Website Builders','Hosting','Web Design'],
+  'Security': ['Home Security','ID Theft','Anti Virus','Password Manager','Parental Control','Cyber Security Hub'],
+  'Telecom': ['Mobile Plans','Internet Providers','TV Services / Streaming'],
+  'Health & Wellness': ['Medical Alerts','Hearing Aid','Hair Loss','ED','DNA','Braces','Weight Loss','Online Therapy'],
+  'Home Services': ['Home Warranty','Home Insurance','Solar','Moving Companies','Walk-in Tubs','Home Security'],
+  'Education': ['Language Learning','Online Degrees','Tech Bootcamps'],
+  'E-commerce': ['E-commerce','Printing Services','Resume Builders','Pet Subscription Boxes','Pet Food Delivery','Flower Delivery','Editing Apps','Lab Grown Diamonds'],
+  'Legal': ['Legal Services','LLC'],
+  'Travel & Mobility': ['Car Insurance','Car Loans','Mobile Plans','Online Banking'],
+  'Entertainment / Gaming': ['Sports Betting','Casino','Slots','Bingo','Poker','TV Services / Streaming'],
+  'Dating': ['Dating'],
+  'Pets': ['Pet Insurance','Pet Food Delivery','Pet Subscription Boxes'],
+  'Food & Meal': ['Meal Delivery','Vitamins'],
+  'Business Services': ['Business Loans','Payroll','Business Applications Hub','Business Insurance','Business VoIP'],
+  'Marketing & CRM': ['Marketing Tools Hub','CRM'],
+  'Hosting & Web': ['Hosting','Website Builders','Web Design'],
+  'Utilities': ['Internet Providers','TV Services / Streaming','Mobile Plans','Remote Access']
+};
 let COUNTRIES = [
   { code:'AU', label:'Australia' },
   { code:'BE', label:'Belgium' },
@@ -165,8 +187,7 @@ export function renderAiSearch(root) {
     ...INDUSTRIES.map(i => h('option', { value: i }, i))
   );
   const verticalSel = h('select', { class: 'select' },
-    h('option', { value: '' }, 'Select'),
-    ...CANONICAL_VERTICALS.map(v => h('option', { value: v }, v))
+    h('option', { value: '' }, 'Select')
   );
   const countrySel = h('select', { class: 'select' },
     h('option', { value: '' }, 'Select'),
@@ -189,6 +210,20 @@ export function renderAiSearch(root) {
   function ul(items) {
     return h('ul', {}, ...items.map(t => h('li', {}, t)));
   }
+
+  function setVerticalOptions(list) {
+    verticalSel.innerHTML = '';
+    verticalSel.append(h('option', { value: '' }, 'Select'));
+    (list || CANONICAL_VERTICALS).forEach(v => verticalSel.append(h('option', { value: v }, v)));
+  }
+  function updateVerticalsFromIndustry() {
+    const ind = industrySel.value;
+    const list = INDUSTRY_TO_VERTICALS[ind] || CANONICAL_VERTICALS;
+    setVerticalOptions(list);
+    verticalSel.value = '';
+    updateReady();
+  }
+  setVerticalOptions(CANONICAL_VERTICALS);
 
   function renderInsights() {
     grid.innerHTML = '';
@@ -350,7 +385,7 @@ export function renderAiSearch(root) {
     const ready = !!industrySel.value && !!verticalSel.value;
     runBtn.disabled = !ready;
   }
-  industrySel.addEventListener('change', updateReady);
+  industrySel.addEventListener('change', () => { updateVerticalsFromIndustry(); });
   verticalSel.addEventListener('change', updateReady);
   countrySel.addEventListener('change', () => {});
   updateReady();
