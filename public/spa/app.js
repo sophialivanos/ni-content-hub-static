@@ -1319,18 +1319,23 @@ export function renderMcAds(root) {
   const styles = ['Default','Narrative / Story-Driven','Conversational','Instructional / How-To','Persuasive / Conversion-Oriented','Analytical / Data-Led','Editorial / Journalistic','Narrative + Persuasive','Instructional + Conversational','Analytical + Third-Person','Narrative + First-Person','Poetic + Journalistic','Comparative + Listicle'];
   const toneSel = h('select', { class: 'select' }, ...tones.map(t => h('option', { value: t === 'Default' ? '' : t }, t)));
   const styleSel = h('select', { class: 'select' }, ...styles.map(s => h('option', { value: s === 'Default' ? '' : s }, s)));
+  function field(labelText, el, required) {
+    return h('div', { class: 'form-field' },
+      h('label', required ? { class: 'label-required' } : {}, labelText),
+      el
+    );
+  }
+  const frameFieldWrapper = field('Frames', frameRangeSel, false);
   const controls = h('div', { class: 'section' },
-    h('div', { class: 'row articles-controls' },
-      h('label', { class: 'label-required' }, 'Social Platform'), platformSel,
-      h('label', { class: 'label-required' }, 'Industry'), industrySel,
-      h('label', { class: 'label-required' }, 'Vertical'), verticalSel
-    ),
-    h('div', { class: 'row articles-controls' },
-      h('label', {}, 'Banned words'), bannedWords,
-      h('label', {}, 'Output type'), outTypeSel,
-      h('label', {}, 'Frames'), frameRangeSel,
-      h('label', {}, 'Tone'), toneSel,
-      h('label', {}, 'Style'), styleSel
+    h('div', { class: 'three-col' },
+      field('Social Platform', platformSel, true),
+      field('Industry', industrySel, true),
+      field('Vertical', verticalSel, true),
+      field('Banned words', bannedWords, false),
+      field('Output type', outTypeSel, false),
+      frameFieldWrapper,
+      field('Tone', toneSel, false),
+      field('Style', styleSel, false)
     )
   );
 
@@ -1344,7 +1349,7 @@ export function renderMcAds(root) {
   }
   platformSel.addEventListener('change', updateReady);
   verticalSel.addEventListener('change', updateReady);
-  outTypeSel.addEventListener('change', () => { updateReady(); framesControls.style.display = requiresFrames() ? '' : 'none'; });
+  outTypeSel.addEventListener('change', () => { updateReady(); framesControls.style.display = requiresFrames() ? '' : 'none'; frameFieldWrapper.style.display = requiresFrames() ? '' : 'none'; });
   frameRangeSel.addEventListener('change', updateReady);
   const cta = h('div', { class: 'section' }, h('div', { class: 'toolbar' }, generateBtn, regenBtn));
 
@@ -1438,6 +1443,8 @@ export function renderMcAds(root) {
   regenBtn.addEventListener('click', async () => { await generateAll(true); });
 
   updateVerticalsFromIndustryAds();
+  // Initialise visibility for frames-related controls in three-col
+  frameFieldWrapper.style.display = requiresFrames() ? '' : 'none';
   updateReady();
   root.append(hero, controls, cta, outCard);
 }

@@ -256,6 +256,17 @@ body {
 .tone-style .tone-style-col { display:flex; flex-direction: column; gap: 8px; }
 .tone-style .tone-style-col .select { width: 100%; }
 
+/* Three-column form layout for MC Ads inputs */
+.three-col { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:12px; align-items:end; }
+.form-field label { display:block; margin:0 0 4px 0; white-space:nowrap; }
+.form-field .select, .form-field .input { width:100%; }
+@media (max-width: 1024px) {
+  .three-col { grid-template-columns: repeat(2, minmax(0,1fr)); }
+}
+@media (max-width: 720px) {
+  .three-col { grid-template-columns: 1fr; }
+}
+
 /* Extra mobile responsiveness */
 @media (max-width: 720px) {
   .toolbar.ai-controls,
