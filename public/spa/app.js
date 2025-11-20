@@ -1072,9 +1072,9 @@ export function renderFunnel(root) {
     };
   }
 
-  optimiseBtn.addEventListener('click', async () => {
-    if (optimiseBtn.disabled) return;
-    optimiseBtn.disabled = true; const prev = optimiseBtn.textContent; optimiseBtn.textContent = 'Optimising…';
+  async function generateVariants() {
+    const prev = optimiseBtn.textContent;
+    optimiseBtn.disabled = true; optimiseBtn.textContent = 'Optimising…';
     await new Promise(r => setTimeout(r, 700));
     const base = verticalSel.value || 'your product';
     const v1 = buildVariant(`Find the right ${base} for you`, tone1, style1);
@@ -1084,11 +1084,30 @@ export function renderFunnel(root) {
     variantsCard.style.display = '';
     optimiseBtn.textContent = prev; optimiseBtn.disabled = false;
     regenVariantsBtn.classList.remove('hidden');
+  }
+
+  optimiseBtn.addEventListener('click', async () => {
+    // Respect gating: requires mandatory fields and persona generated
+    const ready = !!industrySel.value && !!verticalSel.value && personaGenerated;
+    if (!ready) return;
+    await generateVariants();
   });
   regenVariantsBtn.addEventListener('click', async () => {
+    // Regenerate from scratch: run the same generation again with current inputs
     await withWorking(regenVariantsBtn, 'Regenerating…', 'Regenerate variants');
-    optimiseBtn.click();
+    await generateVariants();
   });
+
+  // If mandatory selections change, require fresh persona and hide previous variants/regenerate
+  function resetAfterSelectionChange() {
+    personaGenerated = false;
+    regenPersonaBtn.classList.add('hidden');
+    regenVariantsBtn.classList.add('hidden');
+    variantsCard.style.display = 'none';
+    updateReady();
+  }
+  industrySel.addEventListener('change', resetAfterSelectionChange);
+  verticalSel.addEventListener('change', resetAfterSelectionChange);
 
   root.append(hero, row1, row2, row3, ctaSection, variantsCard);
 }
