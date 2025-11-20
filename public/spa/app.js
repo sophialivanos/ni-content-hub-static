@@ -945,12 +945,50 @@ export function renderVerticalProfiles(root) {
 
   // CTA
   const genBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Generate Vertical Profile');
+  const exportBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, '⬇ Export doc');
+  let lastProfile = null;
+  function exportDocFile(filename, content) {
+    try {
+      const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 300);
+    } catch {}
+  }
+  exportBtn.addEventListener('click', () => {
+    if (!lastProfile) return;
+    const v = verticalSel.value || 'Vertical';
+    const c = countrySel.value || 'US';
+    const lines = [
+      `Vertical Profile — ${v} (${c})`,
+      '',
+      'User Demographics',
+      ...lastProfile.demographics.map(x => `- ${x}`),
+      '',
+      'Regulations',
+      ...lastProfile.regulations.map(x => `- ${x}`),
+      '',
+      'Personas',
+      ...lastProfile.personas.map(x => `- ${x}`),
+      '',
+      'Content Considerations',
+      ...lastProfile.considerations.map(x => `- ${x}`),
+      '',
+      'Platform and Device Preferences',
+      ...lastProfile.platforms.map(x => `- ${x}`),
+    ];
+    exportDocFile(`${v.toLowerCase().replace(/[^a-z0-9]+/g,'-') || 'vertical'}-profile.doc`, lines.join('\n'));
+  });
   function updateReady() {
-    genBtn.disabled = !(industrySel.value && verticalSel.value);
+    const ready = !!industrySel.value && !!verticalSel.value;
+    genBtn.disabled = !ready;
+    exportBtn.disabled = !lastProfile;
   }
   verticalSel.addEventListener('change', updateReady);
   updateVerticalsFromIndustryVP();
-  const cta = h('div', { class: 'section' }, h('div', { class: 'toolbar' }, genBtn));
+  const cta = h('div', { class: 'section' }, h('div', { class: 'toolbar' }, genBtn, exportBtn));
 
   // Outputs
   const outCard = h('div', { class: 'card full', style: 'display:none' });
@@ -991,6 +1029,7 @@ export function renderVerticalProfiles(root) {
     const prev = genBtn.textContent; genBtn.disabled = true; genBtn.textContent = 'Generating…';
     await new Promise(r => setTimeout(r, 600));
     const { demographics, regulations, personas, considerations, platforms } = fabricateProfile();
+    lastProfile = { demographics, regulations, personas, considerations, platforms };
     outCard.innerHTML = '';
     outCard.append(
       h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'User Demographics'), ul(demographics)),
@@ -1001,6 +1040,7 @@ export function renderVerticalProfiles(root) {
     );
     outCard.style.display = '';
     genBtn.textContent = prev; genBtn.disabled = false;
+    exportBtn.disabled = false;
   });
 
   root.append(hero, controls, cta, outCard);
