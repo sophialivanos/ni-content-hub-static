@@ -976,7 +976,7 @@ export function renderFunnel(root) {
 
   // Controls row 2: Persona + current funnel
   const personaArea = h('textarea', { class: 'input', rows: '2', placeholder: 'Persona (e.g., Middle-aged homeowners seeking life insurance...)' });
-  const genPersonaBtn = h('button', { class: 'btn btn-primary' }, 'Generate persona');
+  const genPersonaBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Generate persona');
   const regenPersonaBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate persona');
   async function withWorking(btn, text, done) { const prev = btn.textContent; btn.disabled = true; btn.textContent = text; await new Promise(r=>setTimeout(r,600)); btn.textContent = done || prev; btn.disabled = false; }
   genPersonaBtn.addEventListener('click', async () => {
@@ -1018,6 +1018,7 @@ export function renderFunnel(root) {
   function updateReady() {
     const ready = !!industrySel.value && !!verticalSel.value;
     optimiseBtn.disabled = !ready;
+    genPersonaBtn.disabled = !ready;
   }
   verticalSel.addEventListener('change', updateReady);
   updateVerticalsFromIndustryFunnel();
