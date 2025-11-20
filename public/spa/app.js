@@ -616,13 +616,14 @@ export function renderArticles(root) {
     createHeadlinesBtn.disabled = true; const prev = createHeadlinesBtn.textContent; createHeadlinesBtn.textContent = 'Creating…';
     await new Promise(r => setTimeout(r, 500));
     renderHeadlines();
-    if (!selectedHeadline.value) { selectedHeadline.value = fabricateHeadlines()[0]; }
+    // Do not auto-populate; require the user to select a headline
+    selectedHeadline.value = '';
     createHeadlinesBtn.textContent = prev; createHeadlinesBtn.disabled = false;
     articleCard.style.display = '';
     updateArticleEnabled();
     regenHeadlinesBtn.classList.remove('hidden');
   });
-  regenHeadlinesBtn.addEventListener('click', () => { renderHeadlines(); selectedHeadline.value = fabricateHeadlines()[0]; updateArticleEnabled(); });
+  regenHeadlinesBtn.addEventListener('click', () => { renderHeadlines(); selectedHeadline.value = ''; updateArticleEnabled(); });
   const headlinesCard = h('div', { class: 'card full', style: 'display:none' },
     h('h3', {}, 'Step 2 — Create Headlines'),
     h('div', { class: 'toolbar' }, createHeadlinesBtn, regenHeadlinesBtn),
