@@ -578,6 +578,9 @@ export function renderArticles(root) {
     ];
     insightsList.innerHTML = '';
     items.forEach(x => insightsList.append(h('li', {}, x)));
+    // Ensure Selected headline box is empty until a headline is chosen
+    selectedHeadline.value = '';
+    updateArticleEnabled();
     getTrendsBtn.textContent = prev; getTrendsBtn.disabled = false;
     headlinesCard.style.display = '';
   });
