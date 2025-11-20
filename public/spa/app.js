@@ -940,23 +940,144 @@ export function renderWelcome(root) {
 
 export function renderFunnel(root) {
   root.innerHTML = '';
-  const q = h('input', { class: 'input', placeholder: 'Filter optimisation ideas…' });
-  const grid = h('div', { class: 'card-grid' });
-  const ideas = [
-    'Shorten forms',
-    'Sticky CTA on mobile',
-    'Trust signals above the fold',
-    'Comparison table',
-    'Reduce steps to checkout',
-  ].map(t => ({ t }));
-  function renderList() {
-    grid.innerHTML = '';
-    const term = (q.value || '').toLowerCase();
-    ideas.filter(x => x.t.toLowerCase().includes(term)).forEach(x => grid.append(card(x.t, 'Funnel idea')));
+  const hero = h('div', { class: 'page-hero' },
+    h('h1', {}, 'Funnel Optimisation'),
+    h('p', {}, 'Enter details for a current funnel to generate optimised variations, including rationale.')
+  );
+
+  // Controls row 1: Industry / Vertical / Platform
+  const industrySel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select industry'),
+    ...INDUSTRIES.map(i => h('option', { value: i }, i))
+  );
+  const verticalSel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select vertical')
+  );
+  function updateVerticalsFromIndustryFunnel() {
+    const ind = industrySel.value;
+    const verts = (INDUSTRY_TO_VERTICALS[ind] || CANONICAL_VERTICALS).slice(0, 20);
+    verticalSel.innerHTML = '';
+    verticalSel.append(h('option', { value: '' }, 'Select vertical'));
+    verts.forEach(v => verticalSel.append(h('option', { value: v }, v)));
   }
-  q.addEventListener('input', renderList);
-  renderList();
-  root.append(section('Funnel Optimisation', q), grid);
+  industrySel.addEventListener('change', () => { updateVerticalsFromIndustryFunnel(); updateReady(); });
+  const platforms = ['Facebook','Instagram','Google Ads','YouTube','TikTok','LinkedIn','Email'];
+  const platformSel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select platform'),
+    ...platforms.map(p => h('option', { value: p }, p))
+  );
+  const row1 = h('div', { class: 'section' },
+    h('div', { class: 'row articles-controls' },
+      h('label', { class: 'label-required' }, 'Industry'), industrySel,
+      h('label', { class: 'label-required' }, 'Vertical'), verticalSel,
+      h('label', {}, 'Platform'), platformSel
+    )
+  );
+
+  // Controls row 2: Persona + current funnel
+  const personaArea = h('textarea', { class: 'input', rows: '2', placeholder: 'Persona (e.g., Middle-aged homeowners seeking life insurance...)' });
+  const genPersonaBtn = h('button', { class: 'btn btn-primary' }, 'Generate persona');
+  const regenPersonaBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate persona');
+  async function withWorking(btn, text, done) { const prev = btn.textContent; btn.disabled = true; btn.textContent = text; await new Promise(r=>setTimeout(r,600)); btn.textContent = done || prev; btn.disabled = false; }
+  genPersonaBtn.addEventListener('click', async () => {
+    await withWorking(genPersonaBtn, 'Generating…', 'Generate persona');
+    personaArea.value = `Adults considering ${verticalSel.value || 'your product'} on ${platformSel.value || 'social'}, prioritising value, clarity and trust.`;
+    regenPersonaBtn.classList.remove('hidden');
+    updateReady();
+  });
+  regenPersonaBtn.addEventListener('click', async () => {
+    await withWorking(regenPersonaBtn, 'Regenerating…', 'Regenerate persona');
+    personaArea.value = `Audience segment for ${verticalSel.value || 'the vertical'} showing intent; responds to concise benefits and proof.`;
+    updateReady();
+  });
+  const currentFunnelArea = h('textarea', { class: 'input', rows: '2', placeholder: 'Current funnel (optional)' });
+  const row2 = h('div', { class: 'section' },
+    h('div', { class: 'row' }, h('label', {}, 'Persona'), personaArea, h('div', { class: 'toolbar' }, genPersonaBtn, regenPersonaBtn)),
+    h('div', { class: 'row', style: 'margin-top:10px' }, h('label', {}, 'Current Funnel (optional)'), currentFunnelArea)
+  );
+
+  // Controls row 3: Tone/Style pairs
+  const tones = ['Default','Warm & conversational','Slightly more formal','Upbeat and cheeky','Inspiring & Empowering','Gentle and warm','Informative and direct','Emotional and inspiring','Confident, expert, factual (Authoritative)','Warm, understanding, emotionally in-tune (Empathetic)','Casual, relaxed, friendly (Conversational)','Uplifting, motivational, purpose-driven (Inspiring)','Polished, neutral, minimal fluff (Professional)','Humorous, clever, youth-targeted (Witty/Playful)','Gentle, comforting, calm and grounded (Reassuring)','Stats-focused, analytical, objective (Data-driven)'];
+  const styles = ['Default','Narrative / Story-Driven','Conversational','Instructional / How-To','Persuasive / Conversion-Oriented','Analytical / Data-Led','Editorial / Journalistic','Narrative + Persuasive','Instructional + Conversational','Analytical + Third-Person','Narrative + First-Person','Poetic + Journalistic','Comparative + Listicle'];
+  const tone1 = h('select', { class: 'select' }, ...tones.map(t => h('option', { value: t === 'Default' ? '' : t }, t)));
+  const style1 = h('select', { class: 'select' }, ...styles.map(s => h('option', { value: s === 'Default' ? '' : s }, s)));
+  const tone2 = h('select', { class: 'select' }, ...tones.map(t => h('option', { value: t === 'Default' ? '' : t }, t)));
+  const style2 = h('select', { class: 'select' }, ...styles.map(s => h('option', { value: s === 'Default' ? '' : s }, s)));
+  const row3 = h('div', { class: 'section' },
+    h('div', { class: 'row articles-controls' },
+      h('label', {}, 'Tone 1'), tone1,
+      h('label', {}, 'Style 1'), style1,
+      h('label', {}, 'Tone 2'), tone2,
+      h('label', {}, 'Style 2'), style2,
+    )
+  );
+
+  // CTA: Optimise Funnel
+  const optimiseBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Optimise Funnel');
+  const regenVariantsBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate variants');
+  function updateReady() {
+    const ready = !!industrySel.value && !!verticalSel.value;
+    optimiseBtn.disabled = !ready;
+  }
+  verticalSel.addEventListener('change', updateReady);
+  updateVerticalsFromIndustryFunnel();
+  updateReady();
+  const ctaSection = h('div', { class: 'section' },
+    h('div', { class: 'toolbar' }, optimiseBtn, regenVariantsBtn)
+  );
+
+  // Outputs: Variants
+  const v1Title = h('input', { class: 'input', placeholder: 'Variant 1 title' });
+  const v1Copy = h('textarea', { class: 'input', rows: '3', placeholder: 'Variant 1 copy (editable)' });
+  const v1Hyp = h('textarea', { class: 'input', rows: '2', placeholder: 'Hypothesis / reasoning for Variant 1' });
+  const v2Title = h('input', { class: 'input', placeholder: 'Variant 2 title' });
+  const v2Copy = h('textarea', { class: 'input', rows: '3', placeholder: 'Variant 2 copy (editable)' });
+  const v2Hyp = h('textarea', { class: 'input', rows: '2', placeholder: 'Hypothesis / reasoning for Variant 2' });
+  const variantsWrap = h('div', { class: 'split-2' },
+    h('div', { class: 'card' },
+      h('h4', { class: 'card-title' }, 'Funnel Variant 1'),
+      v1Title, v1Copy, v1Hyp
+    ),
+    h('div', { class: 'card' },
+      h('h4', { class: 'card-title' }, 'Funnel Variant 2'),
+      v2Title, v2Copy, v2Hyp
+    )
+  );
+  const variantsCard = h('div', { class: 'card full', style: 'display:none' }, variantsWrap);
+
+  function buildVariant(titleBase, tSel, sSel) {
+    const t = (tSel.value || 'Professional').toLowerCase();
+    const s = (sSel.value || 'Conversational').toLowerCase();
+    return {
+      title: `${titleBase} — ${platformSel.value || 'Platform'} (${s})`,
+      copy:
+`You care about ${verticalSel.value || 'your audience'}’s outcome — here’s how we help:
+• Clear benefit 1 tied to ${platformSel.value || 'platform'}
+• Social proof or trust signal
+• Action-driven CTA`,
+      hyp: `We expect uplift from a ${t} tone with a ${s} structure that clarifies value quickly to ${platformSel.value || 'the audience'}.`
+    };
+  }
+
+  optimiseBtn.addEventListener('click', async () => {
+    if (optimiseBtn.disabled) return;
+    optimiseBtn.disabled = true; const prev = optimiseBtn.textContent; optimiseBtn.textContent = 'Optimising…';
+    await new Promise(r => setTimeout(r, 700));
+    const base = verticalSel.value || 'your product';
+    const v1 = buildVariant(`Find the right ${base} for you`, tone1, style1);
+    const v2 = buildVariant(`Make ${base} decisions with confidence`, tone2, style2);
+    v1Title.value = v1.title; v1Copy.value = v1.copy; v1Hyp.value = v1.hyp;
+    v2Title.value = v2.title; v2Copy.value = v2.copy; v2Hyp.value = v2.hyp;
+    variantsCard.style.display = '';
+    optimiseBtn.textContent = prev; optimiseBtn.disabled = false;
+    regenVariantsBtn.classList.remove('hidden');
+  });
+  regenVariantsBtn.addEventListener('click', async () => {
+    await withWorking(regenVariantsBtn, 'Regenerating…', 'Regenerate variants');
+    optimiseBtn.click();
+  });
+
+  root.append(hero, row1, row2, row3, ctaSection, variantsCard);
 }
 
 const ROUTES = {
