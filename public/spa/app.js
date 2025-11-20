@@ -976,18 +976,21 @@ export function renderFunnel(root) {
 
   // Controls row 2: Persona + current funnel
   const personaArea = h('textarea', { class: 'input', rows: '2', placeholder: 'Persona (e.g., Middle-aged homeowners seeking life insurance...)' });
-  const genPersonaBtn = h('button', { class: 'btn btn-primary hidden', disabled: 'disabled' }, 'Generate persona');
+  const genPersonaBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Generate persona');
   const regenPersonaBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate persona');
+  let personaGenerated = false;
   async function withWorking(btn, text, done) { const prev = btn.textContent; btn.disabled = true; btn.textContent = text; await new Promise(r=>setTimeout(r,600)); btn.textContent = done || prev; btn.disabled = false; }
   genPersonaBtn.addEventListener('click', async () => {
     await withWorking(genPersonaBtn, 'Generating…', 'Generate persona');
     personaArea.value = `Adults considering ${verticalSel.value || 'your product'} on ${platformSel.value || 'social'}, prioritising value, clarity and trust.`;
     regenPersonaBtn.classList.remove('hidden');
+    personaGenerated = true;
     updateReady();
   });
   regenPersonaBtn.addEventListener('click', async () => {
     await withWorking(regenPersonaBtn, 'Regenerating…', 'Regenerate persona');
     personaArea.value = `Audience segment for ${verticalSel.value || 'the vertical'} showing intent; responds to concise benefits and proof.`;
+    personaGenerated = true;
     updateReady();
   });
   const currentFunnelArea = h('textarea', { class: 'input', rows: '2', placeholder: 'Current funnel (optional)' });
@@ -1021,13 +1024,12 @@ export function renderFunnel(root) {
   const regenVariantsBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate variants');
   function updateReady() {
     const ready = !!industrySel.value && !!verticalSel.value;
-    optimiseBtn.disabled = !ready;
     genPersonaBtn.disabled = !ready;
-    // Show the Generate persona CTA only when mandatory fields are selected
-    if (ready) genPersonaBtn.classList.remove('hidden');
-    else genPersonaBtn.classList.add('hidden');
+    // Optimise requires persona to be generated
+    optimiseBtn.disabled = !(ready && personaGenerated);
   }
-  verticalSel.addEventListener('change', updateReady);
+  verticalSel.addEventListener('change', () => { personaGenerated = false; regenPersonaBtn.classList.add('hidden'); updateReady(); });
+  industrySel.addEventListener('change', () => { personaGenerated = false; regenPersonaBtn.classList.add('hidden'); });
   updateVerticalsFromIndustryFunnel();
   updateReady();
   const ctaSection = h('div', { class: 'section' },
