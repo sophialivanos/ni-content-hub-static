@@ -590,7 +590,7 @@ export function renderArticles(root) {
   // Step 2: Create headlines
   const headlineList = h('div', {});
   const selectedHeadline = h('input', { class: 'input', placeholder: 'Selected headline (editable)' });
-  const regenHeadlinesBtn = h('button', { class: 'btn btn-primary' }, 'Regenerate headlines');
+  const regenHeadlinesBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate headlines');
   const createHeadlinesBtn = h('button', { class: 'btn btn-primary' }, 'Create Headlines');
   function fabricateHeadlines() {
     const base = (verticalSel.value || eventSel.value || 'Your Topic').replace(/\s+/g, ' ');
@@ -620,6 +620,7 @@ export function renderArticles(root) {
     createHeadlinesBtn.textContent = prev; createHeadlinesBtn.disabled = false;
     articleCard.style.display = '';
     updateArticleEnabled();
+    regenHeadlinesBtn.classList.remove('hidden');
   });
   regenHeadlinesBtn.addEventListener('click', () => { renderHeadlines(); selectedHeadline.value = fabricateHeadlines()[0]; updateArticleEnabled(); });
   const headlinesCard = h('div', { class: 'card full', style: 'display:none' },
