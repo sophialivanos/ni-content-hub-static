@@ -148,18 +148,20 @@ function h(tag, attrs = {}, ...children) {
 }
 
 // Lightweight editor tools for any textarea: expand, tighten, +/- chars, add context
-function attachEditorTools(textarea) {
+function attachEditorTools(textarea, options = {}) {
   if (!textarea || textarea.__hasTools) return;
   textarea.__hasTools = true;
+  const { hideExpandReduce = false } = options;
   const tools = h('div', { class: 'editor-tools' });
-  const expandBtn = h('button', { class: 'btn btn-outline' }, 'Expand');
-  const tightenBtn = h('button', { class: 'btn btn-outline' }, 'Reduce');
+  const expandBtn = hideExpandReduce ? null : h('button', { class: 'btn btn-outline' }, 'Expand');
+  const tightenBtn = hideExpandReduce ? null : h('button', { class: 'btn btn-outline' }, 'Reduce');
   const plusBtn = h('button', { class: 'btn btn-outline' }, '+ chars');
   const minusBtn = h('button', { class: 'btn btn-outline' }, '− chars');
   const ctxInput = h('input', { class: 'input', placeholder: 'Add context…', style: 'width:260px' });
   const ctxBtn = h('button', { class: 'btn btn-outline' }, 'Apply');
   const counter = h('span', { class: 'muted' }, '');
-  tools.append(expandBtn, tightenBtn, plusBtn, minusBtn, ctxInput, ctxBtn, h('span', { class: 'spacer' }), counter);
+  if (!hideExpandReduce) tools.append(expandBtn, tightenBtn);
+  tools.append(plusBtn, minusBtn, ctxInput, ctxBtn, h('span', { class: 'spacer' }), counter);
   textarea.parentNode && textarea.parentNode.insertBefore(tools, textarea);
   function getSel() {
     const start = textarea.selectionStart ?? 0;
@@ -189,7 +191,7 @@ function attachEditorTools(textarea) {
   }
   function plusChars(txt) { return txt + ' ' + 'More context to enrich and elaborate on key points.'.slice(0, Math.max(24, Math.min(80, Math.floor(txt.length * 0.1)))); }
   function minusChars(txt) { return reduceText(txt); }
-  expandBtn.addEventListener('click', () => {
+  if (expandBtn) expandBtn.addEventListener('click', () => {
     const { start, end } = getSel();
     const v = textarea.value || '';
     const sel = start !== end ? v.slice(start, end) : v;
@@ -197,7 +199,7 @@ function attachEditorTools(textarea) {
     if (start !== end) setVal(v.slice(0, start) + out + v.slice(end), true);
     else setVal(out, true);
   });
-  tightenBtn.addEventListener('click', () => {
+  if (tightenBtn) tightenBtn.addEventListener('click', () => {
     const { start, end } = getSel();
     const v = textarea.value || '';
     const sel = start !== end ? v.slice(start, end) : v;
@@ -1466,7 +1468,7 @@ export function renderMcAds(root) {
   // Outputs
   const personaArea = h('textarea', { class: 'input', rows: '2', placeholder: 'Platform-specific persona', readOnly: false });
   const copyArea = h('textarea', { class: 'input', rows: '4', placeholder: 'Ad copy will appear here (editable)' });
-  attachEditorTools(copyArea);
+  attachEditorTools(copyArea, { hideExpandReduce: true });
   const framesWrap = h('div', { class: 'tone-style' }); // reuse flex column styles
   const framesControls = h('div', { class: 'toolbar', style: 'display:none' },
     h('button', { class: 'btn btn-outline', id: 'decFrames' }, '− Fewer frames'),
@@ -1572,7 +1574,7 @@ export function renderMcAds(root) {
       );
       const ta = h('textarea', { class: 'input', rows: '3' });
       ta.value = txt;
-      framesWrap.append(
+      const block = h('div', { class: 'frame-block' },
         h('div', { class: 'row articles-controls' },
           h('label', {}, `Frame ${idx+1}`),
           emotionSel,
@@ -1581,7 +1583,8 @@ export function renderMcAds(root) {
         ),
         ta
       );
-      attachEditorTools(ta);
+      framesWrap.append(block);
+      attachEditorTools(ta, { hideExpandReduce: true });
     });
   }
   function getAllOutputText() {

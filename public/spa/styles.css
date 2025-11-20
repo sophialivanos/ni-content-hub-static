@@ -260,6 +260,7 @@ body {
 
 /* Three-column form layout for MC Ads inputs */
 .three-col { display:grid; grid-template-columns: repeat(3, minmax(0,1fr)); gap:12px; align-items:end; }
+.frame-block { margin-bottom: 14px; }
 .form-field label { display:block; margin:0 0 4px 0; white-space:nowrap; }
 .form-field .select, .form-field .input { width:100%; }
 @media (max-width: 1024px) {
