@@ -296,12 +296,8 @@ export function renderAiSearch(root) {
       await withWorkingText(createInfBtn, 'Creating infographic…', 'Create infographic');
       regenInfBtn.classList.remove('hidden');
     });
-    regenImgBtn.addEventListener('click', async () => {
-      await withWorkingText(regenImgBtn, 'Regenerating image…', 'Regenerate image');
-    });
-    regenInfBtn.addEventListener('click', async () => {
-      await withWorkingText(regenInfBtn, 'Regenerating infographic…', 'Regenerate infographic');
-    });
+    regenImgBtn.addEventListener('click', () => { createImgBtn.click(); });
+    regenInfBtn.addEventListener('click', () => { createInfBtn.click(); });
     const visualsSplit = h('div', { class: 'split-2' },
       h('div', { class: 'card' },
         h('h4', { class: 'card-title' }, 'Images'),
@@ -696,9 +692,9 @@ Conclusion — Clear next steps and a concise wrap-up.`;
     })();
   }
   imgCreate.addEventListener('click', async () => { await withWorking(imgCreate, 'Creating image…', 'Create image'); imgRegen.classList.remove('hidden'); });
-  imgRegen.addEventListener('click', async () => { await withWorking(imgRegen, 'Regenerating…', 'Regenerate image'); });
+  imgRegen.addEventListener('click', () => { imgCreate.click(); });
   infCreate.addEventListener('click', async () => { await withWorking(infCreate, 'Creating infographic…', 'Create infographic'); infRegen.classList.remove('hidden'); });
-  infRegen.addEventListener('click', async () => { await withWorking(infRegen, 'Regenerating…', 'Regenerate infographic'); });
+  infRegen.addEventListener('click', () => { infCreate.click(); });
   const visualsCard = h('div', { class: 'card full', style: 'display:none' },
     h('h3', {}, 'Step 4 — Visuals'),
     h('div', { class: 'split-2' },
