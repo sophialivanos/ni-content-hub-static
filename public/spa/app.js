@@ -59,7 +59,6 @@ let COUNTRIES = [
   { code:'RO', label:'Romania' },
   { code:'RU', label:'Russia' },
   { code:'SE', label:'Sweden' },
-  { code:'SP', label:'Spain (SP)' },
   { code:'UK', label:'United Kingdom' },
   { code:'US', label:'United States' }
 ];
