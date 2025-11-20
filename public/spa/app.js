@@ -1370,13 +1370,16 @@ export function renderMcAds(root) {
       framesWrap
     )
   );
-  // Step: Compliance review (only for scripts)
+  // Step: Compliance review and quick check
   const compClaims = h('input', { type: 'checkbox' });
   const compBanned = h('input', { type: 'checkbox' });
   const compDisclosures = h('input', { type: 'checkbox' });
   const compNotes = h('textarea', { class: 'input', rows: '3', placeholder: 'Compliance notes, disclosures, and approvals' });
+  const compBtn = h('button', { class: 'btn btn-primary' }, 'Compliant?');
+  const compResult = h('div', { class: 'muted', style: 'margin-left:10px' }, '');
   const complianceCard = h('div', { class: 'card full', style: 'display:none' },
     h('h3', {}, 'Step — Compliance Review'),
+    h('div', { class: 'toolbar' }, compBtn, compResult),
     h('div', { class: 'card' },
       h('h4', { class: 'card-title' }, 'Checklist'),
       h('div', { class: 'toolbar' },
@@ -1469,6 +1472,35 @@ export function renderMcAds(root) {
       );
     });
   }
+  function getAllOutputText() {
+    if (requiresFrames()) {
+      const areas = Array.from(framesWrap.querySelectorAll('textarea'));
+      return areas.map(a => a.value || '').join('\n');
+    }
+    return copyArea.value || '';
+  }
+  function checkCompliance() {
+    const issues = [];
+    const text = getAllOutputText().toLowerCase();
+    const redFlags = ['guarantee', 'cure', 'risk-free', '#1', 'best ', 'only ', 'free '];
+    const banned = (bannedWords.value || '').split(/[,\n]/).map(s => s.trim()).filter(Boolean);
+    banned.forEach(w => { if (w && text.includes(w.toLowerCase())) issues.push(`Contains banned word: "${w}"`); });
+    redFlags.forEach(f => { if (text.includes(f)) issues.push(`Potential prohibited claim: ${f}`); });
+    if (!compDisclosures.checked && /\bterms?\b|\boffer\b/i.test(text)) {
+      issues.push('Mentions offer/terms without marking disclosures checked');
+    }
+    return issues;
+  }
+  compBtn.addEventListener('click', () => {
+    const issues = checkCompliance();
+    if (issues.length === 0) {
+      compResult.textContent = 'Likely compliant (no obvious issues found).';
+      compResult.style.color = '#16a34a';
+    } else {
+      compResult.textContent = `Issues found: ${issues.slice(0,3).join(' • ')}`;
+      compResult.style.color = '#dc2626';
+    }
+  });
   let currentFrames = 0;
   const decBtn = framesControls.querySelector('#decFrames');
   const incBtn = framesControls.querySelector('#incFrames');
@@ -1492,13 +1524,15 @@ export function renderMcAds(root) {
       document.getElementById('scriptCard').style.display = '';
       framesControls.style.display = '';
       complianceCard.style.display = '';
+      compResult.textContent = '';
     } else {
       copyArea.value = buildAdCopy();
       document.getElementById('outTitle').textContent = 'Ad Copy';
       copyArea.style.display = '';
       document.getElementById('scriptCard').style.display = 'none';
       framesControls.style.display = 'none';
-      complianceCard.style.display = 'none';
+      complianceCard.style.display = '';
+      compResult.textContent = '';
     }
     outCard.style.display = '';
     regenBtn.classList.remove('hidden');
