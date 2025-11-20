@@ -282,7 +282,7 @@ export function renderAiSearch(root) {
   );
   const countrySel = h('select', { class: 'select' },
     h('option', { value: '' }, 'Select'),
-    ...COUNTRIES.map(c => h('option', { value: c.code }, c.code))
+    ...COUNTRIES.map(c => h('option', { value: c.code }, `${c.label} (${c.code})`))
   );
   const runBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Get Insights');
   const industryLabel = h('label', { class: 'label-required' }, 'Industry');
@@ -602,7 +602,7 @@ export function renderArticles(root) {
   );
   const countrySel = h('select', { class: 'select' },
     h('option', { value: '' }, 'Select country'),
-    ...COUNTRIES.map(c => h('option', { value: c.code }, c.label))
+    ...COUNTRIES.map(c => h('option', { value: c.code }, `${c.label} (${c.code})`))
   );
   function updateVerticalsFromIndustryArticles() {
     const ind = industrySel.value;
@@ -819,10 +819,10 @@ export function renderEvents(root) {
   );
   // Leave as "Select" by default (required field)
   // Removed prev/next arrows per request
-  const countriesLabel = h('label', {}, 'Countries (Optional)');
+  const countriesLabel = h('label', {}, 'Country (Optional)');
   const countriesSel = h('select', { class: 'select', style: 'width:160px' },
     h('option', { value: '' }, 'Select'),
-    ...COUNTRIES.map(c => h('option', { value: c.code }, c.code))
+    ...COUNTRIES.map(c => h('option', { value: c.code }, `${c.label} (${c.code})`))
   );
   const verticalLabel = h('label', {}, 'Vertical (Optional)');
   const verticalSel = h('select', { class: 'select', style: 'width:160px' },
@@ -837,6 +837,12 @@ export function renderEvents(root) {
   const grid = h('div', { class: 'card-grid' });
   const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'width:300px' });
   const searchBtn = h('button', { class: 'btn btn-primary' }, 'Search');
+  // API output area shown under the top section
+  const apiOutPre = h('pre', { class: 'muted', style: 'white-space:pre-wrap;margin:0' }, '');
+  const apiOutSection = h('div', { class: 'section', style: 'display:none' },
+    h('div', { class: 'row' }, h('label', {}, 'Events Discovery (API response)')),
+    apiOutPre
+  );
 
   function setMonth(delta) {
     // If no month is chosen, start from current month
@@ -872,6 +878,7 @@ export function renderEvents(root) {
       return;
     }
     const month = mIdx;
+    const monthNameLower = (monthSel.value || '').toLowerCase();
     const countries = Array.from(countriesSel.selectedOptions).map(o => o.value).filter(Boolean);
     const vertical = verticalSel.value || '';
     const commercialOnly = !!commercialChk.checked;
@@ -879,6 +886,25 @@ export function renderEvents(root) {
     // brief delay so the loading state is visible
     await new Promise(r => setTimeout(r, 500));
     try {
+      // Call external API with selected params; country and vertical optional
+      try {
+        const payload = {
+          month: monthNameLower,
+          ...(countriesSel.value ? { country: countriesSel.value } : {}),
+          ...(vertical ? { vertical } : {}),
+        };
+        const resp = await fetch('https://chat-gpt-staging.naturalint.com/lf/workflow/content_events_discovery', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+        const text = await resp.text();
+        apiOutPre.textContent = text || '(empty response)';
+        apiOutSection.style.display = '';
+      } catch (e) {
+        apiOutPre.textContent = 'API request failed.';
+        apiOutSection.style.display = '';
+      }
       const { events } = computeSeasonalEvents({ month, countries: countries.length ? countries : COUNTRIES.map(c=>c.code), commercialOnly });
       lastEvents = events.map(ev => {
         const rel = deriveRelevance(ev, vertical);
@@ -999,7 +1025,7 @@ export function renderEvents(root) {
   });
 
   // Render main content
-  root.append(hero, controls, grid);
+  root.append(hero, controls, apiOutSection, grid);
 
   // initial state: require explicit selections (month required)
 }
@@ -1030,7 +1056,7 @@ export function renderVerticalProfiles(root) {
   industrySel.addEventListener('change', updateVerticalsFromIndustryVP);
   const countrySel = h('select', { class: 'select' },
     h('option', { value: '' }, 'Select country'),
-    ...COUNTRIES.map(c => h('option', { value: c.code }, c.label))
+    ...COUNTRIES.map(c => h('option', { value: c.code }, `${c.label} (${c.code})`))
   );
   const controls = h('div', { class: 'section' },
     h('div', { class: 'row articles-controls' },
