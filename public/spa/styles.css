@@ -48,7 +48,7 @@ body {
 .layout.collapsed .nav-link .label { display:none; }
 .layout.collapsed .nav-link svg { margin-right: 0 !important; }
 
-.main { padding: 20px; background: #ffffff; }
+.main { padding: 20px; background: #ffffff; max-width: 100%; overflow-x: hidden; }
 
 /* Welcome page */
 .welcome-wrap { display: flex; align-items: center; justify-content: center; padding: 40px 16px; }
@@ -121,7 +121,7 @@ body {
 /* Input group with inline action button (e.g., Pull BTC) */
 .input-group { position: relative; } /* legacy - unused now */
 .btc-url-input { width: 420px; max-width: 100%; flex: 0 0 420px; }
-.btc-url-row { margin-bottom: 14px; gap: 12px; }
+.btc-url-row { margin-bottom: 14px; gap: 12px; flex-wrap: nowrap; }
 /* Seasonal Events controls - keep single line and compact selects */
 .events-controls { flex-wrap: nowrap; }
 .events-controls label { white-space: nowrap; }
@@ -253,6 +253,18 @@ body {
 
 /* Two-column split inside a card (e.g., visuals) */
 .split-2 { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+
+/* Extra mobile responsiveness */
+@media (max-width: 720px) {
+  .toolbar.ai-controls,
+  .articles-controls,
+  .btc-url-row { flex-wrap: wrap; }
+  .toolbar.ai-controls .select,
+  .articles-controls .select,
+  .articles-controls .input { width: 100% !important; min-width: 0; }
+  .btc-url-input { flex: 1 1 100%; width: 100%; }
+  .btc-url-row .btn { margin-top: 8px; }
+}
 .split-2 .card .toolbar { margin-bottom: 10px; }
 
 /* Tabs */
