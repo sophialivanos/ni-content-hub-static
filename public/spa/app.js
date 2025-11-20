@@ -523,7 +523,7 @@ export function renderArticles(root) {
     verticalSel.append(h('option', { value: '' }, 'Select vertical'));
     verts.forEach(v => verticalSel.append(h('option', { value: v }, v)));
   }
-  industrySel.addEventListener('change', updateVerticalsFromIndustryArticles);
+  industrySel.addEventListener('change', () => { updateVerticalsFromIndustryArticles(); updateTrendsEnabled(); });
   const manualRow = h('div', { class: 'section' },
     h('div', { class: 'row articles-controls' },
       h('label', { class: 'label-required' }, 'Industry'), industrySel,
@@ -557,7 +557,14 @@ export function renderArticles(root) {
 
   // Step 1: Get trends + insights
   const insightsList = h('ul', {});
-  const getTrendsBtn = h('button', { class: 'btn btn-primary' }, 'Get Trends + Insights');
+  const getTrendsBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Get Trends + Insights');
+  function updateTrendsEnabled() {
+    const hasIndustry = (industrySel.value || '').trim().length > 0;
+    const hasVertical = (verticalSel.value || '').trim().length > 0;
+    getTrendsBtn.disabled = !(hasIndustry && hasVertical);
+  }
+  verticalSel.addEventListener('change', updateTrendsEnabled);
+  updateTrendsEnabled();
   getTrendsBtn.addEventListener('click', async () => {
     getTrendsBtn.disabled = true; const prev = getTrendsBtn.textContent; getTrendsBtn.textContent = 'Generating…';
     await new Promise(r => setTimeout(r, 600));
