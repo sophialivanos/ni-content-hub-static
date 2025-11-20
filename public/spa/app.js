@@ -1370,17 +1370,46 @@ export function renderMcAds(root) {
       framesWrap
     )
   );
+  // Step: Compliance review (only for scripts)
+  const compClaims = h('input', { type: 'checkbox' });
+  const compBanned = h('input', { type: 'checkbox' });
+  const compDisclosures = h('input', { type: 'checkbox' });
+  const compNotes = h('textarea', { class: 'input', rows: '3', placeholder: 'Compliance notes, disclosures, and approvals' });
+  const complianceCard = h('div', { class: 'card full', style: 'display:none' },
+    h('h3', {}, 'Step — Compliance Review'),
+    h('div', { class: 'card' },
+      h('h4', { class: 'card-title' }, 'Checklist'),
+      h('div', { class: 'toolbar' },
+        h('label', { class: 'checkbox' }, compClaims, 'Claims verified and substantiated'),
+        h('label', { class: 'checkbox' }, compBanned, 'Banned words removed/avoided'),
+        h('label', { class: 'checkbox' }, compDisclosures, 'Disclosures included where required')
+      ),
+      h('div', {}, compNotes)
+    )
+  );
 
   function buildPersona() {
     return `${platformSel.value} users interested in ${verticalSel.value || 'your offer'} within ${industrySel.value} — respond to ${toneSel.value || 'friendly'} tone and ${styleSel.value || 'conversational'} style.`;
   }
+  function randPick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
   function buildAdCopy() {
     const banned = (bannedWords.value || '').trim();
-    const lines = [
+    const openers = [
       `Looking for the perfect ${verticalSel.value || 'solution'}?`,
-      `Discover options that fit your needs on ${platformSel.value}.`,
-      `Get started today!`
+      `Ready to upgrade your ${verticalSel.value || 'setup'}?`,
+      `It’s time to rethink ${verticalSel.value || 'your options'}.`
     ];
+    const middles = [
+      `Discover options that fit your needs on ${platformSel.value}.`,
+      `See why others choose us on ${platformSel.value}.`,
+      `Compare, shortlist and decide—fast—on ${platformSel.value}.`
+    ];
+    const closers = [
+      `Get started today!`,
+      `Tap to learn more.`,
+      `Join thousands who switched.`
+    ];
+    const lines = [randPick(openers), randPick(middles), randPick(closers)];
     return lines.map(l => banned ? l.replace(new RegExp(banned,'ig'), '—') : l).join(' ');
   }
   function parseRange(val) {
@@ -1389,18 +1418,55 @@ export function renderMcAds(root) {
     return parseInt(m[1], 10);
     }
   function buildScriptFrames(count) {
+    const hooks = [
+      `Hook: ${verticalSel.value || 'Your solution'} in 5 seconds`,
+      `Question: Struggling with ${verticalSel.value || 'this'}?`,
+      `POV: Life with and without ${verticalSel.value || 'it'}`
+    ];
+    const benefits = [
+      `Benefit: Fast, simple, and tailored to you`,
+      `Proof: Real results from people like you`,
+      `Feature: What makes us different`
+    ];
+    const ctas = [
+      `CTA: Learn more`,
+      `CTA: Try it today`,
+      `CTA: Get started`
+    ];
     const frames = [];
     for (let i = 1; i <= count; i++) {
-      frames.push(`Frame ${i}: Hook/benefit tailored for ${platformSel.value}.`);
+      const line = i === 1 ? randPick(hooks) : i === count ? randPick(ctas) : randPick(benefits);
+      frames.push(`${line} — on ${platformSel.value}.`);
     }
     return frames;
   }
   function renderFrames(frames) {
     framesWrap.innerHTML = '';
+    const emotions = ['Excited','Reassuring','Inspirational','Playful','Urgent','Trustworthy'];
     frames.forEach((txt, idx) => {
-      const ta = h('textarea', { class: 'input', rows: '3' },);
+      const emotionSel = h('select', { class: 'select' },
+        h('option', { value: '' }, 'Emotion'),
+        ...emotions.map(e => h('option', { value: e }, e))
+      );
+      const toneSelF = h('select', { class: 'select' },
+        h('option', { value: '' }, 'Tone'),
+        ...tones.map(t => h('option', { value: t === 'Default' ? '' : t }, t))
+      );
+      const styleSelF = h('select', { class: 'select' },
+        h('option', { value: '' }, 'Style'),
+        ...styles.map(s => h('option', { value: s === 'Default' ? '' : s }, s))
+      );
+      const ta = h('textarea', { class: 'input', rows: '3' });
       ta.value = txt;
-      framesWrap.append(h('div', { class: 'row' }, h('label', {}, `Frame ${idx+1}`)), ta);
+      framesWrap.append(
+        h('div', { class: 'row articles-controls' },
+          h('label', {}, `Frame ${idx+1}`),
+          emotionSel,
+          toneSelF,
+          styleSelF
+        ),
+        ta
+      );
     });
   }
   let currentFrames = 0;
@@ -1425,12 +1491,14 @@ export function renderMcAds(root) {
       copyArea.style.display = 'none';
       document.getElementById('scriptCard').style.display = '';
       framesControls.style.display = '';
+      complianceCard.style.display = '';
     } else {
       copyArea.value = buildAdCopy();
       document.getElementById('outTitle').textContent = 'Ad Copy';
       copyArea.style.display = '';
       document.getElementById('scriptCard').style.display = 'none';
       framesControls.style.display = 'none';
+      complianceCard.style.display = 'none';
     }
     outCard.style.display = '';
     regenBtn.classList.remove('hidden');
@@ -1446,7 +1514,7 @@ export function renderMcAds(root) {
   // Initialise visibility for frames-related controls in three-col
   frameFieldWrapper.style.display = requiresFrames() ? '' : 'none';
   updateReady();
-  root.append(hero, controls, cta, outCard);
+  root.append(hero, controls, cta, outCard, complianceCard);
 }
 
 
