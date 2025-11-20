@@ -205,6 +205,8 @@ body {
 .label-required::after { content: " *"; color: #ef4444; }
 .card .card-header { display:flex; align-items:center; justify-content:space-between; gap:10px; cursor:pointer; }
 .card .card-title { margin:0; font-size:16px; }
+.editor-tools { display:flex; flex-wrap:wrap; gap:8px; align-items:center; margin-bottom:8px; }
+.editor-tools .input { width:220px; }
 .card .card-actions { display:flex; align-items:center; gap:8px; }
 .card .card-body { margin-top:8px; display:none; }
 .card.expanded .card-body { display:block; }

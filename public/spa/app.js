@@ -147,6 +147,95 @@ function h(tag, attrs = {}, ...children) {
   return el;
 }
 
+// Lightweight editor tools for any textarea: expand, tighten, +/- chars, add context
+function attachEditorTools(textarea) {
+  if (!textarea || textarea.__hasTools) return;
+  textarea.__hasTools = true;
+  const tools = h('div', { class: 'editor-tools' });
+  const expandBtn = h('button', { class: 'btn btn-outline' }, 'Expand');
+  const tightenBtn = h('button', { class: 'btn btn-outline' }, 'Reduce');
+  const plusBtn = h('button', { class: 'btn btn-outline' }, '+ chars');
+  const minusBtn = h('button', { class: 'btn btn-outline' }, '− chars');
+  const ctxInput = h('input', { class: 'input', placeholder: 'Add context…', style: 'width:260px' });
+  const ctxBtn = h('button', { class: 'btn btn-outline' }, 'Apply');
+  const counter = h('span', { class: 'muted' }, '');
+  tools.append(expandBtn, tightenBtn, plusBtn, minusBtn, ctxInput, ctxBtn, h('span', { class: 'spacer' }), counter);
+  textarea.parentNode && textarea.parentNode.insertBefore(tools, textarea);
+  function getSel() {
+    const start = textarea.selectionStart ?? 0;
+    const end = textarea.selectionEnd ?? 0;
+    return { start, end };
+  }
+  function setVal(newVal, selToEnd = false) {
+    textarea.value = newVal;
+    updateCount();
+    if (selToEnd) {
+      textarea.selectionStart = textarea.selectionEnd = newVal.length;
+    }
+    textarea.dispatchEvent(new Event('input', { bubbles: true }));
+  }
+  function updateCount() { counter.textContent = `${(textarea.value || '').length} chars`; }
+  function expandText(txt) {
+    // Naive expansion: duplicate key sentences and add connective phrases
+    const parts = txt.split(/([.!?]\s+)/);
+    if (parts.length < 3) return txt + ' Additionally, here are more details to consider.';
+    return parts.slice(0, parts.length - 1).join('') + ' Furthermore, consider supporting details and examples for clarity.';
+  }
+  function reduceText(txt) {
+    // Naive reduction: trim to ~85% by removing middle sentences/extra spaces
+    const target = Math.max(0, Math.floor(txt.length * 0.85));
+    if (txt.length <= target) return txt.trim();
+    return (txt.slice(0, target).replace(/\s+\S*$/, '') + '…').trim();
+  }
+  function plusChars(txt) { return txt + ' ' + 'More context to enrich and elaborate on key points.'.slice(0, Math.max(24, Math.min(80, Math.floor(txt.length * 0.1)))); }
+  function minusChars(txt) { return reduceText(txt); }
+  expandBtn.addEventListener('click', () => {
+    const { start, end } = getSel();
+    const v = textarea.value || '';
+    const sel = start !== end ? v.slice(start, end) : v;
+    const out = expandText(sel);
+    if (start !== end) setVal(v.slice(0, start) + out + v.slice(end), true);
+    else setVal(out, true);
+  });
+  tightenBtn.addEventListener('click', () => {
+    const { start, end } = getSel();
+    const v = textarea.value || '';
+    const sel = start !== end ? v.slice(start, end) : v;
+    const out = reduceText(sel);
+    if (start !== end) setVal(v.slice(0, start) + out + v.slice(end), true);
+    else setVal(out, true);
+  });
+  plusBtn.addEventListener('click', () => {
+    const { start, end } = getSel();
+    const v = textarea.value || '';
+    const sel = start !== end ? v.slice(start, end) : v;
+    const out = plusChars(sel);
+    if (start !== end) setVal(v.slice(0, start) + out + v.slice(end), true);
+    else setVal(out, true);
+  });
+  minusBtn.addEventListener('click', () => {
+    const { start, end } = getSel();
+    const v = textarea.value || '';
+    const sel = start !== end ? v.slice(start, end) : v;
+    const out = minusChars(sel);
+    if (start !== end) setVal(v.slice(0, start) + out + v.slice(end), true);
+    else setVal(out, true);
+  });
+  ctxBtn.addEventListener('click', () => {
+    const ctx = (ctxInput.value || '').trim();
+    if (!ctx) return;
+    const { start, end } = getSel();
+    const v = textarea.value || '';
+    const sel = start !== end ? v.slice(start, end) : v;
+    const out = sel + (sel ? ' ' : '') + `Additional context: ${ctx}.`;
+    if (start !== end) setVal(v.slice(0, start) + out + v.slice(end), true);
+    else setVal(out, true);
+    ctxInput.value = '';
+  });
+  textarea.addEventListener('input', updateCount);
+  updateCount();
+}
+
 function card(title, body) {
   return h('div', { class: 'card' }, h('h3', {}, title), h('p', {}, body));
 }
@@ -333,7 +422,7 @@ export function renderAiSearch(root) {
       updateCreateEnabled();
     });
     // Create or optimise content based on BTC
-    const outputArea = h('textarea', { class: 'input', rows: '10', placeholder: 'Generated content will appear here. You can edit freely.' });
+  const outputArea = h('textarea', { class: 'input', rows: '10', placeholder: 'Generated content will appear here. You can edit freely.' });
     outputArea.value = '';
     const exportBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, '⬇ Export doc');
     function exportDocFile(filename, content) {
@@ -387,7 +476,7 @@ export function renderAiSearch(root) {
       updateCreateEnabled();
     });
     // BTC content card (placed under Trends, first column)
-    const btcCard = h('div', { class: 'card full' },
+  const btcCard = h('div', { class: 'card full' },
       h('h3', {}, 'BTC content'),
       urlRow,
       btcArea,
@@ -398,9 +487,10 @@ export function renderAiSearch(root) {
       h('div', { class: 'row' },
         h('h3', { style: 'margin:0' }, 'Generated content')
       ),
-      outputArea,
+    outputArea,
       h('div', { class: 'toolbar export-row' }, exportBtn)
     );
+  attachEditorTools(outputArea);
 
     // Append rows in order:
     // Row 1: Trends, Steps (rec), Reddit, Steps (actions), Aggregator, FAQs, Page Updates
@@ -632,6 +722,7 @@ export function renderArticles(root) {
 
   // Step 3: Generate article (editable) + export + visuals
   const articleArea = h('textarea', { class: 'input', rows: '12', placeholder: 'Generated article will appear here. You can edit freely.' });
+  const extraContext = h('textarea', { class: 'input', rows: '2', placeholder: 'Additional context for the article (optional)' });
   const exportBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, '⬇ Export doc');
   function exportDocFile(filename, content) {
     try {
@@ -660,6 +751,7 @@ export function renderArticles(root) {
     const head = selectedHeadline.value || 'Your Article';
     const tone = toneSel.value || 'Professional';
     const style = styleSel.value || 'Conversational';
+    const ctx = (extraContext.value || '').trim();
     articleArea.value =
 `# ${head}
 
@@ -669,15 +761,18 @@ Introduction — In this ${style.toLowerCase()} piece, we explore the latest dev
 - Trend 2: User needs and search intent
 - Trend 3: Actionable recommendations
 
-Conclusion — Clear next steps and a concise wrap-up.`;
+${ctx ? `Additional context — ${ctx}\n\n` : ''}Conclusion — Clear next steps and a concise wrap-up.`;
     genArticleBtn.textContent = prev; genArticleBtn.disabled = false; updateArticleEnabled();
     visualsCard.style.display = '';
   });
   const articleCard = h('div', { class: 'card full', style: 'display:none' },
     h('h3', {}, 'Step 3 — Generate Article'),
     h('div', { class: 'toolbar' }, genArticleBtn, exportBtn),
+    extraContext,
     articleArea
   );
+  // attach editor tools
+  attachEditorTools(articleArea);
 
   // Visuals
   const imgCreate = h('button', { class: 'btn btn-primary' }, 'Create image');
@@ -1031,16 +1126,30 @@ export function renderVerticalProfiles(root) {
     const { demographics, regulations, personas, considerations, platforms } = fabricateProfile();
     lastProfile = { demographics, regulations, personas, considerations, platforms };
     outCard.innerHTML = '';
-    outCard.append(
-      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'User Demographics'), ul(demographics)),
-      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'Regulations'), ul(regulations)),
-      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'Personas'), ul(personas)),
-      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'Content Considerations'), ul(considerations)),
-      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'Platform and Device Preferences'), ul(platforms)),
-    );
+    function sectionEditor(title, lines) {
+      const ta = h('textarea', { class: 'input', rows: String(Math.max(3, lines.length + 1)) });
+      ta.value = lines.join('\n');
+      const cardEl = h('div', { class: 'card' }, h('h4', { class: 'card-title' }, title), ta);
+      attachEditorTools(ta);
+      return { cardEl, ta };
+    }
+    const s1 = sectionEditor('User Demographics', demographics);
+    const s2 = sectionEditor('Regulations', regulations);
+    const s3 = sectionEditor('Personas', personas);
+    const s4 = sectionEditor('Content Considerations', considerations);
+    const s5 = sectionEditor('Platform and Device Preferences', platforms);
+    outCard.append(s1.cardEl, s2.cardEl, s3.cardEl, s4.cardEl, s5.cardEl);
     outCard.style.display = '';
     genBtn.textContent = prev; genBtn.disabled = false;
     exportBtn.disabled = false;
+    // Keep a reference to the live editors for export
+    lastProfile = {
+      get demographics() { return (s1.ta.value || '').split(/\n/).filter(Boolean); },
+      get regulations() { return (s2.ta.value || '').split(/\n/).filter(Boolean); },
+      get personas() { return (s3.ta.value || '').split(/\n/).filter(Boolean); },
+      get considerations() { return (s4.ta.value || '').split(/\n/).filter(Boolean); },
+      get platforms() { return (s5.ta.value || '').split(/\n/).filter(Boolean); },
+    };
   });
 
   root.append(hero, controls, cta, outCard);
@@ -1170,6 +1279,7 @@ export function renderFunnel(root) {
   const v2Title = h('input', { class: 'input', placeholder: 'Variant 2 title' });
   const v2Copy = h('textarea', { class: 'input', rows: '3', placeholder: 'Variant 2 copy (editable)' });
   const v2Hyp = h('textarea', { class: 'input', rows: '2', placeholder: 'Hypothesis / reasoning for Variant 2' });
+  attachEditorTools(v1Copy); attachEditorTools(v2Copy); attachEditorTools(v1Hyp); attachEditorTools(v2Hyp);
   const variantsWrap = h('div', { class: 'split-2' },
     h('div', { class: 'card' },
       h('h4', { class: 'card-title' }, 'Funnel Variant 1'),
@@ -1356,6 +1466,7 @@ export function renderMcAds(root) {
   // Outputs
   const personaArea = h('textarea', { class: 'input', rows: '2', placeholder: 'Platform-specific persona', readOnly: false });
   const copyArea = h('textarea', { class: 'input', rows: '4', placeholder: 'Ad copy will appear here (editable)' });
+  attachEditorTools(copyArea);
   const framesWrap = h('div', { class: 'tone-style' }); // reuse flex column styles
   const framesControls = h('div', { class: 'toolbar', style: 'display:none' },
     h('button', { class: 'btn btn-outline', id: 'decFrames' }, '− Fewer frames'),
@@ -1470,6 +1581,7 @@ export function renderMcAds(root) {
         ),
         ta
       );
+      attachEditorTools(ta);
     });
   }
   function getAllOutputText() {
