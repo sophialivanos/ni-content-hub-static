@@ -909,17 +909,101 @@ export function renderEvents(root) {
 
 export function renderVerticalProfiles(root) {
   root.innerHTML = '';
-  const q = h('input', { class: 'input', placeholder: 'Filter verticals…' });
-  const grid = h('div', { class: 'card-grid' });
-  const data = CANONICAL_VERTICALS.map(t => ({ t }));
-  function renderList() {
-    grid.innerHTML = '';
-    const term = (q.value || '').toLowerCase();
-    data.filter(x => x.t.toLowerCase().includes(term)).forEach(x => grid.append(card(x.t, 'Profile summary…')));
+  const hero = h('div', { class: 'page-hero' },
+    h('h1', {}, 'Vertical Profile'),
+    h('p', {}, 'Generate a vertical profile with key demographics, regulations, personas, preferences, and content considerations.')
+  );
+
+  // Selectors
+  const industrySel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select industry'),
+    ...INDUSTRIES.map(i => h('option', { value: i }, i))
+  );
+  const verticalSel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select vertical')
+  );
+  function updateVerticalsFromIndustryVP() {
+    const ind = industrySel.value;
+    const verts = (INDUSTRY_TO_VERTICALS[ind] || CANONICAL_VERTICALS).slice(0, 24);
+    verticalSel.innerHTML = '';
+    verticalSel.append(h('option', { value: '' }, 'Select vertical'));
+    verts.forEach(v => verticalSel.append(h('option', { value: v }, v)));
+    updateReady();
   }
-  q.addEventListener('input', renderList);
-  renderList();
-  root.append(section('Vertical Profiles', q), grid);
+  industrySel.addEventListener('change', updateVerticalsFromIndustryVP);
+  const countrySel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select country'),
+    ...COUNTRIES.map(c => h('option', { value: c.code }, c.label))
+  );
+  const controls = h('div', { class: 'section' },
+    h('div', { class: 'row articles-controls' },
+      h('label', { class: 'label-required' }, 'Industry'), industrySel,
+      h('label', { class: 'label-required' }, 'Vertical'), verticalSel,
+      h('label', {}, 'Country'), countrySel
+    )
+  );
+
+  // CTA
+  const genBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Generate Vertical Profile');
+  function updateReady() {
+    genBtn.disabled = !(industrySel.value && verticalSel.value);
+  }
+  verticalSel.addEventListener('change', updateReady);
+  updateVerticalsFromIndustryVP();
+  const cta = h('div', { class: 'section' }, h('div', { class: 'toolbar' }, genBtn));
+
+  // Outputs
+  const outCard = h('div', { class: 'card full', style: 'display:none' });
+  function ul(items) { return h('ul', {}, ...items.map(i => h('li', {}, i))); }
+  function fabricateProfile() {
+    const v = verticalSel.value || 'the selected vertical';
+    const c = countrySel.value || 'US';
+    const countryLabel = (COUNTRIES.find(x => x.code === c)?.label) || 'United States';
+    const demographics = [
+      `Adults aged 25–54 are primary decision-makers for ${v.toLowerCase()}.`,
+      `Balanced gender distribution; slight skew by sub-vertical.`,
+      `High research intent on mobile; converts on desktop.`
+    ];
+    const regulations = [
+      `Country-specific regulations in ${countryLabel} apply to ${v.toLowerCase()}.`,
+      `Disclosure, data privacy, and advertising claims must follow local laws.`,
+      `Review licencing requirements for publishers/advertisers as applicable.`
+    ];
+    const personas = [
+      `Professionals evaluating ${v.toLowerCase()} to solve an immediate need.`,
+      `Budget-conscious researchers comparing ${v.toLowerCase()} options.`,
+      `Risk-averse users looking for social proof and guarantees.`
+    ];
+    const considerations = [
+      `Lead with outcome/value before features; show quick proof (ratings, badges).`,
+      `Localise examples and pricing to ${countryLabel}; avoid region-specific jargon.`,
+      `Answer top objections and highlight differentiators early on the page.`
+    ];
+    const platforms = [
+      `Mobile-first consumption; ensure fast loads and scannable sections.`,
+      `Retargeting on ${['Facebook','YouTube','Google'].join(', ')} performs well with value-led hooks.`,
+      `Desktop sees higher form completion; simplify fields for mobile.`
+    ];
+    return { demographics, regulations, personas, considerations, platforms };
+  }
+  genBtn.addEventListener('click', async () => {
+    if (genBtn.disabled) return;
+    const prev = genBtn.textContent; genBtn.disabled = true; genBtn.textContent = 'Generating…';
+    await new Promise(r => setTimeout(r, 600));
+    const { demographics, regulations, personas, considerations, platforms } = fabricateProfile();
+    outCard.innerHTML = '';
+    outCard.append(
+      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'User Demographics'), ul(demographics)),
+      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'Regulations'), ul(regulations)),
+      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'Personas'), ul(personas)),
+      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'Content Considerations'), ul(considerations)),
+      h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'Platform and Device Preferences'), ul(platforms)),
+    );
+    outCard.style.display = '';
+    genBtn.textContent = prev; genBtn.disabled = false;
+  });
+
+  root.append(hero, controls, cta, outCard);
 }
 
 export function renderWelcome(root) {
