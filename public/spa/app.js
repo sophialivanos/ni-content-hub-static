@@ -1243,6 +1243,7 @@ const ROUTES = {
   '/articles': renderArticles,
   '/funnel': renderFunnel,
   '/vertical-profiles': renderVerticalProfiles,
+  '/mc-ads': renderMcAds,
 };
 
 // Router
@@ -1274,5 +1275,171 @@ function renderRoute() {
 }
 window.addEventListener('hashchange', renderRoute);
 window.addEventListener('DOMContentLoaded', renderRoute);
+
+export function renderMcAds(root) {
+  root.innerHTML = '';
+  const hero = h('div', { class: 'page-hero' },
+    h('h1', {}, 'MC Ads, Scripts, and Brainstorming'),
+    h('p', {}, 'Supports campaign ideation and rapid execution on major media channels.')
+  );
+
+  // Inputs
+  const platforms = ['Facebook','Instagram','TikTok','YouTube','LinkedIn','Google Ads','Twitter/X'];
+  const platformSel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select platform'),
+    ...platforms.map(p => h('option', { value: p }, p))
+  );
+  const industrySel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select industry'),
+    ...INDUSTRIES.map(i => h('option', { value: i }, i))
+  );
+  const verticalSel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select vertical')
+  );
+  function updateVerticalsFromIndustryAds() {
+    const ind = industrySel.value;
+    const verts = (INDUSTRY_TO_VERTICALS[ind] || CANONICAL_VERTICALS).slice(0, 24);
+    verticalSel.innerHTML = '';
+    verticalSel.append(h('option', { value: '' }, 'Select vertical'));
+    verts.forEach(v => verticalSel.append(h('option', { value: v }, v)));
+    updateReady();
+  }
+  industrySel.addEventListener('change', updateVerticalsFromIndustryAds);
+  const bannedWords = h('input', { class: 'input', placeholder: 'Banned words (optional)' });
+  const outTypes = ['Ad copy','Script'];
+  const outTypeSel = h('select', { class: 'select' },
+    ...outTypes.map(t => h('option', { value: t.toLowerCase() }, t))
+  );
+  const frameRanges = ['3-5','5-7','7-9'];
+  const frameRangeSel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Frames'),
+    ...frameRanges.map(r => h('option', { value: r }, r))
+  );
+  const tones = ['Default','Warm & conversational','Slightly more formal','Upbeat and cheeky','Inspiring & Empowering','Gentle and warm','Informative and direct','Emotional and inspiring','Confident, expert, factual (Authoritative)','Warm, understanding, emotionally in-tune (Empathetic)','Casual, relaxed, friendly (Conversational)','Uplifting, motivational, purpose-driven (Inspiring)','Polished, neutral, minimal fluff (Professional)','Humorous, clever, youth-targeted (Witty/Playful)','Gentle, comforting, calm and grounded (Reassuring)','Stats-focused, analytical, objective (Data-driven)'];
+  const styles = ['Default','Narrative / Story-Driven','Conversational','Instructional / How-To','Persuasive / Conversion-Oriented','Analytical / Data-Led','Editorial / Journalistic','Narrative + Persuasive','Instructional + Conversational','Analytical + Third-Person','Narrative + First-Person','Poetic + Journalistic','Comparative + Listicle'];
+  const toneSel = h('select', { class: 'select' }, ...tones.map(t => h('option', { value: t === 'Default' ? '' : t }, t)));
+  const styleSel = h('select', { class: 'select' }, ...styles.map(s => h('option', { value: s === 'Default' ? '' : s }, s)));
+  const controls = h('div', { class: 'section' },
+    h('div', { class: 'row articles-controls' },
+      h('label', { class: 'label-required' }, 'Social Platform'), platformSel,
+      h('label', { class: 'label-required' }, 'Industry'), industrySel,
+      h('label', { class: 'label-required' }, 'Vertical'), verticalSel
+    ),
+    h('div', { class: 'row articles-controls' },
+      h('label', {}, 'Banned words'), bannedWords,
+      h('label', {}, 'Output type'), outTypeSel,
+      h('label', {}, 'Frames'), frameRangeSel,
+      h('label', {}, 'Tone'), toneSel,
+      h('label', {}, 'Style'), styleSel
+    )
+  );
+
+  // CTA
+  const generateBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Generate');
+  const regenBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate');
+  function requiresFrames() { return outTypeSel.value === 'script'; }
+  function updateReady() {
+    const ready = !!platformSel.value && !!industrySel.value && !!verticalSel.value && (!requiresFrames() || !!frameRangeSel.value);
+    generateBtn.disabled = !ready;
+  }
+  platformSel.addEventListener('change', updateReady);
+  verticalSel.addEventListener('change', updateReady);
+  outTypeSel.addEventListener('change', () => { updateReady(); framesControls.style.display = requiresFrames() ? '' : 'none'; });
+  frameRangeSel.addEventListener('change', updateReady);
+  const cta = h('div', { class: 'section' }, h('div', { class: 'toolbar' }, generateBtn, regenBtn));
+
+  // Outputs
+  const personaArea = h('textarea', { class: 'input', rows: '2', placeholder: 'Platform-specific persona', readOnly: false });
+  const copyArea = h('textarea', { class: 'input', rows: '4', placeholder: 'Ad copy will appear here (editable)' });
+  const framesWrap = h('div', { class: 'tone-style' }); // reuse flex column styles
+  const framesControls = h('div', { class: 'toolbar', style: 'display:none' },
+    h('button', { class: 'btn btn-outline', id: 'decFrames' }, '− Fewer frames'),
+    h('button', { class: 'btn btn-outline', id: 'incFrames' }, '+ More frames')
+  );
+  const outCard = h('div', { class: 'card full', style: 'display:none' },
+    h('div', { class: 'card' }, h('h4', { class: 'card-title' }, 'Platform-Specific Persona'), personaArea),
+    h('div', { class: 'card' }, h('h4', { class: 'card-title', id: 'outTitle' }, 'Ad Copy'), copyArea),
+    h('div', { class: 'card', id: 'scriptCard', style: 'display:none' },
+      h('h4', { class: 'card-title' }, 'Video Script Frames'),
+      framesControls,
+      framesWrap
+    )
+  );
+
+  function buildPersona() {
+    return `${platformSel.value} users interested in ${verticalSel.value || 'your offer'} within ${industrySel.value} — respond to ${toneSel.value || 'friendly'} tone and ${styleSel.value || 'conversational'} style.`;
+  }
+  function buildAdCopy() {
+    const banned = (bannedWords.value || '').trim();
+    const lines = [
+      `Looking for the perfect ${verticalSel.value || 'solution'}?`,
+      `Discover options that fit your needs on ${platformSel.value}.`,
+      `Get started today!`
+    ];
+    return lines.map(l => banned ? l.replace(new RegExp(banned,'ig'), '—') : l).join(' ');
+  }
+  function parseRange(val) {
+    const m = (val || '').match(/(\d+)\s*-\s*(\d+)/);
+    if (!m) return 3;
+    return parseInt(m[1], 10);
+    }
+  function buildScriptFrames(count) {
+    const frames = [];
+    for (let i = 1; i <= count; i++) {
+      frames.push(`Frame ${i}: Hook/benefit tailored for ${platformSel.value}.`);
+    }
+    return frames;
+  }
+  function renderFrames(frames) {
+    framesWrap.innerHTML = '';
+    frames.forEach((txt, idx) => {
+      const ta = h('textarea', { class: 'input', rows: '3' },);
+      ta.value = txt;
+      framesWrap.append(h('div', { class: 'row' }, h('label', {}, `Frame ${idx+1}`)), ta);
+    });
+  }
+  let currentFrames = 0;
+  const decBtn = framesControls.querySelector('#decFrames');
+  const incBtn = framesControls.querySelector('#incFrames');
+  decBtn.addEventListener('click', () => {
+    if (currentFrames > 1) { currentFrames -= 1; renderFrames(buildScriptFrames(currentFrames)); }
+  });
+  incBtn.addEventListener('click', () => {
+    currentFrames += 1; renderFrames(buildScriptFrames(currentFrames));
+  });
+
+  async function generateAll(fromRegenerate = false) {
+    generateBtn.disabled = true; const prev = generateBtn.textContent; generateBtn.textContent = fromRegenerate ? 'Regenerating…' : 'Generating…';
+    await new Promise(r => setTimeout(r, 600));
+    personaArea.value = buildPersona();
+    if (requiresFrames()) {
+      const start = parseRange(frameRangeSel.value) || 3;
+      currentFrames = start;
+      renderFrames(buildScriptFrames(currentFrames));
+      document.getElementById('outTitle').textContent = 'Video Script';
+      copyArea.style.display = 'none';
+      document.getElementById('scriptCard').style.display = '';
+      framesControls.style.display = '';
+    } else {
+      copyArea.value = buildAdCopy();
+      document.getElementById('outTitle').textContent = 'Ad Copy';
+      copyArea.style.display = '';
+      document.getElementById('scriptCard').style.display = 'none';
+      framesControls.style.display = 'none';
+    }
+    outCard.style.display = '';
+    regenBtn.classList.remove('hidden');
+    generateBtn.textContent = 'Generate'; generateBtn.disabled = false;
+  }
+  generateBtn.addEventListener('click', async () => {
+    if (generateBtn.disabled) return;
+    await generateAll(false);
+  });
+  regenBtn.addEventListener('click', async () => { await generateAll(true); });
+
+  updateVerticalsFromIndustryAds();
+  updateReady();
+  root.append(hero, controls, cta, outCard);
+}
 
 
