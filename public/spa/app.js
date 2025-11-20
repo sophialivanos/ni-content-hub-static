@@ -734,8 +734,8 @@ export function renderEvents(root) {
   );
   const commercialChk = h('input', { type: 'checkbox', checked: 'checked' });
   const commercialWrap = h('label', { class: 'checkbox' }, commercialChk, 'Commercial only');
-  const loadBtn = h('button', { class: 'btn btn-primary' }, 'Load');
-  const exportBtn = h('button', { class: 'btn btn-primary' }, '⬇ Export CSV');
+  const loadBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Load');
+  const exportBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, '⬇ Export CSV');
   // (meta row removed per feedback)
   const grid = h('div', { class: 'card-grid' });
   const searchInput = h('input', { class: 'input', placeholder: 'Quick search…', style: 'width:300px' });
@@ -749,6 +749,13 @@ export function renderEvents(root) {
     monthSel.value = months[m - 1];
   }
   // no arrow listeners
+  function updateEventsReady() {
+    const ready = !!monthSel.value;
+    loadBtn.disabled = !ready;
+    exportBtn.disabled = !ready;
+  }
+  monthSel.addEventListener('change', updateEventsReady);
+  updateEventsReady();
 
   function deriveRelevance(ev, vertical) {
     const txt = `${ev.name || ''} ${ev.description || ''}`.toLowerCase();
