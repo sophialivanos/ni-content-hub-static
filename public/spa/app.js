@@ -1004,11 +1004,15 @@ export function renderFunnel(root) {
   const tone2 = h('select', { class: 'select' }, ...tones.map(t => h('option', { value: t === 'Default' ? '' : t }, t)));
   const style2 = h('select', { class: 'select' }, ...styles.map(s => h('option', { value: s === 'Default' ? '' : s }, s)));
   const row3 = h('div', { class: 'section' },
-    h('div', { class: 'row articles-controls' },
-      h('label', {}, 'Tone 1'), tone1,
-      h('label', {}, 'Style 1'), style1,
-      h('label', {}, 'Tone 2'), tone2,
-      h('label', {}, 'Style 2'), style2,
+    h('div', { class: 'split-2 tone-style' },
+      h('div', { class: 'tone-style-col' },
+        h('label', {}, 'Tone 1'), tone1,
+        h('label', {}, 'Style 1'), style1
+      ),
+      h('div', { class: 'tone-style-col' },
+        h('label', {}, 'Tone 2'), tone2,
+        h('label', {}, 'Style 2'), style2
+      )
     )
   );
 

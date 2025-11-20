@@ -253,6 +253,8 @@ body {
 
 /* Two-column split inside a card (e.g., visuals) */
 .split-2 { display:grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.tone-style .tone-style-col { display:flex; flex-direction: column; gap: 8px; }
+.tone-style .tone-style-col .select { width: 100%; }
 
 /* Extra mobile responsiveness */
 @media (max-width: 720px) {
