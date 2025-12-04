@@ -816,6 +816,12 @@ export function renderEvents(root) {
     h('option', { value: '' }, 'Select'),
     ...months.map((m) => h('option', { value: m }, m)),
   );
+  const yearLabel = h('label', { class: 'label-required' }, 'Year');
+  const years = Array.from({ length: 8 }).map((_, idx) => 2023 + idx);
+  const yearSel = h('select', { class: 'select', style: 'width:160px' },
+    h('option', { value: '' }, 'Select'),
+    ...years.map(y => h('option', { value: String(y) }, String(y)))
+  );
   // Leave as "Select" by default (required field)
   // Removed prev/next arrows per request
   const countriesLabel = h('label', {}, 'Country (Optional)');
@@ -852,11 +858,12 @@ export function renderEvents(root) {
   }
   // no arrow listeners
   function updateEventsReady() {
-    const ready = !!monthSel.value;
+    const ready = !!monthSel.value && !!yearSel.value;
     loadBtn.disabled = !ready;
     exportBtn.disabled = !ready;
   }
   monthSel.addEventListener('change', updateEventsReady);
+  yearSel.addEventListener('change', updateEventsReady);
   updateEventsReady();
 
   function deriveRelevance(ev, vertical) {
@@ -877,6 +884,11 @@ export function renderEvents(root) {
       return;
     }
     const month = mIdx;
+    const yearValue = yearSel.value;
+    if (!yearValue) {
+      grid.append(card('Select a year', 'Year is required. Please choose a year from the dropdown.'));
+      return;
+    }
     const countries = Array.from(countriesSel.selectedOptions).map(o => o.value).filter(Boolean);
     const vertical = verticalSel.value || '';
     const commercialOnly = !!commercialChk.checked;
@@ -890,7 +902,7 @@ export function renderEvents(root) {
           version: '0',
           args: {
             month: String(month),
-            year: String(new Date().getFullYear()),
+            year: yearValue,
             ...(countriesSel.value ? { country: countriesSel.value } : {}),
             ...(vertical ? { vertical } : {}),
           }
@@ -1009,6 +1021,7 @@ export function renderEvents(root) {
     // Top row: fixed controls incl. Export
     h('div', { class: 'toolbar events-controls' },
       monthLabel, monthSel,
+      yearLabel, yearSel,
       countriesLabel, countriesSel,
       verticalLabel, verticalSel,
       commercialWrap, loadBtn
