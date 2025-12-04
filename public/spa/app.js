@@ -877,7 +877,6 @@ export function renderEvents(root) {
       return;
     }
     const month = mIdx;
-    const monthNameLower = (monthSel.value || '').toLowerCase();
     const countries = Array.from(countriesSel.selectedOptions).map(o => o.value).filter(Boolean);
     const vertical = verticalSel.value || '';
     const commercialOnly = !!commercialChk.checked;
@@ -888,13 +887,20 @@ export function renderEvents(root) {
       // Call external API with selected params; country and vertical optional
       try {
         const payload = {
-          month: monthNameLower,
-          ...(countriesSel.value ? { country: countriesSel.value } : {}),
-          ...(vertical ? { vertical } : {}),
+          version: '0',
+          args: {
+            month: String(month),
+            year: String(new Date().getFullYear()),
+            ...(countriesSel.value ? { country: countriesSel.value } : {}),
+            ...(vertical ? { vertical } : {}),
+          }
         };
-        const resp = await fetch('https://chat-gpt-staging.naturalint.com/lf/workflow/content_events_discovery', {
+        const resp = await fetch('https://chat-gpt-production.naturalint.com/lf/workflow/content_events_discovery', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
+          headers: {
+            'Content-Type': 'application/json',
+            'accept': 'application/json'
+          },
           body: JSON.stringify(payload),
         });
         const text = await resp.text();
