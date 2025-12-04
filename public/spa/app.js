@@ -898,22 +898,24 @@ export function renderEvents(root) {
     try {
       // Call external API with selected params; country and vertical optional
       try {
-        const payload = {
-          'version': '0',
-          'args': {
-            'month': String(month),
-            'year': String(yearValue),
-            ...(countriesSel.value ? { 'country': String(countriesSel.value) } : {}),
-            ...(vertical ? { 'vertical': String(vertical) } : {}),
-          }
-        };
+        const payload = JSON.stringify({
+          version: '0',
+          args: Object.assign(
+            {
+              month: String(month),
+              year: String(yearValue)
+            },
+            countriesSel.value ? { country: String(countriesSel.value) } : {},
+            vertical ? { vertical: String(vertical) } : {}
+          )
+        });
         const resp = await fetch('https://chat-gpt-production.naturalint.com/lf/workflow/content_events_discovery', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
             'accept': 'application/json'
           },
-          body: JSON.stringify(payload),
+          body: payload,
         });
         const text = await resp.text();
         apiOutPre.textContent = text || '(empty response)';
