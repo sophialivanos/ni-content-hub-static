@@ -902,9 +902,9 @@ export function renderEvents(root) {
           version: '0',
           args: {
             month: String(month),
-            year: yearValue,
-            ...(countriesSel.value ? { country: countriesSel.value } : {}),
-            ...(vertical ? { vertical } : {}),
+            year: String(yearValue),
+            ...(countriesSel.value ? { country: String(countriesSel.value) } : {}),
+            ...(vertical ? { vertical: String(vertical) } : {}),
           }
         };
         const resp = await fetch('https://chat-gpt-production.naturalint.com/lf/workflow/content_events_discovery', {
