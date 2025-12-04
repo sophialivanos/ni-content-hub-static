@@ -909,6 +909,7 @@ export function renderEvents(root) {
             vertical ? { vertical: String(vertical) } : {}
           )
         });
+        console.log('Payload being sent:', payload);
         const resp = await fetch('https://chat-gpt-production.naturalint.com/lf/workflow/content_events_discovery', {
           method: 'POST',
           headers: {
