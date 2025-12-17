@@ -896,40 +896,87 @@ export function renderEvents(root) {
     // brief delay so the loading state is visible
     await new Promise(r => setTimeout(r, 500));
     try {
-      // Call external API with selected params; country and vertical optional
-      try {
+      // Call external API with month, year, country - do NOT send vertical so we get ALL events
+      let apiEvents = [];
+      
+      // Helper function to fetch events for a single country
+      async function fetchEventsForCountry(countryCode) {
         const payload = JSON.stringify({
           version: '0',
-          args: Object.assign(
-            {
-              month: String(month),
-              year: String(yearValue)
-            },
-            countriesSel.value ? { country: String(countriesSel.value) } : {},
-            vertical ? { vertical: String(vertical) } : {}
-          )
+          args: {
+            month: String(month),
+            year: String(yearValue),
+            country: String(countryCode)
+          }
         });
-        console.log('Payload being sent:', payload);
         const resp = await fetch('https://chat-gpt-production.naturalint.com/lf/workflow/content_events_discovery', {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'accept': 'application/json'
-          },
+          headers: { 'Content-Type': 'application/json', 'accept': 'application/json' },
           body: payload,
         });
         const text = await resp.text();
-        apiOutPre.textContent = text || '(empty response)';
-        apiOutSection.style.display = '';
-      } catch (e) {
-        apiOutPre.textContent = 'API request failed.';
-        apiOutSection.style.display = '';
+        const data = JSON.parse(text);
+        const events = [];
+        const holidays = data?.content?.holidays || [];
+        holidays.forEach(h => {
+          const country = h.country || countryCode;
+          const relevantHolidays = h.relevantHolidays || [];
+          relevantHolidays.forEach(rh => {
+            events.push({
+              name: rh.name || '',
+              date: rh.date || '',
+              description: rh.description || '',
+              country: country,
+              relevantVerticals: rh.relevantVerticals || '',
+              relevanceExplanation: rh.relevanceExplanation || '',
+              bestPractices: rh.bestPractices || '',
+              contentSuggestions: rh.contentSuggestions || {},
+              _fromApi: true
+            });
+          });
+        });
+        return events;
       }
-      const { events } = computeSeasonalEvents({ month, countries: countries.length ? countries : COUNTRIES.map(c=>c.code), commercialOnly });
-      lastEvents = events.map(ev => {
-        const rel = deriveRelevance(ev, vertical);
-        return { ...ev, _relevant: rel.relevant, _why: rel.why, _verticals: vertical ? [vertical] : [] };
-      });
+      
+      try {
+        apiOutSection.style.display = 'none';
+        
+        if (countriesSel.value) {
+          // Single country selected - fetch just that one
+          console.log('Fetching events for:', countriesSel.value);
+          apiEvents = await fetchEventsForCountry(countriesSel.value);
+        } else {
+          // No country selected - fetch ALL countries in parallel
+          const allCountryCodes = COUNTRIES.map(c => c.code);
+          console.log('Fetching events for all countries:', allCountryCodes);
+          loadBtn.textContent = 'Loading all countries…';
+          const results = await Promise.all(allCountryCodes.map(code => 
+            fetchEventsForCountry(code).catch(err => {
+              console.error(`Failed to fetch ${code}:`, err);
+              return [];
+            })
+          ));
+          apiEvents = results.flat();
+        }
+      } catch (e) {
+        console.error('API request failed:', e);
+        apiOutSection.style.display = 'none';
+      }
+      // Use API events if available, otherwise fall back to computed events
+      if (apiEvents.length > 0) {
+        lastEvents = apiEvents.map(ev => ({
+          ...ev,
+          _relevant: true,
+          _why: ev.relevanceExplanation || 'From API',
+          _verticals: ev.relevantVerticals ? ev.relevantVerticals.split(',').map(v => v.trim()) : []
+        }));
+      } else {
+        const { events } = computeSeasonalEvents({ month, countries: countries.length ? countries : COUNTRIES.map(c=>c.code), commercialOnly });
+        lastEvents = events.map(ev => {
+          const rel = deriveRelevance(ev, vertical);
+          return { ...ev, _relevant: rel.relevant, _why: rel.why, _verticals: vertical ? [vertical] : [] };
+        });
+      }
     } catch (err) {
       grid.append(card('Error', 'Failed to load events. Please try again.'));
       loadBtn.disabled = false; loadBtn.textContent = 'Load';
@@ -945,51 +992,186 @@ export function renderEvents(root) {
     grid.innerHTML = '';
     const q = (searchInput.value || '').toLowerCase();
     const selectedVertical = verticalSel.value || '';
-    lastEvents
-      .filter(ev => !q || (`${ev.name||''} ${ev.description||''}`).toLowerCase().includes(q))
-      .forEach(ev => {
-        const top = h('div', { class: 'toolbar' },
-          h('span', { class: 'badge' }, ev._country || ev.country || ''),
-          h('span', { class: 'pill' }, ev.date || ''),
-        );
-        // Expandable body
-        const relChips = h('div', { class: 'toolbar' },
-          ...(selectedVertical ? [h('span', { class: 'chip' }, selectedVertical)] : [])
-        );
-        const relBlock = h('div', {}, h('div', { class: 'muted' }, ev._why || 'Relevance not calculated'), relChips);
-        const bestPractices = h('ul', {},
-          h('li', {}, 'Use clear H1/DH1 with market phrasing'),
-          h('li', {}, 'Add brief compliance notes if needed'),
-          h('li', {}, 'Mobile-first layout with scannable bullets')
-        );
-        const suggestions = h('div', {},
-          h('div', { class: 'muted' }, 'Content suggestions'),
-          h('p', {}, ['H1: ', ev.name || '']),
-          h('p', {}, ['DH1: ', 'Concise value proposition aligned to the event']),
-          h('p', {}, ['H2: ', 'What, When, Eligibility']),
-          h('p', {}, ['Article headline: ', ev.name || '']),
-          h('p', {}, ['Ribbon copy: ', `Limited window • Updated ${ev.date || ''}`]),
-          h('p', {}, ['BTC paragraph: ', 'Short paragraph describing what visitors will get for this period']),
-        );
-        const body = h('div', { class: 'card-body' },
-          h('p', {}, ev.description || ''),
-          h('div', { class: 'section' }, h('strong', {}, 'Relevance'), relBlock),
-          h('div', { class: 'section' }, h('strong', {}, 'Best practices'), bestPractices),
-          h('div', { class: 'section' }, h('strong', {}, 'Content suggestions'), suggestions),
-        );
-        const header = h('div', {
-          class: 'card-header',
-          onClick: (e) => { const card = e.currentTarget.parentElement; card.classList.toggle('expanded'); }
-        },
-          h('h3', { class: 'card-title' }, ev.name || 'Untitled'),
-          h('div', { class: 'card-actions' }, top)
-        );
-        const cardEl = h('div', { class: 'card' }, header, body);
-        grid.append(cardEl);
+    
+    // Filter events by search
+    let filteredEvents = lastEvents.filter(ev => {
+      if (q && !(`${ev.name||''} ${ev.description||''}`).toLowerCase().includes(q)) return false;
+      return true;
+    });
+    
+    // If vertical is selected, filter to only events relevant to that vertical
+    if (selectedVertical) {
+      filteredEvents = filteredEvents.filter(ev => {
+        const evVerticals = (ev.relevantVerticals || '').toLowerCase();
+        return evVerticals.includes(selectedVertical.toLowerCase());
       });
+    }
+    
+    // Show message if no events match
+    if (filteredEvents.length === 0 && selectedVertical) {
+      grid.append(card('No relevant events', `There are no relevant events for "${selectedVertical}". Try selecting a different vertical or clear the selection to see all events.`));
+      return;
+    }
+    if (filteredEvents.length === 0 && q) {
+      grid.append(card('No results', `No events match your search "${q}".`));
+      return;
+    }
+    if (filteredEvents.length === 0) {
+      grid.append(card('No events', 'No events found. Try a different month or country.'));
+      return;
+    }
+    
+    // Group events by name + country (e.g., all "Boxing Day" events for same country together)
+    const groupedEvents = {};
+    filteredEvents.forEach(ev => {
+      const key = `${ev.name || 'Untitled'}__${ev.country || 'Unknown'}`;
+      if (!groupedEvents[key]) {
+        groupedEvents[key] = { name: ev.name || 'Untitled', date: ev.date, country: ev.country || '', variants: [] };
+      }
+      groupedEvents[key].variants.push(ev);
+    });
+    
+    // Render grouped cards
+    Object.values(groupedEvents).forEach(group => {
+      // Get all unique verticals for this event
+      const allVerticals = [...new Set(group.variants.map(v => v.relevantVerticals).filter(Boolean))];
+      
+      // If a vertical was pre-selected, use that variant; otherwise use first variant
+      let activeVariant = group.variants[0];
+      if (selectedVertical) {
+        const match = group.variants.find(v => (v.relevantVerticals || '').toLowerCase().includes(selectedVertical.toLowerCase()));
+        if (match) activeVariant = match;
+      }
+      
+      // Format date
+      let dateDisplay = group.date || '';
+      if (dateDisplay) {
+        try {
+          const d = new Date(dateDisplay);
+          const days = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+          const monthNames = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+          dateDisplay = `${days[d.getDay()]}, ${monthNames[d.getMonth()]} ${d.getDate()} '${String(d.getFullYear()).slice(-2)}`;
+        } catch(e) { /* keep original */ }
+      }
+      
+      // Create the card element
+      const cardEl = h('div', { class: 'event-card' });
+      
+      // Header (always visible) - includes event name and country
+      const header = h('div', { 
+        class: 'event-card-header',
+        onClick: (e) => { 
+          if (!e.target.classList.contains('event-card-vertical-btn')) {
+            e.currentTarget.parentElement.classList.toggle('expanded'); 
+          }
+        }
+      },
+        h('div', { class: 'event-card-header-left' },
+          h('h2', { class: 'event-card-title' }, group.name),
+          group.country ? h('span', { class: 'event-card-country' }, group.country) : null
+        ),
+        h('div', { style: 'display:flex;align-items:center;gap:12px;' },
+          dateDisplay ? h('span', { class: 'event-card-date' }, dateDisplay) : null,
+          h('span', { class: 'event-card-chevron' }, '▼')
+        )
+      );
+      cardEl.appendChild(header);
+      
+      // Vertical selector row (show all available verticals as clickable buttons)
+      const verticalRow = h('div', { class: 'event-card-verticals' });
+      allVerticals.forEach((vert, idx) => {
+        const isActive = (selectedVertical && vert.toLowerCase().includes(selectedVertical.toLowerCase())) || 
+                         (!selectedVertical && vert === activeVariant.relevantVerticals);
+        const btn = h('button', { 
+          class: `event-card-vertical-btn ${isActive ? 'active' : ''}`,
+          onClick: (e) => {
+            e.stopPropagation();
+            // Find the variant for this vertical
+            const variant = group.variants.find(v => v.relevantVerticals === vert);
+            if (variant) {
+              updateCardContent(cardEl, variant, vert);
+              // Update active state on buttons
+              verticalRow.querySelectorAll('.event-card-vertical-btn').forEach(b => b.classList.remove('active'));
+              e.target.classList.add('active');
+            }
+          }
+        }, vert);
+        verticalRow.appendChild(btn);
+      });
+      cardEl.appendChild(verticalRow);
+      
+      // Body container (will be updated when vertical changes)
+      const bodyEl = h('div', { class: 'event-card-body' });
+      cardEl.appendChild(bodyEl);
+      
+      // Render initial content
+      updateCardContent(cardEl, activeVariant, selectedVertical || activeVariant.relevantVerticals);
+      
+      grid.append(cardEl);
+    });
+  }
+  
+  // Helper to update card body content for a specific variant
+  function updateCardContent(cardEl, ev, verticalLabel) {
+    const bodyEl = cardEl.querySelector('.event-card-body');
+    if (!bodyEl) return;
+    bodyEl.innerHTML = '';
+    
+    // Build best practices list
+    let bpItems = [];
+    if (ev.bestPractices && ev._fromApi) {
+      const bpText = ev.bestPractices;
+      const numbered = bpText.split(/\d+\.\s*/).filter(s => s.trim());
+      if (numbered.length > 1) {
+        bpItems = numbered;
+      } else {
+        bpItems = bpText.split(/\\n|\n/).filter(s => s.trim()).map(s => s.replace(/^-\s*/, ''));
+      }
+    }
+    if (bpItems.length === 0) {
+      bpItems = ['Use clear H1/DH1 with market phrasing', 'Add brief compliance notes if needed', 'Mobile-first layout with scannable bullets'];
+    }
+    
+    // Build content suggestions
+    const cs = ev.contentSuggestions || {};
+    const suggestions = [];
+    suggestions.push({ label: 'H1', text: cs.H1 || ev.name || 'Event Title', cls: 'h1' });
+    suggestions.push({ label: 'DH1', text: cs.DH1 || 'Concise value proposition aligned to the event', cls: 'dh1' });
+    suggestions.push({ label: 'H2', text: cs.H2 || 'What, When, Eligibility', cls: 'h2' });
+    // Article headline - check various possible key names from API
+    const articleHeadline = cs['Article headline'] || cs['Article_headline'] || cs.articleHeadline || cs.article || cs.Article || '';
+    suggestions.push({ label: 'ARTICLE', text: articleHeadline || `Article headline for ${ev.name || 'event'}`, cls: 'article' });
+    // BTC paragraph - check various key names
+    const btcText = cs.BTC || cs['BTC paragraph'] || cs['BTC_paragraph'] || cs.BTCParagraph || cs.btcParagraph || '';
+    suggestions.push({ label: 'BTC', text: btcText || 'Short paragraph describing what visitors will get for this period', cls: 'btc' });
+    // Ribbon Copy
+    suggestions.push({ label: 'RIBBON', text: cs.Ribbon_Copy || cs['Ribbon Copy'] || cs.ribbonCopy || cs.ribbon || `Limited window • Updated ${ev.date || ''}`, cls: 'ribbon' });
+    
+    // Append content
+    bodyEl.appendChild(h('p', { class: 'event-card-description' }, ev.description || ''));
+    bodyEl.appendChild(h('div', { class: 'event-card-section' },
+      h('div', { class: 'event-card-section-title' }, 'Relevance'),
+      h('div', { class: 'event-card-relevance' }, ev._why || ev.relevanceExplanation || 'Relevance not calculated')
+    ));
+    bodyEl.appendChild(h('div', { class: 'event-card-section' },
+      h('div', { class: 'event-card-section-title' }, 'Best Practices'),
+      h('ol', { class: 'event-card-best-practices' }, ...bpItems.map(item => h('li', {}, item.trim())))
+    ));
+    bodyEl.appendChild(h('div', { class: 'event-card-section' },
+      h('div', { class: 'event-card-section-title' }, 'Content Suggestions'),
+      h('div', { class: 'event-card-suggestions' },
+        ...suggestions.map(s => h('div', { class: 'event-card-suggestion' },
+          h('span', { class: `event-card-suggestion-label ${s.cls}` }, s.label),
+          h('span', { class: 'event-card-suggestion-text' }, s.text)
+        ))
+      )
+    ));
   }
 
   loadBtn.addEventListener('click', doLoad);
+  // Re-render when vertical or search changes (filter without re-fetching)
+  verticalSel.addEventListener('change', () => { if (lastEvents.length) renderList(); });
+  searchInput.addEventListener('input', () => { if (lastEvents.length) renderList(); });
   exportBtn.addEventListener('click', async () => {
     const prevText = exportBtn.textContent;
     exportBtn.disabled = true;
@@ -998,20 +1180,72 @@ export function renderEvents(root) {
     const month = (months.indexOf(monthSel.value) + 1) || (new Date().getMonth() + 1);
     const selectedVertical = verticalSel.value || '';
     const events = lastEvents.filter(ev => ev._relevant || !selectedVertical);
-    const rows = [
-      ['name','date','country','description','why'].join(','),
-      ...events.map(ev => [
+    
+    // Helper to escape CSV values properly
+    function escapeCSV(val) {
+      if (val === null || val === undefined) return '';
+      const str = String(val);
+      // If contains comma, quote, or newline, wrap in quotes and escape internal quotes
+      if (str.includes(',') || str.includes('"') || str.includes('\n') || str.includes('\r')) {
+        return '"' + str.replace(/"/g, '""') + '"';
+      }
+      return str;
+    }
+    
+    // CSV headers - all event information
+    const headers = [
+      'Event Name',
+      'Date',
+      'Country',
+      'Description',
+      'Relevant Verticals',
+      'Relevance Explanation',
+      'Best Practices',
+      'H1',
+      'DH1',
+      'H2',
+      'Article Headline',
+      'BTC Paragraph',
+      'Ribbon Copy'
+    ];
+    
+    // Build rows with all event data
+    const dataRows = events.map(ev => {
+      const cs = ev.contentSuggestions || {};
+      // Get content suggestions with fallbacks for various API key names
+      const h1 = cs.H1 || '';
+      const dh1 = cs.DH1 || '';
+      const h2 = cs.H2 || '';
+      const articleHeadline = cs['Article headline'] || cs['Article_headline'] || cs.articleHeadline || cs.article || cs.Article || '';
+      const btc = cs.BTC || cs['BTC paragraph'] || cs['BTC_paragraph'] || cs.BTCParagraph || cs.btcParagraph || '';
+      const ribbon = cs.Ribbon_Copy || cs['Ribbon Copy'] || cs.ribbonCopy || cs.ribbon || '';
+      
+      return [
         ev.name || '',
         ev.date || '',
         ev._country || ev.country || '',
         ev.description || '',
-        ev._why || ''
-      ].map(v => JSON.stringify(v)).join(','))
-    ].join('\\n');
-    const blob = new Blob([rows], { type: 'text/csv;charset=utf-8' });
+        ev.relevantVerticals || ev._verticals?.join(', ') || '',
+        ev._why || ev.relevanceExplanation || '',
+        ev.bestPractices || '',
+        h1,
+        dh1,
+        h2,
+        articleHeadline,
+        btc,
+        ribbon
+      ].map(escapeCSV).join(',');
+    });
+    
+    // Combine headers and data rows with proper newlines
+    const csvContent = [headers.map(escapeCSV).join(','), ...dataRows].join('\n');
+    
+    // Add BOM for Excel compatibility with UTF-8
+    const blob = new Blob(['\ufeff' + csvContent], { type: 'text/csv;charset=utf-8' });
     const url = URL.createObjectURL(blob);
     const monthName = months[(month-1+12)%12];
-    const a = Object.assign(document.createElement('a'), { href: url, download: `seasonal-events-${monthName}.csv` });
+    const yearValue = yearSel.value || new Date().getFullYear();
+    const a = Object.assign(document.createElement('a'), { href: url, download: `seasonal-events-${monthName}-${yearValue}.csv` });
     a.click(); URL.revokeObjectURL(url);
     exportBtn.disabled = false;
     exportBtn.textContent = prevText;

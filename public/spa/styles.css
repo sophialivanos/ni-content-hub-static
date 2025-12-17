@@ -288,4 +288,188 @@ body {
 .tabs .tab { border:1px solid #cbd5e1; background:#ffffff; color:#0f172a; border-radius:9999px; padding:6px 12px; cursor:pointer; }
 .tabs .tab.active { background:#eef2ff; border-color:#c7d2fe; color:#3730a3; }
 
+/* Event Cards - API Response Display */
+.card-grid:has(.event-card) {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.event-card {
+  background: #ffffff;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  overflow: hidden;
+}
+.event-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.event-card-header:hover {
+  background: #f9fafb;
+}
+.event-card-header-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.event-card-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #0f172a;
+  margin: 0;
+}
+.event-card-country {
+  display: inline-block;
+  background: #e0f2fe;
+  color: #0369a1;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 500;
+}
+.event-card-date {
+  background: #dcfce7;
+  color: #166534;
+  padding: 6px 14px;
+  border-radius: 9999px;
+  font-size: 13px;
+  font-weight: 500;
+  white-space: nowrap;
+}
+.event-card-category {
+  display: inline-block;
+  background: #ede9fe;
+  color: #6d28d9;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  font-weight: 600;
+}
+.event-card-chevron {
+  font-size: 18px;
+  color: #9ca3af;
+  transition: transform 0.2s;
+}
+.event-card.expanded .event-card-chevron {
+  transform: rotate(180deg);
+}
+.event-card-body {
+  display: none;
+  padding: 0 20px 20px 20px;
+  border-top: 1px solid #e5e7eb;
+}
+.event-card.expanded .event-card-body {
+  display: block;
+}
+.event-card-description {
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.6;
+  margin: 16px 0;
+}
+.event-card-section {
+  margin-bottom: 16px;
+}
+.event-card-section:last-child {
+  margin-bottom: 0;
+}
+.event-card-section-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.event-card-section-title::before {
+  content: "•";
+  color: #a855f7;
+}
+.event-card-relevance {
+  background: #faf5ff;
+  border-left: 4px solid #a855f7;
+  padding: 12px 16px;
+  border-radius: 0 8px 8px 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.6;
+}
+.event-card-best-practices {
+  padding-left: 20px;
+  margin: 0;
+  color: #475569;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.event-card-best-practices li {
+  margin-bottom: 4px;
+}
+.event-card-suggestions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.event-card-suggestion {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.event-card-suggestion-label {
+  min-width: 70px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  text-align: center;
+  flex-shrink: 0;
+}
+.event-card-suggestion-label.h1 { background: #dbeafe; color: #1d4ed8; }
+.event-card-suggestion-label.dh1 { background: #d1fae5; color: #047857; }
+.event-card-suggestion-label.h2 { background: #fef3c7; color: #b45309; }
+.event-card-suggestion-label.article { background: #f3e8ff; color: #7c3aed; }
+.event-card-suggestion-label.btc { background: #fce7f3; color: #be185d; }
+.event-card-suggestion-label.ribbon { background: #e0e7ff; color: #4338ca; }
+.event-card-suggestion-text {
+  color: #374151;
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Vertical selector buttons within event cards */
+.event-card-verticals {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 20px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f9fafb;
+}
+.event-card-vertical-btn {
+  padding: 6px 14px;
+  border: 1px solid #d1d5db;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: #374151;
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.event-card-vertical-btn:hover {
+  background: #f3f4f6;
+  border-color: #9ca3af;
+}
+.event-card-vertical-btn.active {
+  background: #ede9fe;
+  border-color: #a78bfa;
+  color: #6d28d9;
+  font-weight: 600;
+}
+
 
