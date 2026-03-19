@@ -147,19 +147,15 @@ function h(tag, attrs = {}, ...children) {
 }
 
 // Lightweight editor tools for any textarea: expand, tighten, +/- chars, add context
-function attachEditorTools(textarea, options = {}) {
+function attachEditorTools(textarea) {
   if (!textarea || textarea.__hasTools) return;
   textarea.__hasTools = true;
-  const { hideExpandReduce = false } = options;
   const tools = h('div', { class: 'editor-tools' });
-  const expandBtn = hideExpandReduce ? null : h('button', { class: 'btn btn-outline' }, 'Expand');
-  const tightenBtn = hideExpandReduce ? null : h('button', { class: 'btn btn-outline' }, 'Reduce');
   const plusBtn = h('button', { class: 'btn btn-outline' }, '+ chars');
   const minusBtn = h('button', { class: 'btn btn-outline' }, '− chars');
   const ctxInput = h('input', { class: 'input', placeholder: 'Add context…', style: 'width:260px' });
   const ctxBtn = h('button', { class: 'btn btn-outline' }, 'Apply');
   const counter = h('span', { class: 'muted' }, '');
-  if (!hideExpandReduce) tools.append(expandBtn, tightenBtn);
   tools.append(plusBtn, minusBtn, ctxInput, ctxBtn, h('span', { class: 'spacer' }), counter);
   textarea.parentNode && textarea.parentNode.insertBefore(tools, textarea);
   function getSel() {
@@ -176,12 +172,6 @@ function attachEditorTools(textarea, options = {}) {
     textarea.dispatchEvent(new Event('input', { bubbles: true }));
   }
   function updateCount() { counter.textContent = `${(textarea.value || '').length} chars`; }
-  function expandText(txt) {
-    // Naive expansion: duplicate key sentences and add connective phrases
-    const parts = txt.split(/([.!?]\s+)/);
-    if (parts.length < 3) return txt + ' Additionally, here are more details to consider.';
-    return parts.slice(0, parts.length - 1).join('') + ' Furthermore, consider supporting details and examples for clarity.';
-  }
   function reduceText(txt) {
     // Naive reduction: trim to ~85% by removing middle sentences/extra spaces
     const target = Math.max(0, Math.floor(txt.length * 0.85));
@@ -190,22 +180,6 @@ function attachEditorTools(textarea, options = {}) {
   }
   function plusChars(txt) { return txt + ' ' + 'More context to enrich and elaborate on key points.'.slice(0, Math.max(24, Math.min(80, Math.floor(txt.length * 0.1)))); }
   function minusChars(txt) { return reduceText(txt); }
-  if (expandBtn) expandBtn.addEventListener('click', () => {
-    const { start, end } = getSel();
-    const v = textarea.value || '';
-    const sel = start !== end ? v.slice(start, end) : v;
-    const out = expandText(sel);
-    if (start !== end) setVal(v.slice(0, start) + out + v.slice(end), true);
-    else setVal(out, true);
-  });
-  if (tightenBtn) tightenBtn.addEventListener('click', () => {
-    const { start, end } = getSel();
-    const v = textarea.value || '';
-    const sel = start !== end ? v.slice(start, end) : v;
-    const out = reduceText(sel);
-    if (start !== end) setVal(v.slice(0, start) + out + v.slice(end), true);
-    else setVal(out, true);
-  });
   plusBtn.addEventListener('click', () => {
     const { start, end } = getSel();
     const v = textarea.value || '';
@@ -405,6 +379,19 @@ export function renderAiSearch(root) {
 
     // BTC content pull/paste (declare BEFORE using in card layout)
     let btcContent = '';
+    let keywordsValue = '';
+    const keywordsInput = h('input', { class: 'input', placeholder: 'Keywords (comma-separated)', ariaLabel: 'Keywords (required)' });
+    keywordsInput.addEventListener('input', () => {
+      keywordsValue = keywordsInput.value || '';
+      updateCreateEnabled();
+    });
+    const keywordsBar = h('div', { class: 'card full' },
+      h('div', { class: 'row' },
+        h('label', { class: 'label-required', style: 'margin:0' }, 'Keywords'),
+        keywordsInput
+      ),
+      h('p', { class: 'muted', style: 'margin:6px 0 0' }, 'Required to create/optimise content and keep it specific to the topic.')
+    );
     const urlInput = h('input', { class: 'input btc-url-input', placeholder: 'Internal page URL (optional)' });
     const pullBtn = h('button', { class: 'btn btn-primary' }, 'Pull BTC content');
     const urlRow = h('div', { class: 'toolbar btc-url-row' }, urlInput, pullBtn);
@@ -450,12 +437,15 @@ export function renderAiSearch(root) {
     const optimiseBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Optimise content');
     function fabricateCopy(kind) {
       const base = btcContent || `Key points for ${v}: trending topics and user questions.`;
-      return `${kind} based on BTC and insights: ${base.slice(0, 160)}…`;
+      const kws = (keywordsValue || '').trim();
+      const kwText = kws ? ` Keywords: ${kws}.` : '';
+      return `${kind} based on BTC and insights:${kwText} ${base.slice(0, 160)}…`;
     }
     function updateCreateEnabled() {
       const has = (btcContent || '').trim().length > 0;
-      createBtn.disabled = !has;
-      optimiseBtn.disabled = !has;
+      const hasKeywords = (keywordsValue || '').trim().length > 0;
+      createBtn.disabled = !(has && hasKeywords);
+      optimiseBtn.disabled = !(has && hasKeywords);
       exportBtn.disabled = !(outputArea.value || '').trim().length;
     }
     updateCreateEnabled();
@@ -515,7 +505,7 @@ export function renderAiSearch(root) {
       card('Page Update Suggestions', ul(pageUpdates))
     );
     // Row 2: full-width BTC
-    grid.append(btcCard);
+    grid.append(keywordsBar, btcCard);
     // Row 3: show output below BTC
     grid.append(outputCard);
     // Row 4: full-width visuals
@@ -1629,6 +1619,142 @@ export function renderFunnel(root) {
   root.append(hero, row1, row2, row3, ctaSection, variantsCard);
 }
 
+export function renderPartnerKdfs(root) {
+  root.innerHTML = '';
+  const hero = h('div', { class: 'page-hero' },
+    h('h1', {}, 'Partner KDFs & KDF Categorisation'),
+    h('p', {}, 'Creates key defining factors (KDFs) for specific industries and partners, and creates KDF categories for new verticals.')
+  );
+
+  // Required inputs
+  const industrySel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select industry'),
+    ...INDUSTRIES.map(i => h('option', { value: i }, i))
+  );
+  const verticalSel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select vertical')
+  );
+  function updateVerticalsFromIndustryKdf() {
+    const ind = industrySel.value;
+    const verts = (INDUSTRY_TO_VERTICALS[ind] || CANONICAL_VERTICALS).slice(0, 50);
+    verticalSel.innerHTML = '';
+    verticalSel.append(h('option', { value: '' }, 'Select vertical'));
+    verts.forEach(v => verticalSel.append(h('option', { value: v }, v)));
+    updateReady();
+  }
+  industrySel.addEventListener('change', updateVerticalsFromIndustryKdf);
+
+  const countrySel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'Select country'),
+    ...COUNTRIES.map(c => h('option', { value: c.code }, `${c.label} (${c.code})`))
+  );
+  const partnerInput = h('input', { class: 'input', placeholder: 'Partner / brand name' });
+
+  // Actions
+  const genKdfsBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Generate KDFs');
+  const createCatsBtn = h('button', { class: 'btn btn-outline', disabled: 'disabled' }, 'Create KDF categorisation');
+  function updateReady() {
+    const ready = !!industrySel.value && !!verticalSel.value && !!countrySel.value && !!(partnerInput.value || '').trim();
+    genKdfsBtn.disabled = !ready;
+    createCatsBtn.disabled = !ready;
+  }
+  verticalSel.addEventListener('change', updateReady);
+  countrySel.addEventListener('change', updateReady);
+  partnerInput.addEventListener('input', updateReady);
+  updateReady();
+  updateVerticalsFromIndustryKdf();
+
+  const controls = h('div', { class: 'section' },
+    h('div', { class: 'row articles-controls' },
+      h('label', { class: 'label-required' }, 'Industry'), industrySel,
+      h('label', { class: 'label-required' }, 'Vertical'), verticalSel,
+      h('label', { class: 'label-required' }, 'Country'), countrySel
+    ),
+    h('div', { class: 'row', style: 'margin-top:10px' },
+      h('label', { class: 'label-required' }, 'Partner / brand name'),
+      partnerInput,
+      h('div', { class: 'spacer' }),
+      createCatsBtn,
+      genKdfsBtn
+    )
+  );
+
+  const infoCard = h('div', { class: 'card full', style: 'display:none' },
+    h('h3', {}, 'Process'),
+    h('p', {}, 'Thanks — once these required details are provided, we’ll outline the KDF creation and categorisation steps for this industry, vertical, country, and partner. (You mentioned you will explain the process next.)')
+  );
+
+  // Categorisation editor (appears when "Create KDF categorisation" is chosen)
+  const catTextarea = h('textarea', { class: 'input', rows: '8', placeholder: 'Paste or draft KDF categories here (editable)...' });
+  attachEditorTools(catTextarea);
+  const confirmCatsBtn = h('button', { class: 'btn btn-primary' }, 'Confirm categories');
+  const catCard = h('div', { class: 'card full', style: 'display:none' },
+    h('h3', {}, 'KDF Categorisation'),
+    h('p', { class: 'muted' }, 'If a vertical has no scoring system, create categories here. This is fully editable.'),
+    catTextarea,
+    h('div', { class: 'toolbar' }, confirmCatsBtn)
+  );
+  let categoriesConfirmed = false;
+
+  // KDF output grid (5 main boxes, each with Score / Reason / Response)
+  const kdfDefs = [
+    { title: 'KDF 1 — Cost', hintScore: 'Score the affordability and promos', hintReason: 'Explain pricing drivers/promos', hintResponse: 'Record decision or notes' },
+    { title: 'KDF 2 — Whitening Method', hintScore: 'Score based on products offered', hintReason: 'Which products (LED, strips, kits, toothpaste)', hintResponse: 'Record decision or notes' },
+    { title: 'KDF 3 — Dentist Recommended', hintScore: 'Score based on awards/recommendations', hintReason: 'Do dentists/awards back the product?', hintResponse: 'Record decision or notes' },
+    { title: 'KDF 4 — Application Time', hintScore: 'Score for speed of use', hintReason: 'How long/frequent is application?', hintResponse: 'Record decision or notes' },
+    { title: 'KDF 5 — Money Back Guarantee', hintScore: 'Score length/strength of guarantee', hintReason: 'Is there a guarantee? How many days?', hintResponse: 'Record decision or notes' },
+  ];
+
+  function makeKdfColumn(def) {
+    const col = h('div', { class: 'card', style: 'display:flex;flex-direction:column;gap:8px;' },
+      h('h3', { style: 'margin:0' }, def.title),
+      h('div', { class: 'card kdf-subcard' },
+        h('div', { class: 'muted' }, 'SCORE'),
+        h('textarea', { class: 'input', rows: '2', placeholder: def.hintScore || 'Score' })
+      ),
+      h('div', { class: 'card kdf-subcard' },
+        h('div', { class: 'muted' }, 'REASON'),
+        h('textarea', { class: 'input', rows: '3', placeholder: def.hintReason || 'Reason' })
+      ),
+      h('div', { class: 'card kdf-subcard' },
+        h('div', { class: 'muted' }, 'RESPONSE'),
+        h('textarea', { class: 'input', rows: '4', placeholder: def.hintResponse || 'Response' })
+      )
+    );
+    // add lightweight editing helpers
+    col.querySelectorAll('textarea').forEach(ta => attachEditorTools(ta));
+    return col;
+  }
+
+  const kdfGrid = h('div', {
+    class: 'card-grid',
+    style: 'display:none;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px;'
+  },
+    ...kdfDefs.map(makeKdfColumn)
+  );
+
+  genKdfsBtn.addEventListener('click', () => {
+    if (genKdfsBtn.disabled) return;
+    infoCard.style.display = '';
+    kdfGrid.style.display = '';
+  });
+
+  createCatsBtn.addEventListener('click', () => {
+    if (createCatsBtn.disabled) return;
+    catCard.style.display = '';
+  });
+
+  confirmCatsBtn.addEventListener('click', () => {
+    categoriesConfirmed = true;
+    kdfGrid.style.display = '';
+    infoCard.style.display = '';
+    // Ensure Generate KDFs is available after categorisation is confirmed
+    genKdfsBtn.disabled = false;
+  });
+
+  root.append(hero, controls, catCard, infoCard, kdfGrid);
+}
+
 const ROUTES = {
   '/welcome': renderWelcome,
   '/seasonal-events': renderEvents,
@@ -1637,6 +1763,7 @@ const ROUTES = {
   '/funnel': renderFunnel,
   '/vertical-profiles': renderVerticalProfiles,
   '/mc-ads': renderMcAds,
+  '/partner-kdfs': renderPartnerKdfs,
 };
 
 // Router
@@ -1749,7 +1876,7 @@ export function renderMcAds(root) {
   // Outputs
   const personaArea = h('textarea', { class: 'input', rows: '2', placeholder: 'Platform-specific persona', readOnly: false });
   const copyArea = h('textarea', { class: 'input', rows: '4', placeholder: 'Ad copy will appear here (editable)' });
-  attachEditorTools(copyArea, { hideExpandReduce: true });
+  attachEditorTools(copyArea);
   const framesWrap = h('div', { class: 'tone-style' }); // reuse flex column styles
   const framesControls = h('div', { class: 'toolbar', style: 'display:none' },
     h('button', { class: 'btn btn-outline', id: 'decFrames' }, '− Fewer frames'),
@@ -1865,7 +1992,7 @@ export function renderMcAds(root) {
         ta
       );
       framesWrap.append(block);
-      attachEditorTools(ta, { hideExpandReduce: true });
+      attachEditorTools(ta);
     });
   }
   function getAllOutputText() {
