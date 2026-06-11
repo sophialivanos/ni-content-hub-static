@@ -1755,6 +1755,62 @@ export function renderPartnerKdfs(root) {
   root.append(hero, controls, catCard, infoCard, kdfGrid);
 }
 
+// Content forms for archive filtering
+const CONTENT_FORMS = ['Article', 'Review', 'Guide', 'Listicle', 'How-to', 'Case Study', 'Comparison', 'News', 'Opinion', 'Interview'];
+
+export function renderContentArchive(root) {
+  root.innerHTML = '';
+  const hero = h('div', { class: 'page-hero' },
+    h('h1', {}, 'Content Archive'),
+    h('p', {}, 'Search and browse all long-form content — articles, reviews, guides, and more — filtered by industry, content form, and keywords.')
+  );
+
+  const industrySel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'All industries'),
+    ...INDUSTRIES.map(i => h('option', { value: i }, i))
+  );
+  const contentFormSel = h('select', { class: 'select' },
+    h('option', { value: '' }, 'All content forms'),
+    ...CONTENT_FORMS.map(f => h('option', { value: f }, f))
+  );
+  const searchInput = h('input', { class: 'input', placeholder: 'Search by title, topic, or keyword…', style: 'flex:1;max-width:320px' });
+  const searchBtn = h('button', { class: 'btn btn-primary' }, 'Search');
+
+  const filters = h('div', { class: 'section' },
+    h('div', { class: 'row articles-controls', style: 'flex-wrap:wrap;gap:12px' },
+      h('label', {}, 'Industry'), industrySel,
+      h('label', {}, 'Content form'), contentFormSel,
+      h('label', {}, 'Search'), searchInput,
+      searchBtn
+    )
+  );
+
+  const resultsGrid = h('div', {
+    class: 'card-grid ai-rows',
+    style: 'display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:12px;margin-top:16px'
+  });
+  const emptyState = h('div', { class: 'card full', style: 'padding:32px;text-align:center' },
+    h('p', { class: 'muted', style: 'margin:0' }, 'No archived content yet. Content you create will appear here, searchable by industry, content form, and more.')
+  );
+  resultsGrid.append(emptyState);
+
+  function doSearch() {
+    const industry = (industrySel.value || '').trim();
+    const form = (contentFormSel.value || '').trim();
+    const q = (searchInput.value || '').trim().toLowerCase();
+    // Placeholder: in future, filter real data; for now show empty state
+    resultsGrid.innerHTML = '';
+    resultsGrid.append(emptyState);
+  }
+
+  searchBtn.addEventListener('click', doSearch);
+  searchInput.addEventListener('keydown', (e) => { if (e.key === 'Enter') doSearch(); });
+  industrySel.addEventListener('change', doSearch);
+  contentFormSel.addEventListener('change', doSearch);
+
+  root.append(hero, filters, resultsGrid);
+}
+
 const ROUTES = {
   '/welcome': renderWelcome,
   '/seasonal-events': renderEvents,
@@ -1764,6 +1820,7 @@ const ROUTES = {
   '/vertical-profiles': renderVerticalProfiles,
   '/mc-ads': renderMcAds,
   '/partner-kdfs': renderPartnerKdfs,
+  '/content-archive': renderContentArchive,
 };
 
 // Router
