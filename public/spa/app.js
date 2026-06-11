@@ -538,7 +538,7 @@ export function renderReviews(root) {
   root.innerHTML = '';
   const hero = h('div', { class: 'page-hero' },
     h('h1', {}, 'Review Creation'),
-    h('p', {}, 'Generate product and service reviews with structured pros, cons, and verdict sections — tailored by industry, vertical, and partner.')
+    h('p', {}, 'Generate partner and product reviews and customise your inputs and outputs.')
   );
 
   const industrySel = h('select', { class: 'select' },
