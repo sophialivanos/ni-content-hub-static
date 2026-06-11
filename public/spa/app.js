@@ -547,18 +547,283 @@ function fillSelect(select, placeholder, options, getValue, getLabel) {
   });
 }
 
+const REVIEW_VARS_FALLBACK = {
+  geos: ['Global', 'Americas', 'EMEA', 'APAC', 'North America', 'Europe', 'Latin America'],
+  languages: ['English', 'French', 'Spanish', 'German', 'Italian', 'Portuguese', 'Dutch', 'Swedish'],
+  contentOptions: [
+    { value: 'full-review', label: 'Full review' },
+    { value: 'summary-review', label: 'Summary review' },
+    { value: 'comparison-snippet', label: 'Comparison snippet' },
+    { value: 'buyers-guide', label: "Buyer's guide section" }
+  ]
+};
+
 export function renderReviews(root) {
   root.innerHTML = '';
   const hero = h('div', { class: 'page-hero' },
     h('h1', {}, 'Review Creation'),
     h('p', {}, 'Generate and optimise partner and product reviews.')
   );
-  const loading = h('p', { class: 'muted' }, 'Loading review options…');
-  root.append(hero, loading);
+
+  let reviewVars = REVIEW_VARS_FALLBACK;
+  let templateIndex = [];
+  let loadedTemplate = null;
+
+  const brandInput = h('input', { class: 'input', placeholder: 'Brand name' });
+  const websiteInput = h('input', { class: 'input', placeholder: 'https://partner-website.com' });
+  const geoSel = h('select', { class: 'select' });
+  const countrySel = h('select', { class: 'select' });
+  const industrySel = h('select', { class: 'select' });
+  const verticalSel = h('select', { class: 'select' });
+  const languageSel = h('select', { class: 'select' });
+  const contentSel = h('select', { class: 'select' });
+  const templateSel = h('select', { class: 'select' });
+
+  function refreshVariableDropdowns() {
+    fillSelect(geoSel, 'Select geo', reviewVars.geos || [], (g) => g, (g) => g);
+    fillSelect(languageSel, 'Select content language', reviewVars.languages || [], (l) => l, (l) => l);
+    fillSelect(contentSel, 'Select content', reviewVars.contentOptions || [], (o) => o.value, (o) => o.label);
+  }
+
+  fillSelect(countrySel, 'Select country', COUNTRIES, (c) => c.code, (c) => `${c.label} (${c.code})`);
+  fillSelect(industrySel, 'Select industry', INDUSTRIES, (i) => i, (i) => i);
+  fillSelect(verticalSel, 'Select vertical', [], () => '', () => '');
+  refreshVariableDropdowns();
+
+  function updateVerticalsFromIndustry() {
+    const ind = industrySel.value;
+    const verts = (INDUSTRY_TO_VERTICALS[ind] || CANONICAL_VERTICALS).slice(0, 50);
+    fillSelect(verticalSel, 'Select vertical', verts, (v) => v, (v) => v);
+  }
+
+  function getVariableContext() {
+    const contentOpt = contentSel.selectedOptions[0];
+    const templateOpt = templateSel.selectedOptions[0];
+    return {
+      brand_name: (brandInput.value || '').trim(),
+      partner_website: (websiteInput.value || '').trim(),
+      country: countrySel.value || '',
+      geo: geoSel.value || '',
+      content_language: languageSel.value || '',
+      industry: industrySel.value || '',
+      vertical: verticalSel.value || '',
+      content: contentOpt && contentOpt.value ? contentOpt.textContent : '',
+      template: templateOpt && templateOpt.value ? templateOpt.textContent : ''
+    };
+  }
+
+  function updateTemplateOptions() {
+    const contentValue = contentSel.value;
+    const { country, geo, content_language, industry, vertical } = getVariableContext();
+    let matches = templateIndex.slice();
+    if (vertical) matches = matches.filter((t) => !t.verticals?.length || t.verticals.includes(vertical));
+    if (industry) matches = matches.filter((t) => !t.industries?.length || t.industries.includes(industry));
+    if (country) matches = matches.filter((t) => !t.countries?.length || t.countries.includes(country));
+    if (geo) matches = matches.filter((t) => !t.geos?.length || t.geos.includes(geo));
+    if (content_language) matches = matches.filter((t) => !t.languages?.length || t.languages.includes(content_language));
+    if (contentValue) matches = matches.filter((t) => !t.contentOptions?.length || t.contentOptions.includes(contentValue));
+    fillSelect(templateSel, 'Select template', matches, (t) => t.id, (t) => t.name);
+    loadedTemplate = null;
+  }
+
+  async function loadSelectedTemplate() {
+    const id = templateSel.value;
+    if (!id) { loadedTemplate = null; return; }
+    try {
+      const res = await fetch(`./data/reviews/templates/${id}.json`);
+      if (res.ok) loadedTemplate = await res.json();
+    } catch {
+      loadedTemplate = null;
+    }
+  }
+
+  function allVariablesSelected() {
+    return !!(
+      (brandInput.value || '').trim() &&
+      (websiteInput.value || '').trim() &&
+      geoSel.value &&
+      countrySel.value &&
+      industrySel.value &&
+      verticalSel.value &&
+      languageSel.value &&
+      contentSel.value &&
+      templateSel.value
+    );
+  }
+
+  const variablesSection = h('div', { class: 'section' },
+    h('h3', { style: 'margin:0 0 12px 0;font-size:14px' }, 'Review variables'),
+    h('div', { class: 'row articles-controls' },
+      h('label', { class: 'label-required' }, 'Brand name'), brandInput,
+      h('label', { class: 'label-required' }, "Partner's website"), websiteInput
+    ),
+    h('div', { class: 'row articles-controls', style: 'margin-top:10px' },
+      h('label', { class: 'label-required' }, 'Geo'), geoSel,
+      h('label', { class: 'label-required' }, 'Country'), countrySel,
+      h('label', { class: 'label-required' }, 'Industry'), industrySel
+    ),
+    h('div', { class: 'row articles-controls', style: 'margin-top:10px' },
+      h('label', { class: 'label-required' }, 'Vertical'), verticalSel,
+      h('label', { class: 'label-required' }, 'Content language'), languageSel,
+      h('label', { class: 'label-required' }, 'Content'), contentSel
+    ),
+    h('div', { class: 'row articles-controls', style: 'margin-top:10px' },
+      h('label', { class: 'label-required' }, 'Template'), templateSel
+    )
+  );
+
+  const tones = ['Warm & conversational','Slightly more formal','Upbeat and cheeky','Inspiring & Empowering','Gentle and warm','Informative and direct','Emotional and inspiring','Confident, expert, factual (Authoritative)','Warm, understanding, emotionally in-tune (Empathetic)','Casual, relaxed, friendly (Conversational)','Uplifting, motivational, purpose-driven (Inspiring)','Polished, neutral, minimal fluff (Professional)','Humorous, clever, youth-targeted (Witty/Playful)','Gentle, comforting, calm and grounded (Reassuring)','Stats-focused, analytical, objective (Data-driven)'];
+  const styles = ['Narrative / Story-Driven','Conversational','Instructional / How-To','Persuasive / Conversion-Oriented','Analytical / Data-Led','Editorial / Journalistic','Narrative + Persuasive','Instructional + Conversational','Analytical + Third-Person','Narrative + First-Person','Poetic + Journalistic','Comparative + Listicle'];
+  const toneSel = h('select', { class: 'select' }, h('option', { value: '' }, 'Select...'), ...tones.map(t => h('option', { value: t }, t)));
+  const styleSel = h('select', { class: 'select' }, h('option', { value: '' }, 'Select...'), ...styles.map(s => h('option', { value: s }, s)));
+  const bannedWords = h('input', { class: 'input', placeholder: 'Banned words' });
+  const keywordsIn = h('input', { class: 'input', placeholder: 'Keywords to include' });
+  const customSection = h('div', { class: 'section' },
+    h('div', { class: 'row articles-controls' },
+      h('label', {}, 'Banned words'), bannedWords,
+      h('label', {}, 'Tone'), toneSel,
+      h('label', {}, 'Style'), styleSel
+    ),
+    h('div', { class: 'row' },
+      h('label', {}, 'Keywords to include'), keywordsIn
+    )
+  );
+
+  const researchList = h('ul', {});
+  const getResearchBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Get Research + Insights');
+  function updateResearchEnabled() {
+    getResearchBtn.disabled = !allVariablesSelected();
+  }
+  function updateFormState() {
+    updateTemplateOptions();
+    updateResearchEnabled();
+  }
+
+  getResearchBtn.addEventListener('click', async () => {
+    getResearchBtn.disabled = true;
+    const prev = getResearchBtn.textContent;
+    getResearchBtn.textContent = 'Generating…';
+    await new Promise(r => setTimeout(r, 600));
+    const ctx = getVariableContext();
+    const items = [
+      `Key features and differentiators for ${ctx.brand_name} in ${ctx.vertical}`,
+      `Market positioning for ${ctx.geo} / ${ctx.country} (${ctx.content_language})`,
+      `Trust signals and value themes for ${ctx.partner_website}`,
+      `Review angles for ${ctx.content}`,
+      `Template: ${ctx.template}`
+    ];
+    researchList.innerHTML = '';
+    items.forEach(x => researchList.append(h('li', {}, x)));
+    outlineCard.style.display = '';
+    getResearchBtn.textContent = prev;
+    getResearchBtn.disabled = false;
+  });
+  const researchCard = h('div', { class: 'card full' },
+    h('h3', {}, 'Step 1 — Research & Insights'),
+    h('div', { class: 'toolbar' }, getResearchBtn),
+    researchList
+  );
+
+  const outlineArea = h('textarea', { class: 'input', rows: '6', placeholder: 'Review outline…' });
+  attachEditorTools(outlineArea);
+  const createOutlineBtn = h('button', { class: 'btn btn-primary' }, 'Create Outline');
+  const regenOutlineBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate outline');
+  function buildOutline() {
+    const ctx = getVariableContext();
+    if (loadedTemplate?.outlineTemplate) return applyReviewTemplate(loadedTemplate.outlineTemplate, ctx);
+    return `Review outline — ${ctx.brand_name} (${ctx.vertical}, ${ctx.country})`;
+  }
+  createOutlineBtn.addEventListener('click', async () => {
+    createOutlineBtn.disabled = true;
+    const prev = createOutlineBtn.textContent;
+    createOutlineBtn.textContent = 'Creating…';
+    await loadSelectedTemplate();
+    await new Promise(r => setTimeout(r, 500));
+    outlineArea.value = buildOutline();
+    reviewCard.style.display = '';
+    updateReviewEnabled();
+    regenOutlineBtn.classList.remove('hidden');
+    createOutlineBtn.textContent = prev;
+    createOutlineBtn.disabled = false;
+  });
+  regenOutlineBtn.addEventListener('click', () => { outlineArea.value = buildOutline(); updateReviewEnabled(); });
+  const outlineCard = h('div', { class: 'card full', style: 'display:none' },
+    h('h3', {}, 'Step 2 — Review Outline'),
+    h('div', { class: 'toolbar' }, createOutlineBtn, regenOutlineBtn),
+    outlineArea
+  );
+
+  const reviewArea = h('textarea', { class: 'input', rows: '14', placeholder: 'Generated review will appear here. You can edit freely.' });
+  attachEditorTools(reviewArea);
+  const extraContext = h('textarea', { class: 'input', rows: '2', placeholder: 'Additional context for the review (optional)' });
+  const exportBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, '⬇ Export doc');
+  function exportDocFile(filename, content) {
+    try {
+      const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 300);
+    } catch {}
+  }
+  exportBtn.addEventListener('click', () => {
+    if (!(reviewArea.value || '').trim()) return;
+    const ctx = getVariableContext();
+    const name = (ctx.brand_name || 'review').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
+    exportDocFile(`${name || 'review'}.doc`, reviewArea.value);
+  });
+  const genReviewBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Generate Review');
+  function updateReviewEnabled() {
+    genReviewBtn.disabled = !(outlineArea.value || '').trim();
+    exportBtn.disabled = !(reviewArea.value || '').trim();
+  }
+  outlineArea.addEventListener('input', updateReviewEnabled);
+  reviewArea.addEventListener('input', updateReviewEnabled);
+  genReviewBtn.addEventListener('click', async () => {
+    genReviewBtn.disabled = true;
+    const prev = genReviewBtn.textContent;
+    genReviewBtn.textContent = 'Generating…';
+    await loadSelectedTemplate();
+    await new Promise(r => setTimeout(r, 700));
+    const ctx = getVariableContext();
+    const tone = toneSel.value || 'Professional';
+    const style = styleSel.value || 'Analytical / Data-Led';
+    const ctxExtra = (extraContext.value || '').trim();
+    let body = loadedTemplate?.bodyTemplate
+      ? applyReviewTemplate(loadedTemplate.bodyTemplate, ctx)
+      : `# ${ctx.brand_name} Review\n\n${ctx.content}`;
+    if (ctxExtra) body += `\n\nAdditional context — ${ctxExtra}`;
+    body += `\n\n_(Tone: ${tone}; Style: ${style})_`;
+    reviewArea.value = body;
+    genReviewBtn.textContent = prev;
+    genReviewBtn.disabled = false;
+    updateReviewEnabled();
+  });
+  const reviewCard = h('div', { class: 'card full', style: 'display:none' },
+    h('h3', {}, 'Step 3 — Generate Review'),
+    h('div', { class: 'toolbar' }, genReviewBtn, exportBtn),
+    extraContext,
+    reviewArea
+  );
+
+  industrySel.addEventListener('change', () => { updateVerticalsFromIndustry(); updateFormState(); });
+  geoSel.addEventListener('change', updateFormState);
+  countrySel.addEventListener('change', updateFormState);
+  verticalSel.addEventListener('change', updateFormState);
+  languageSel.addEventListener('change', updateFormState);
+  contentSel.addEventListener('change', updateFormState);
+  brandInput.addEventListener('input', updateResearchEnabled);
+  websiteInput.addEventListener('input', updateResearchEnabled);
+  templateSel.addEventListener('change', async () => {
+    await loadSelectedTemplate();
+    updateResearchEnabled();
+  });
+
+  root.append(hero, variablesSection, customSection, researchCard, outlineCard, reviewCard);
+  updateVerticalsFromIndustry();
+  updateTemplateOptions();
 
   (async () => {
-    let reviewVars = { geos: [], languages: [], contentOptions: [] };
-    let templateIndex = [];
     try {
       const [varsRes, idxRes] = await Promise.all([
         fetch('./data/reviews/variables.json'),
@@ -569,265 +834,11 @@ export function renderReviews(root) {
         const idx = await idxRes.json();
         templateIndex = idx.templates || [];
       }
+      refreshVariableDropdowns();
+      updateTemplateOptions();
     } catch (err) {
       console.warn('Review data load failed, using fallbacks', err);
     }
-
-    root.innerHTML = '';
-    root.append(hero);
-
-    let loadedTemplate = null;
-
-    const brandInput = h('input', { class: 'input', placeholder: 'Brand name' });
-    const websiteInput = h('input', { class: 'input', placeholder: 'https://partner-website.com' });
-    const geoSel = h('select', { class: 'select' });
-    const countrySel = h('select', { class: 'select' });
-    const industrySel = h('select', { class: 'select' });
-    const verticalSel = h('select', { class: 'select' });
-    const languageSel = h('select', { class: 'select' });
-    const contentSel = h('select', { class: 'select' });
-    const templateSel = h('select', { class: 'select' });
-
-    fillSelect(geoSel, 'Select geo', reviewVars.geos || [], (g) => g, (g) => g);
-    fillSelect(countrySel, 'Select country', COUNTRIES, (c) => c.code, (c) => `${c.label} (${c.code})`);
-    fillSelect(industrySel, 'Select industry', INDUSTRIES, (i) => i, (i) => i);
-    fillSelect(verticalSel, 'Select vertical', [], () => '', () => '');
-    fillSelect(languageSel, 'Select content language', reviewVars.languages || [], (l) => l, (l) => l);
-    fillSelect(contentSel, 'Select content', reviewVars.contentOptions || [], (o) => o.value, (o) => o.label);
-
-    function updateVerticalsFromIndustry() {
-      const ind = industrySel.value;
-      const verts = (INDUSTRY_TO_VERTICALS[ind] || CANONICAL_VERTICALS).slice(0, 50);
-      fillSelect(verticalSel, 'Select vertical', verts, (v) => v, (v) => v);
-    }
-
-    function getVariableContext() {
-      const contentOpt = contentSel.selectedOptions[0];
-      const templateOpt = templateSel.selectedOptions[0];
-      return {
-        brand_name: (brandInput.value || '').trim(),
-        partner_website: (websiteInput.value || '').trim(),
-        country: countrySel.value || '',
-        geo: geoSel.value || '',
-        content_language: languageSel.value || '',
-        industry: industrySel.value || '',
-        vertical: verticalSel.value || '',
-        content: contentOpt && contentOpt.value ? contentOpt.textContent : '',
-        template: templateOpt && templateOpt.value ? templateOpt.textContent : ''
-      };
-    }
-
-    function updateTemplateOptions() {
-      const contentValue = contentSel.value;
-      const { country, geo, content_language, industry, vertical } = getVariableContext();
-      let matches = templateIndex.slice();
-      if (vertical) matches = matches.filter((t) => !t.verticals?.length || t.verticals.includes(vertical));
-      if (industry) matches = matches.filter((t) => !t.industries?.length || t.industries.includes(industry));
-      if (country) matches = matches.filter((t) => !t.countries?.length || t.countries.includes(country));
-      if (geo) matches = matches.filter((t) => !t.geos?.length || t.geos.includes(geo));
-      if (content_language) matches = matches.filter((t) => !t.languages?.length || t.languages.includes(content_language));
-      if (contentValue) matches = matches.filter((t) => !t.contentOptions?.length || t.contentOptions.includes(contentValue));
-      fillSelect(templateSel, 'Select template', matches, (t) => t.id, (t) => t.name);
-      loadedTemplate = null;
-    }
-
-    async function loadSelectedTemplate() {
-      const id = templateSel.value;
-      if (!id) { loadedTemplate = null; return; }
-      try {
-        const res = await fetch(`./data/reviews/templates/${id}.json`);
-        if (res.ok) loadedTemplate = await res.json();
-      } catch {
-        loadedTemplate = null;
-      }
-    }
-
-    function allVariablesSelected() {
-      return !!(
-        (brandInput.value || '').trim() &&
-        (websiteInput.value || '').trim() &&
-        geoSel.value &&
-        countrySel.value &&
-        industrySel.value &&
-        verticalSel.value &&
-        languageSel.value &&
-        contentSel.value &&
-        templateSel.value
-      );
-    }
-
-    function updateFormState() {
-      updateTemplateOptions();
-      updateResearchEnabled();
-    }
-
-    industrySel.addEventListener('change', () => { updateVerticalsFromIndustry(); updateFormState(); });
-    geoSel.addEventListener('change', updateFormState);
-    countrySel.addEventListener('change', updateFormState);
-    verticalSel.addEventListener('change', updateFormState);
-    languageSel.addEventListener('change', updateFormState);
-    contentSel.addEventListener('change', updateFormState);
-    brandInput.addEventListener('input', updateResearchEnabled);
-    websiteInput.addEventListener('input', updateResearchEnabled);
-    templateSel.addEventListener('change', async () => {
-      await loadSelectedTemplate();
-      updateResearchEnabled();
-    });
-
-    const variablesSection = h('div', { class: 'section' },
-      h('h3', { style: 'margin:0 0 12px 0;font-size:14px' }, 'Review variables'),
-      h('div', { class: 'row articles-controls' },
-        h('label', { class: 'label-required' }, 'Brand name'), brandInput,
-        h('label', { class: 'label-required' }, "Partner's website"), websiteInput
-      ),
-      h('div', { class: 'row articles-controls', style: 'margin-top:10px' },
-        h('label', { class: 'label-required' }, 'Geo'), geoSel,
-        h('label', { class: 'label-required' }, 'Country'), countrySel,
-        h('label', { class: 'label-required' }, 'Industry'), industrySel
-      ),
-      h('div', { class: 'row articles-controls', style: 'margin-top:10px' },
-        h('label', { class: 'label-required' }, 'Vertical'), verticalSel,
-        h('label', { class: 'label-required' }, 'Content language'), languageSel,
-        h('label', { class: 'label-required' }, 'Content'), contentSel
-      ),
-      h('div', { class: 'row articles-controls', style: 'margin-top:10px' },
-        h('label', { class: 'label-required' }, 'Template'), templateSel
-      )
-    );
-
-    updateVerticalsFromIndustry();
-    updateFormState();
-
-    const tones = ['Warm & conversational','Slightly more formal','Upbeat and cheeky','Inspiring & Empowering','Gentle and warm','Informative and direct','Emotional and inspiring','Confident, expert, factual (Authoritative)','Warm, understanding, emotionally in-tune (Empathetic)','Casual, relaxed, friendly (Conversational)','Uplifting, motivational, purpose-driven (Inspiring)','Polished, neutral, minimal fluff (Professional)','Humorous, clever, youth-targeted (Witty/Playful)','Gentle, comforting, calm and grounded (Reassuring)','Stats-focused, analytical, objective (Data-driven)'];
-    const styles = ['Narrative / Story-Driven','Conversational','Instructional / How-To','Persuasive / Conversion-Oriented','Analytical / Data-Led','Editorial / Journalistic','Narrative + Persuasive','Instructional + Conversational','Analytical + Third-Person','Narrative + First-Person','Poetic + Journalistic','Comparative + Listicle'];
-    const toneSel = h('select', { class: 'select' }, h('option', { value: '' }, 'Select...'), ...tones.map(t => h('option', { value: t }, t)));
-    const styleSel = h('select', { class: 'select' }, h('option', { value: '' }, 'Select...'), ...styles.map(s => h('option', { value: s }, s)));
-    const bannedWords = h('input', { class: 'input', placeholder: 'Banned words' });
-    const keywordsIn = h('input', { class: 'input', placeholder: 'Keywords to include' });
-    const customSection = h('div', { class: 'section' },
-      h('div', { class: 'row articles-controls' },
-        h('label', {}, 'Banned words'), bannedWords,
-        h('label', {}, 'Tone'), toneSel,
-        h('label', {}, 'Style'), styleSel
-      ),
-      h('div', { class: 'row' },
-        h('label', {}, 'Keywords to include'), keywordsIn
-      )
-    );
-
-    const researchList = h('ul', {});
-    const getResearchBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Get Research + Insights');
-    function updateResearchEnabled() {
-      getResearchBtn.disabled = !allVariablesSelected();
-    }
-    getResearchBtn.addEventListener('click', async () => {
-      getResearchBtn.disabled = true;
-      const prev = getResearchBtn.textContent;
-      getResearchBtn.textContent = 'Generating…';
-      await new Promise(r => setTimeout(r, 600));
-      const ctx = getVariableContext();
-      const items = [
-        `Key features and differentiators for ${ctx.brand_name} in ${ctx.vertical}`,
-        `Market positioning for ${ctx.geo} / ${ctx.country} (${ctx.content_language})`,
-        `Trust signals and value themes for ${ctx.partner_website}`,
-        `Review angles for ${ctx.content}`,
-        `Template: ${ctx.template}`
-      ];
-      researchList.innerHTML = '';
-      items.forEach(x => researchList.append(h('li', {}, x)));
-      outlineCard.style.display = '';
-      getResearchBtn.textContent = prev;
-      getResearchBtn.disabled = false;
-    });
-    const researchCard = h('div', { class: 'card full' },
-      h('h3', {}, 'Step 1 — Research & Insights'),
-      h('div', { class: 'toolbar' }, getResearchBtn),
-      researchList
-    );
-
-    const outlineArea = h('textarea', { class: 'input', rows: '6', placeholder: 'Review outline…' });
-    attachEditorTools(outlineArea);
-    const createOutlineBtn = h('button', { class: 'btn btn-primary' }, 'Create Outline');
-    const regenOutlineBtn = h('button', { class: 'btn btn-primary hidden' }, 'Regenerate outline');
-    function buildOutline() {
-      const ctx = getVariableContext();
-      if (loadedTemplate?.outlineTemplate) return applyReviewTemplate(loadedTemplate.outlineTemplate, ctx);
-      return `Review outline — ${ctx.brand_name} (${ctx.vertical}, ${ctx.country})`;
-    }
-    createOutlineBtn.addEventListener('click', async () => {
-      createOutlineBtn.disabled = true;
-      const prev = createOutlineBtn.textContent;
-      createOutlineBtn.textContent = 'Creating…';
-      await loadSelectedTemplate();
-      await new Promise(r => setTimeout(r, 500));
-      outlineArea.value = buildOutline();
-      reviewCard.style.display = '';
-      updateReviewEnabled();
-      regenOutlineBtn.classList.remove('hidden');
-      createOutlineBtn.textContent = prev;
-      createOutlineBtn.disabled = false;
-    });
-    regenOutlineBtn.addEventListener('click', () => { outlineArea.value = buildOutline(); updateReviewEnabled(); });
-    const outlineCard = h('div', { class: 'card full', style: 'display:none' },
-      h('h3', {}, 'Step 2 — Review Outline'),
-      h('div', { class: 'toolbar' }, createOutlineBtn, regenOutlineBtn),
-      outlineArea
-    );
-
-    const reviewArea = h('textarea', { class: 'input', rows: '14', placeholder: 'Generated review will appear here. You can edit freely.' });
-    attachEditorTools(reviewArea);
-    const extraContext = h('textarea', { class: 'input', rows: '2', placeholder: 'Additional context for the review (optional)' });
-    const exportBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, '⬇ Export doc');
-    function exportDocFile(filename, content) {
-      try {
-        const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement('a');
-        a.href = url; a.download = filename; document.body.appendChild(a); a.click(); a.remove();
-        setTimeout(() => URL.revokeObjectURL(url), 300);
-      } catch {}
-    }
-    exportBtn.addEventListener('click', () => {
-      if (!(reviewArea.value || '').trim()) return;
-      const ctx = getVariableContext();
-      const name = (ctx.brand_name || 'review').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '');
-      exportDocFile(`${name || 'review'}.doc`, reviewArea.value);
-    });
-    const genReviewBtn = h('button', { class: 'btn btn-primary', disabled: 'disabled' }, 'Generate Review');
-    function updateReviewEnabled() {
-      genReviewBtn.disabled = !(outlineArea.value || '').trim();
-      exportBtn.disabled = !(reviewArea.value || '').trim();
-    }
-    outlineArea.addEventListener('input', updateReviewEnabled);
-    reviewArea.addEventListener('input', updateReviewEnabled);
-    genReviewBtn.addEventListener('click', async () => {
-      genReviewBtn.disabled = true;
-      const prev = genReviewBtn.textContent;
-      genReviewBtn.textContent = 'Generating…';
-      await loadSelectedTemplate();
-      await new Promise(r => setTimeout(r, 700));
-      const ctx = getVariableContext();
-      const tone = toneSel.value || 'Professional';
-      const style = styleSel.value || 'Analytical / Data-Led';
-      const ctxExtra = (extraContext.value || '').trim();
-      let body = loadedTemplate?.bodyTemplate
-        ? applyReviewTemplate(loadedTemplate.bodyTemplate, ctx)
-        : `# ${ctx.brand_name} Review\n\n${ctx.content}`;
-      if (ctxExtra) body += `\n\nAdditional context — ${ctxExtra}`;
-      body += `\n\n_(Tone: ${tone}; Style: ${style})_`;
-      reviewArea.value = body;
-      genReviewBtn.textContent = prev;
-      genReviewBtn.disabled = false;
-      updateReviewEnabled();
-    });
-    const reviewCard = h('div', { class: 'card full', style: 'display:none' },
-      h('h3', {}, 'Step 3 — Generate Review'),
-      h('div', { class: 'toolbar' }, genReviewBtn, exportBtn),
-      extraContext,
-      reviewArea
-    );
-
-    root.append(variablesSection, customSection, researchCard, outlineCard, reviewCard);
   })();
 }
 
