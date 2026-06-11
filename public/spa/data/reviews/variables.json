@@ -1,13 +1,4 @@
 {
-  "geos": [
-    "Global",
-    "Americas",
-    "EMEA",
-    "APAC",
-    "North America",
-    "Europe",
-    "Latin America"
-  ],
   "languages": [
     "English",
     "French",
@@ -16,7 +7,10 @@
     "Italian",
     "Portuguese",
     "Dutch",
-    "Swedish"
+    "Swedish",
+    "Romanian",
+    "Greek",
+    "Russian"
   ],
   "contentOptions": [
     { "value": "full-review", "label": "Full review" },

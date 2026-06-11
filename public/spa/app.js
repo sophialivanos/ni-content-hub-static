@@ -547,9 +547,27 @@ function fillSelect(select, placeholder, options, getValue, getLabel) {
   });
 }
 
+function languageForCountry(code) {
+  switch ((code || '').toUpperCase()) {
+    case 'FR': return 'French';
+    case 'DE': return 'German';
+    case 'ES': return 'Spanish';
+    case 'IT': return 'Italian';
+    case 'MX': return 'Spanish';
+    case 'BR':
+    case 'PT': return 'Portuguese';
+    case 'NL':
+    case 'BE': return 'Dutch';
+    case 'SE': return 'Swedish';
+    case 'RO': return 'Romanian';
+    case 'GR': return 'Greek';
+    case 'RU': return 'Russian';
+    default: return 'English';
+  }
+}
+
 const REVIEW_VARS_FALLBACK = {
-  geos: ['Global', 'Americas', 'EMEA', 'APAC', 'North America', 'Europe', 'Latin America'],
-  languages: ['English', 'French', 'Spanish', 'German', 'Italian', 'Portuguese', 'Dutch', 'Swedish'],
+  languages: ['English', 'French', 'Spanish', 'German', 'Italian', 'Portuguese', 'Dutch', 'Swedish', 'Romanian', 'Greek', 'Russian'],
   contentOptions: [
     { value: 'full-review', label: 'Full review' },
     { value: 'summary-review', label: 'Summary review' },
@@ -571,7 +589,6 @@ export function renderReviews(root) {
 
   const brandInput = h('input', { class: 'input', placeholder: 'Brand name' });
   const websiteInput = h('input', { class: 'input', placeholder: 'https://partner-website.com' });
-  const geoSel = h('select', { class: 'select' });
   const countrySel = h('select', { class: 'select' });
   const industrySel = h('select', { class: 'select' });
   const verticalSel = h('select', { class: 'select' });
@@ -580,9 +597,21 @@ export function renderReviews(root) {
   const templateSel = h('select', { class: 'select' });
 
   function refreshVariableDropdowns() {
-    fillSelect(geoSel, 'Select geo', reviewVars.geos || [], (g) => g, (g) => g);
+    const prevLang = languageSel.value;
     fillSelect(languageSel, 'Select content language', reviewVars.languages || [], (l) => l, (l) => l);
+    if (prevLang && Array.from(languageSel.options).some((o) => o.value === prevLang)) {
+      languageSel.value = prevLang;
+    } else if (countrySel.value) {
+      updateLanguageFromCountry();
+    }
     fillSelect(contentSel, 'Select content', reviewVars.contentOptions || [], (o) => o.value, (o) => o.label);
+  }
+
+  function updateLanguageFromCountry() {
+    const lang = languageForCountry(countrySel.value);
+    if (Array.from(languageSel.options).some((o) => o.value === lang)) {
+      languageSel.value = lang;
+    }
   }
 
   fillSelect(countrySel, 'Select country', COUNTRIES, (c) => c.code, (c) => `${c.label} (${c.code})`);
@@ -603,7 +632,7 @@ export function renderReviews(root) {
       brand_name: (brandInput.value || '').trim(),
       partner_website: (websiteInput.value || '').trim(),
       country: countrySel.value || '',
-      geo: geoSel.value || '',
+      geo: countrySel.value || '',
       content_language: languageSel.value || '',
       industry: industrySel.value || '',
       vertical: verticalSel.value || '',
@@ -614,12 +643,11 @@ export function renderReviews(root) {
 
   function updateTemplateOptions() {
     const contentValue = contentSel.value;
-    const { country, geo, content_language, industry, vertical } = getVariableContext();
+    const { country, content_language, industry, vertical } = getVariableContext();
     let matches = templateIndex.slice();
     if (vertical) matches = matches.filter((t) => !t.verticals?.length || t.verticals.includes(vertical));
     if (industry) matches = matches.filter((t) => !t.industries?.length || t.industries.includes(industry));
     if (country) matches = matches.filter((t) => !t.countries?.length || t.countries.includes(country));
-    if (geo) matches = matches.filter((t) => !t.geos?.length || t.geos.includes(geo));
     if (content_language) matches = matches.filter((t) => !t.languages?.length || t.languages.includes(content_language));
     if (contentValue) matches = matches.filter((t) => !t.contentOptions?.length || t.contentOptions.includes(contentValue));
     fillSelect(templateSel, 'Select template', matches, (t) => t.id, (t) => t.name);
@@ -641,7 +669,6 @@ export function renderReviews(root) {
     return !!(
       (brandInput.value || '').trim() &&
       (websiteInput.value || '').trim() &&
-      geoSel.value &&
       countrySel.value &&
       industrySel.value &&
       verticalSel.value &&
@@ -658,7 +685,6 @@ export function renderReviews(root) {
       h('label', { class: 'label-required' }, "Partner's website"), websiteInput
     ),
     h('div', { class: 'row articles-controls', style: 'margin-top:10px' },
-      h('label', { class: 'label-required' }, 'Geo'), geoSel,
       h('label', { class: 'label-required' }, 'Country'), countrySel,
       h('label', { class: 'label-required' }, 'Industry'), industrySel
     ),
@@ -707,7 +733,7 @@ export function renderReviews(root) {
     const ctx = getVariableContext();
     const items = [
       `Key features and differentiators for ${ctx.brand_name} in ${ctx.vertical}`,
-      `Market positioning for ${ctx.geo} / ${ctx.country} (${ctx.content_language})`,
+      `Market positioning for ${ctx.country} (${ctx.content_language})`,
       `Trust signals and value themes for ${ctx.partner_website}`,
       `Review angles for ${ctx.content}`,
       `Template: ${ctx.template}`
@@ -807,8 +833,10 @@ export function renderReviews(root) {
   );
 
   industrySel.addEventListener('change', () => { updateVerticalsFromIndustry(); updateFormState(); });
-  geoSel.addEventListener('change', updateFormState);
-  countrySel.addEventListener('change', updateFormState);
+  countrySel.addEventListener('change', () => {
+    updateLanguageFromCountry();
+    updateFormState();
+  });
   verticalSel.addEventListener('change', updateFormState);
   languageSel.addEventListener('change', updateFormState);
   contentSel.addEventListener('change', updateFormState);
