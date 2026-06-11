@@ -13,9 +13,7 @@
     "Russian"
   ],
   "contentOptions": [
-    { "value": "full-review", "label": "Full review" },
-    { "value": "summary-review", "label": "Summary review" },
-    { "value": "comparison-snippet", "label": "Comparison snippet" },
-    { "value": "buyers-guide", "label": "Buyer's guide section" }
+    { "value": "full-review", "label": "Full Review" },
+    { "value": "optimisation", "label": "Optimisation" }
   ]
 }

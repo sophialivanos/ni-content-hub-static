@@ -6,7 +6,7 @@
       "verticals": ["VPN"],
       "countries": ["US", "UK", "CA", "AU"],
       "languages": ["English"],
-      "contentOptions": ["full-review", "summary-review"]
+      "contentOptions": ["full-review", "optimisation"]
     },
     {
       "id": "vpn-comparison",
@@ -14,7 +14,7 @@
       "verticals": ["VPN"],
       "countries": ["US", "UK"],
       "languages": ["English"],
-      "contentOptions": ["full-review", "comparison-snippet"]
+      "contentOptions": ["full-review", "optimisation"]
     },
     {
       "id": "car-insurance-product",
@@ -22,7 +22,7 @@
       "verticals": ["Car Insurance"],
       "countries": ["US"],
       "languages": ["English"],
-      "contentOptions": ["full-review", "buyers-guide"]
+      "contentOptions": ["full-review", "optimisation"]
     },
     {
       "id": "meal-delivery-roundup",
@@ -30,7 +30,7 @@
       "verticals": ["Meal Delivery"],
       "countries": ["US", "UK"],
       "languages": ["English", "French"],
-      "contentOptions": ["full-review", "summary-review"]
+      "contentOptions": ["full-review", "optimisation"]
     }
   ]
 }

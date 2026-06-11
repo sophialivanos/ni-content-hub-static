@@ -569,10 +569,8 @@ function languageForCountry(code) {
 const REVIEW_VARS_FALLBACK = {
   languages: ['English', 'French', 'Spanish', 'German', 'Italian', 'Portuguese', 'Dutch', 'Swedish', 'Romanian', 'Greek', 'Russian'],
   contentOptions: [
-    { value: 'full-review', label: 'Full review' },
-    { value: 'summary-review', label: 'Summary review' },
-    { value: 'comparison-snippet', label: 'Comparison snippet' },
-    { value: 'buyers-guide', label: "Buyer's guide section" }
+    { value: 'full-review', label: 'Full Review' },
+    { value: 'optimisation', label: 'Optimisation' }
   ]
 };
 
@@ -604,7 +602,7 @@ export function renderReviews(root) {
     } else if (countrySel.value) {
       updateLanguageFromCountry();
     }
-    fillSelect(contentSel, 'Select content', reviewVars.contentOptions || [], (o) => o.value, (o) => o.label);
+    fillSelect(contentSel, 'Select task', reviewVars.contentOptions || [], (o) => o.value, (o) => o.label);
   }
 
   function updateLanguageFromCountry() {
@@ -626,8 +624,9 @@ export function renderReviews(root) {
   }
 
   function getVariableContext() {
-    const contentOpt = contentSel.selectedOptions[0];
+    const taskOpt = contentSel.selectedOptions[0];
     const templateOpt = templateSel.selectedOptions[0];
+    const task = taskOpt && taskOpt.value ? taskOpt.textContent : '';
     return {
       brand_name: (brandInput.value || '').trim(),
       partner_website: (websiteInput.value || '').trim(),
@@ -636,7 +635,8 @@ export function renderReviews(root) {
       content_language: languageSel.value || '',
       industry: industrySel.value || '',
       vertical: verticalSel.value || '',
-      content: contentOpt && contentOpt.value ? contentOpt.textContent : '',
+      task,
+      content: task,
       template: templateOpt && templateOpt.value ? templateOpt.textContent : ''
     };
   }
@@ -691,7 +691,7 @@ export function renderReviews(root) {
     h('div', { class: 'row articles-controls', style: 'margin-top:10px' },
       h('label', { class: 'label-required' }, 'Vertical'), verticalSel,
       h('label', { class: 'label-required' }, 'Content language'), languageSel,
-      h('label', { class: 'label-required' }, 'Content'), contentSel
+      h('label', { class: 'label-required' }, 'Task'), contentSel
     ),
     h('div', { class: 'row articles-controls', style: 'margin-top:10px' },
       h('label', { class: 'label-required' }, 'Template'), templateSel
@@ -735,7 +735,7 @@ export function renderReviews(root) {
       `Key features and differentiators for ${ctx.brand_name} in ${ctx.vertical}`,
       `Market positioning for ${ctx.country} (${ctx.content_language})`,
       `Trust signals and value themes for ${ctx.partner_website}`,
-      `Review angles for ${ctx.content}`,
+      `Review angles for ${ctx.task}`,
       `Template: ${ctx.template}`
     ];
     researchList.innerHTML = '';
