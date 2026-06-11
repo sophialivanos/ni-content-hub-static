@@ -1,0 +1,5 @@
+{
+  "id": "car-insurance-product",
+  "outlineTemplate": "Review outline — {{brand_name}} car insurance ({{country}})\n\n1. Coverage overview\n2. Pricing\n3. Pros & cons\n4. Who it's best for",
+  "bodyTemplate": "# {{brand_name}} Car Insurance Review\n\n**Website:** {{partner_website}}\n**Geo:** {{country}} | **Language:** {{content_language}}\n**Template:** {{template}}\n\n## Overview\n{{brand_name}} in {{vertical}}.\n\n{{content}}"
+}

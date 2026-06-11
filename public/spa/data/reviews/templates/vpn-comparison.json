@@ -1,0 +1,5 @@
+{
+  "id": "vpn-comparison",
+  "outlineTemplate": "Comparison — {{brand_name}} vs alternatives ({{vertical}}, {{country}})\n\n1. Quick comparison table\n2. {{brand_name}} strengths\n3. Where competitors win\n4. Best for…",
+  "bodyTemplate": "# {{brand_name}} Comparison Review\n\n**Website:** {{partner_website}}\n**Geo:** {{country}} | **Language:** {{content_language}}\n**Template:** {{template}}\n\n## Comparison\nHow {{brand_name}} stacks up in {{vertical}}.\n\n{{content}}"
+}

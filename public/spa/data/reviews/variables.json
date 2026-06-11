@@ -1,0 +1,27 @@
+{
+  "geos": [
+    "Global",
+    "Americas",
+    "EMEA",
+    "APAC",
+    "North America",
+    "Europe",
+    "Latin America"
+  ],
+  "languages": [
+    "English",
+    "French",
+    "Spanish",
+    "German",
+    "Italian",
+    "Portuguese",
+    "Dutch",
+    "Swedish"
+  ],
+  "contentOptions": [
+    { "value": "full-review", "label": "Full review" },
+    { "value": "summary-review", "label": "Summary review" },
+    { "value": "comparison-snippet", "label": "Comparison snippet" },
+    { "value": "buyers-guide", "label": "Buyer's guide section" }
+  ]
+}

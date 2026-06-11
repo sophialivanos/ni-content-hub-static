@@ -1,0 +1,36 @@
+{
+  "templates": [
+    {
+      "id": "vpn-product-standard",
+      "name": "VPN Product Review — Standard",
+      "verticals": ["VPN"],
+      "countries": ["US", "UK", "CA", "AU"],
+      "languages": ["English"],
+      "contentOptions": ["full-review", "summary-review"]
+    },
+    {
+      "id": "vpn-comparison",
+      "name": "VPN Comparison Review",
+      "verticals": ["VPN"],
+      "countries": ["US", "UK"],
+      "languages": ["English"],
+      "contentOptions": ["full-review", "comparison-snippet"]
+    },
+    {
+      "id": "car-insurance-product",
+      "name": "Car Insurance Product Review",
+      "verticals": ["Car Insurance"],
+      "countries": ["US"],
+      "languages": ["English"],
+      "contentOptions": ["full-review", "buyers-guide"]
+    },
+    {
+      "id": "meal-delivery-roundup",
+      "name": "Meal Delivery Round-up",
+      "verticals": ["Meal Delivery"],
+      "countries": ["US", "UK"],
+      "languages": ["English", "French"],
+      "contentOptions": ["full-review", "summary-review"]
+    }
+  ]
+}

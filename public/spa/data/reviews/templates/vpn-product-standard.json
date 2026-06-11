@@ -1,0 +1,5 @@
+{
+  "id": "vpn-product-standard",
+  "outlineTemplate": "Review outline — {{brand_name}} ({{vertical}}, {{country}})\n\n1. Overview — {{brand_name}} for {{country}} readers\n2. Key features\n3. Pros\n4. Cons\n5. Pricing & value\n6. Verdict",
+  "bodyTemplate": "# {{brand_name}} Review\n\n**Website:** {{partner_website}}\n**Geo:** {{country}} | **Language:** {{content_language}}\n**Industry:** {{vertical}}\n**Template:** {{template}}\n\n## Overview\n{{brand_name}} is a leading option in {{vertical}} for the {{country}} market.\n\n## Content\n{{content}}\n\n## Verdict\nSummary recommendation for {{brand_name}}."
+}

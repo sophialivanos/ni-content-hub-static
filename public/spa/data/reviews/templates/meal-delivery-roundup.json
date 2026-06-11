@@ -1,0 +1,5 @@
+{
+  "id": "meal-delivery-roundup",
+  "outlineTemplate": "Round-up — {{vertical}} including {{brand_name}} ({{country}})\n\n1. Category overview\n2. {{brand_name}} highlight\n3. Alternatives\n4. Verdict",
+  "bodyTemplate": "# {{vertical}} Round-up: {{brand_name}}\n\n**Website:** {{partner_website}}\n**Geo:** {{country}} | **Language:** {{content_language}}\n**Template:** {{template}}\n\n{{content}}"
+}
