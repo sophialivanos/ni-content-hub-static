@@ -583,7 +583,6 @@ export function renderReviews(root) {
       h('label', { class: 'label-required' }, 'Review type'), reviewTypeSel
     )
   );
-  updateVerticalsFromIndustryReviews();
 
   const tones = ['Warm & conversational','Slightly more formal','Upbeat and cheeky','Inspiring & Empowering','Gentle and warm','Informative and direct','Emotional and inspiring','Confident, expert, factual (Authoritative)','Warm, understanding, emotionally in-tune (Empathetic)','Casual, relaxed, friendly (Conversational)','Uplifting, motivational, purpose-driven (Inspiring)','Polished, neutral, minimal fluff (Professional)','Humorous, clever, youth-targeted (Witty/Playful)','Gentle, comforting, calm and grounded (Reassuring)','Stats-focused, analytical, objective (Data-driven)'];
   const styles = ['Narrative / Story-Driven','Conversational','Instructional / How-To','Persuasive / Conversion-Oriented','Analytical / Data-Led','Editorial / Journalistic','Narrative + Persuasive','Instructional + Conversational','Analytical + Third-Person','Narrative + First-Person','Poetic + Journalistic','Comparative + Listicle'];
@@ -608,6 +607,7 @@ export function renderReviews(root) {
     const ready = !!(industrySel.value && verticalSel.value && (partnerInput.value || '').trim() && reviewTypeSel.value);
     getResearchBtn.disabled = !ready;
   }
+  updateVerticalsFromIndustryReviews();
   updateResearchEnabled();
   getResearchBtn.addEventListener('click', async () => {
     getResearchBtn.disabled = true;

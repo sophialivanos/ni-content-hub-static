@@ -36,8 +36,14 @@ body {
 .sidebar-brand { position:absolute; left:8px; right:8px; text-align:center; pointer-events:none; }
 .sidebar-brand { color: var(--text); font-weight: 700; z-index: 1; }
 .nav { display: flex; flex-direction: column; padding: 12px; gap: 6px; }
-.nav-link { color: var(--text); text-decoration: none; padding: 8px 10px; border-radius: 8px; }
+.nav-link { color: var(--text); text-decoration: none; padding: 8px 10px; border-radius: 8px; font-weight: 500; transition: background .15s ease, color .15s ease; }
 .nav-link:hover { background: rgba(148,163,184,.08); }
+.nav-link.active {
+  background: rgba(99, 102, 241, 0.18);
+  color: #ffffff;
+  font-weight: 600;
+}
+.nav-link.active:hover { background: rgba(99, 102, 241, 0.24); }
 .layout.collapsed .nav-link .label { display: none; }
 
 /* Edge toggle button */
